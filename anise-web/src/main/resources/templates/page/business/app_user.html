@@ -98,7 +98,11 @@
                         <el-tag type="danger" v-if="scope.row.status==0">已禁用</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="extraJson" label="扩展字段" width="100"></el-table-column>
+                <el-table-column prop="extraJson" label="扩展字段" width="200">
+                    <template slot-scope="scope">
+                        <span :title="scope.row.extraJson">{{ truncateText(scope.row.extraJson,20) }}</span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
                 <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
                 <el-table-column
@@ -159,16 +163,24 @@
                 <el-input v-model="itemData.username" autocomplete="off" placeholder="请输入用户名/手机号"></el-input>
             </el-form-item>
 
-            <el-form-item label="加密密码" prop="password" :label-width="formLabelWidth">
-                <el-input v-model="itemData.password" autocomplete="off" placeholder="请输入加密密码"></el-input>
-            </el-form-item>
-
             <el-form-item label="用户昵称" prop="nickname" :label-width="formLabelWidth">
                 <el-input v-model="itemData.nickname" autocomplete="off" placeholder="请输入用户昵称"></el-input>
             </el-form-item>
 
             <el-form-item label="头像URL" prop="avatar" :label-width="formLabelWidth">
-                <el-input v-model="itemData.avatar" autocomplete="off" placeholder="请输入头像URL"></el-input>
+                <el-input v-model="itemData.avatar" autocomplete="off"></el-input>
+                <el-upload
+                        class="upload-demo"
+                        drag
+                        :limit="1"
+                        :before-upload="beforeAvatarUpload"
+                        :on-success="uploadSuccess"
+                        :action="uploadUrl"
+                        list-type="picture">
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
             </el-form-item>
 
             <el-form-item label="角色类型 " prop="roleType" :label-width="formLabelWidth">
@@ -185,12 +197,14 @@
             </el-form-item>
 
             <el-form-item label="账号状态" prop="status" :label-width="formLabelWidth">
-                <el-input v-model="itemData.status" autocomplete="off"
-                          placeholder="请输入账号状态 0:禁用 1:正常"></el-input>
+                <el-select v-model="itemData.status" placeholder="请选择账号状态">
+                    <el-option label="禁用" :value="0"></el-option>
+                    <el-option label="正常" :value="1"></el-option>
+                </el-select>
             </el-form-item>
 
             <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                <el-input v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段"></el-input>
+                <el-input type="textarea" v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段"></el-input>
             </el-form-item>
 
         </el-form>
@@ -217,6 +231,7 @@
                     batchDelUrl: ctx + 'business/appUser/batchDel',
                     addUrl: ctx + 'business/appUser/add',
                     editUrl: ctx + 'business/appUser/edit',
+                    uploadUrl: ctx + 'upload/image',
                     dialogUrl: '',
                     tableData: [],
                     multipleSelection: [],
@@ -278,6 +293,7 @@
                 }
             },
             methods: {
+
                 searchList: function () {
                     // 列表检索
                     let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
@@ -378,6 +394,35 @@
                             message: '已取消删除'
                         });
                     });
+                },
+                uploadSuccess(res, file, fileList) {
+                    console.log("res:", res);
+                    if (res.code === 200) {
+                        this.itemData.avatar = res.data;
+                    } else {
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "上传失败，请稍后重试",
+                            type: 'warning'
+                        });
+                    }
+                },
+                beforeAvatarUpload(file) {
+                    const isJPG = (file.type === 'image/jpeg' || file.type === 'image/png');
+                    const isLt2M = file.size / 1024 / 1024 < 10;
+                    if (!isJPG) {
+                        ELEMENT.Message.error('上传头像图片只能是 JPG/PNG 格式!');
+                    }
+                    if (!isLt2M) {
+                        ELEMENT.Message.error('上传头像图片大小不能超过 2MB!');
+                    }
+                    return isJPG && isLt2M;
+                },
+                truncateText(text, maxLength = 30) {
+                    if (text && text.length > maxLength) {
+                        return text.slice(0, maxLength) + '...';
+                    }
+                    return text;
                 }
             }, created() {
                 this.searchList();

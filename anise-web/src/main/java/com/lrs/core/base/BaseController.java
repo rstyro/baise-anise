@@ -9,15 +9,12 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.ModelAndView;
-import org.thymeleaf.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,16 +59,6 @@ public class BaseController {
     }
 
     /**
-     * 获取session
-     *
-     * @return
-     */
-    public HttpSession getSession() {
-        HttpSession session = getRequest().getSession();
-        return session;
-    }
-
-    /**
      * 获取ServletContext
      *
      * @return
@@ -105,65 +92,6 @@ public class BaseController {
             params.put(entry.getKey(), String.join(",", entry.getValue()));
         }
         return params;
-    }
-
-    /**
-     * 获取ModelAndView
-     *
-     * @return
-     */
-    public ModelAndView getModelAndView() {
-        return new ModelAndView();
-    }
-
-    public ModelAndView get404ModelAndView() {
-        ModelAndView view = new ModelAndView();
-        view.setViewName("404");
-        return view;
-    }
-
-
-    /**
-     * 获取port
-     *
-     * @return
-     */
-    public int getPort() {
-        return this.getRequest().getServerPort();
-    }
-
-    /**
-     * 获取ip
-     *
-     * @return
-     */
-    public static String getIpAddr() {
-        return getRemoteIP(getRequest());
-    }
-
-    public static String getRemoteIP(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-
-        // 处理多个代理服务器的情况，只取第一个非unknown的IP地址
-        if (ip != null && ip.contains(",")) {
-            String[] ips = ip.split(",");
-            for (String ipAddress : ips) {
-                if (!"unknown".equalsIgnoreCase(ipAddress.trim())) {
-                    ip = ipAddress.trim();
-                    break;
-                }
-            }
-        }
-        return StringUtils.contains(ip, "0:0:0:0:0:0:0:1") ? "127.0.0.1" : ip;
     }
 
     public static SysUser getLoginSysUser() {

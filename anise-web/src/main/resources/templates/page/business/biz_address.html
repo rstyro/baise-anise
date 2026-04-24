@@ -146,25 +146,39 @@
                 <el-input v-model="itemData.phone" autocomplete="off" placeholder="请输入收货人电话"></el-input>
             </el-form-item>
 
-            <el-form-item label="省份" prop="province" :label-width="formLabelWidth">
-                <el-input v-model="itemData.province" autocomplete="off" placeholder="请输入省份"></el-input>
+            <el-form-item label="地区" prop="region" :label-width="formLabelWidth">
+                <el-cascader
+                    v-model="regionValue"
+                    :options="regionOptions"
+                    @change="handleRegionChange"
+                    placeholder="请选择省市区"
+                    style="width: 100%"
+                    :props="regionProps"
+                    filterable
+                ></el-cascader>
             </el-form-item>
 
-            <el-form-item label="城市" prop="city" :label-width="formLabelWidth">
-                <el-input v-model="itemData.city" autocomplete="off" placeholder="请输入城市"></el-input>
+            <el-form-item label="省份" prop="province" :label-width="formLabelWidth" >
+                <el-input v-model="itemData.province" autocomplete="off"></el-input>
             </el-form-item>
 
-            <el-form-item label="区县" prop="district" :label-width="formLabelWidth">
-                <el-input v-model="itemData.district" autocomplete="off" placeholder="请输入区县"></el-input>
+            <el-form-item label="城市" prop="city" :label-width="formLabelWidth" >
+                <el-input v-model="itemData.city" autocomplete="off"></el-input>
+            </el-form-item>
+
+            <el-form-item label="区县" prop="district" :label-width="formLabelWidth" >
+                <el-input v-model="itemData.district" autocomplete="off"></el-input>
             </el-form-item>
 
             <el-form-item label="详细地址" prop="detailAddress" :label-width="formLabelWidth">
                 <el-input v-model="itemData.detailAddress" autocomplete="off" placeholder="请输入详细地址"></el-input>
             </el-form-item>
 
-            <el-form-item label="是否默认" prop="isDefault" :label-width="formLabelWidth">
-                <el-input v-model="itemData.isDefault" autocomplete="off"
-                          placeholder="请输入是否默认 0:否 1:是"></el-input>
+            <el-form-item label="默认地址" prop="isDefault" :label-width="formLabelWidth">
+                <el-radio-group v-model="itemData.isDefault">
+                    <el-radio :label="0">否</el-radio>
+                    <el-radio :label="1">是</el-radio>
+                </el-radio-group>
             </el-form-item>
 
         </el-form>
@@ -261,7 +275,27 @@
                             {required: true, message: '请输入详细地址', trigger: 'blur'},
                         ],
 
-                    }
+                    },
+                    // 动态级联
+                    regionProps: {
+                        value: 'code',
+                        label: 'name',
+                        checkStrictly: false,
+                        lazy: true,
+                        lazyLoad: (node, resolve) => {
+                            this.loadRegion(node, resolve);
+                        },
+                    },
+                    regionDto:{
+                        "level":1,
+                        "parentCode":''
+                    },
+                    // 省市区级联数据
+                    regionOptions: [],
+                    // 省市区选中值
+                    regionValue: [],
+                    // 省市区名称映射
+                    regionMap: {}
 
                 }
             },
@@ -313,12 +347,16 @@
                     this.dialogTitle = '新增';
                     this.dialogUrl = this.addUrl;
                     this.itemData = {};
+                    // 清空级联选择器值
+                    this.regionValue = [];
                 },
                 edit(row) {
                     this.addDialogVisible = true;
                     this.dialogTitle = '编辑';
                     this.itemData = row;
                     this.dialogUrl = this.editUrl;
+                    // 根据已有的省市区值设置级联选择器
+                    this.setRegionValue(row.province, row.city, row.district);
                 },
                 saveOrUpdate() {
                     this.$refs['itemData'].validate((valid) => {
@@ -366,9 +404,112 @@
                             message: '已取消删除'
                         });
                     });
+                },
+                // 初始化省份数据
+                initProvince() {
+                    this.regionDto.level = 1;
+                    this.regionDto.parentCode = '';
+                    let url = ctx + `base/baseRegion/list?pageNum=-1&pageSize=-1`;
+                    axios.post(url, this.regionDto).then(r => {
+                        if (r.data.code === 200) {
+                            let data = r.data.data;
+                            let regionData = data.records;
+                            let options = [];
+                            regionData.forEach(item => {
+                                // 构建省份数据结构
+                                let option = {
+                                    code: item.code,
+                                    name: item.name,
+                                    leaf: false
+                                };
+                                // 存储 code 到 name 的映射
+                                this.regionMap[item.code] = item.name;
+                                options.push(option);
+                            });
+                            this.regionOptions = options;
+                        }
+                    }).catch(error => {
+                        console.error("请求失败：", error);
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "请求失败，请稍后重试",
+                            type: 'error'
+                        });
+                    });
+                },
+                // 动态加载地区数据
+                loadRegion(node, resolve) {
+                    let level = node.level + 1;
+                    let parentCode = node.data.code;
+                    this.regionDto.level = level;
+                    this.regionDto.parentCode = parentCode;
+                    let url = ctx + `base/baseRegion/list?pageSize=-1`;
+                    axios.post(url, this.regionDto).then(r => {
+                        if (r.data.code === 200) {
+                            let data = r.data.data;
+                            let regionData = data.records;
+                            let options = [];
+                            regionData.forEach(item => {
+                                // 构建地区数据结构
+                                let option = {
+                                    code: item.code,
+                                    name: item.name,
+                                    leaf: level >= 3 // 区县为叶子节点
+                                };
+                                // 存储 code 到 name 的映射
+                                this.regionMap[item.code] = item.name;
+                                options.push(option);
+                            });
+                            resolve(options);
+                        } else {
+                            resolve([]);
+                        }
+                    }).catch(error => {
+                        console.error("请求失败：", error);
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "请求失败，请稍后重试",
+                            type: 'error'
+                        });
+                        resolve([]);
+                    });
+                },
+                // 处理地区选择变化
+                handleRegionChange(value) {
+                    if (value && value.length === 3) {
+                        this.itemData.province = this.regionMap[value[0]];
+                        this.itemData.city = this.regionMap[value[1]];
+                        this.itemData.district = this.regionMap[value[2]];
+                    } else {
+                        this.itemData.province = '';
+                        this.itemData.city = '';
+                        this.itemData.district = '';
+                    }
+                },
+                // 根据省市区名称获取对应的 code
+                getRegionCode(name) {
+                    for (let code in this.regionMap) {
+                        if (this.regionMap[code] === name) {
+                            return code;
+                        }
+                    }
+                    return '';
+                },
+                // 根据省市区名称设置级联选择器的值
+                setRegionValue(province, city, district) {
+                    let provinceCode = this.getRegionCode(province);
+                    let cityCode = this.getRegionCode(city);
+                    let districtCode = this.getRegionCode(district);
+                    if (provinceCode && cityCode && districtCode) {
+                        this.regionValue = [provinceCode, cityCode, districtCode];
+                    } else {
+                        this.regionValue = [];
+                    }
                 }
             }, created() {
                 this.searchList();
+                // 初始化省份数据
+                this.initProvince();
             }
         });
 </script>

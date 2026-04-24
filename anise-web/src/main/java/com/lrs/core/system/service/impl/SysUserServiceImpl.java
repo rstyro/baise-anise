@@ -16,6 +16,7 @@ import com.lrs.common.constant.Const;
 import com.lrs.common.enums.RedisKeyEnum;
 import com.lrs.common.constant.SystemConst;
 import com.lrs.common.exception.ServiceException;
+import com.lrs.common.utils.RemoteIpUtil;
 import com.lrs.common.vo.TabsVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.config.CommonConfig;
@@ -221,7 +222,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public SysUser login(HttpServletRequest request, LoginDto dto) {
-        String errKey = RedisKeyEnum.USER_ACCOUNT_ERR_KEY.getKey() +dto.getUsername()+ BaseController.getRemoteIP(request);
+        String errKey = RedisKeyEnum.USER_ACCOUNT_ERR_KEY.getKey() +dto.getUsername()+ RemoteIpUtil.getRemoteIpSafely(request);
 
         // 检查账户是否被锁定
         checkAccountLocked(request, dto.getUsername(), errKey);

@@ -59,11 +59,11 @@ public class SecurityContextHolder {
 
     public static int getPageSize() {
         Integer pageSize = PAGE_SIZE_HOLDER.get();
-        return pageSize != null && pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
+        return pageSize != null ? pageSize : DEFAULT_PAGE_SIZE;
     }
 
     public static void setPageSize(Integer pageSize) {
-        if (pageSize != null && pageSize > 0) {
+        if (pageSize != null) {
             // 限制最大分页大小，防止内存溢出
             int safePageSize = Math.min(pageSize, MAX_PAGE_SIZE);
             PAGE_SIZE_HOLDER.set(safePageSize);
@@ -132,7 +132,7 @@ public class SecurityContextHolder {
         setContext(
                 StringUtils.hasLength(trackerId) ? trackerId : IdUtil.fastSimpleUUID(),
                 parsePositiveInt(pageNoStr, DEFAULT_PAGE_NO),
-                parsePositiveInt(pageSizeStr, DEFAULT_PAGE_SIZE),
+                parsePositiveInt(pageSizeStr, DEFAULT_PAGE_SIZE,Boolean.TRUE),
                 token,
                 parseLong(userIdStr)
         );
@@ -183,16 +183,22 @@ public class SecurityContextHolder {
         return request.getParameter(key);
     }
 
-    private static Integer parsePositiveInt(String str, int defaultValue) {
-        if (!StringUtils.hasLength(str) || !StrUtil.isNumeric(str)) {
+
+    private static Integer parsePositiveInt(String str, int defaultValue,boolean negative) {
+        if (!StringUtils.hasLength(str)) {
             return defaultValue;
         }
         try {
             int value = Integer.parseInt(str);
+            if(negative)return value;
             return value > 0 ? value : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    private static Integer parsePositiveInt(String str, int defaultValue){
+        return parsePositiveInt(str,defaultValue,Boolean.FALSE);
     }
 
     private static Long parseLong(String str) {
