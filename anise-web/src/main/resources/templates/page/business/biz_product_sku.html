@@ -26,10 +26,16 @@
         .container .content-header .content-header-right {
             text-align: right;
         }
+        
+        .spec-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
     </style>
+    <script th:src="@{/static/vue/api.js}"></script>
 </head>
 <body>
-
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
         <el-form :inline="true" :model="formDto" class="demo-form-inline">
@@ -69,7 +75,11 @@
                     <el-table-column prop="id" label="SKU-ID" width="100" ></el-table-column>
                     <el-table-column prop="productId" label="商品ID" width="100" ></el-table-column>
                     <el-table-column prop="specName" label="规格名称" width="100" ></el-table-column>
-                    <el-table-column prop="specValues" label="规格属性" width="300" ></el-table-column>
+                    <el-table-column prop="specValues" label="规格属性" width="300" >
+                        <template slot-scope="scope">
+                            <pre>{{viewJson(scope.row.specValues)}}</pre>
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="price" label="销售价" width="100" ></el-table-column>
                     <el-table-column prop="originalPrice" label="划线原价" width="100" ></el-table-column>
                     <el-table-column prop="wholesalePrice" label="批发价" width="100" ></el-table-column>
@@ -134,8 +144,13 @@
                             <el-input v-model="itemData.specName" autocomplete="off" placeholder="请输入规格名称" ></el-input>
                         </el-form-item>
 
-                        <el-form-item label="规格属性" prop="specValues" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.specValues" autocomplete="off" placeholder="请输入规格属性" ></el-input>
+                        <el-form-item label="规格属性" :label-width="formLabelWidth">
+                            <div v-for="(spec, index) in specValueList" :key="index" class="spec-item">
+                                <el-input v-model="spec.key" placeholder="键" style="width: 150px; margin-right: 10px"></el-input>
+                                <el-input v-model="spec.value" placeholder="值" style="width: 150px; margin-right: 10px"></el-input>
+                                <el-button type="danger" @click="removeSpec(index)" size="small">删除</el-button>
+                            </div>
+                            <el-button type="primary" @click="addSpec" size="small" style="margin-top: 10px">添加规格</el-button>
                         </el-form-item>
 
                         <el-form-item label="销售价" prop="price" :label-width="formLabelWidth">
@@ -158,8 +173,11 @@
                             <el-input v-model="itemData.sales" autocomplete="off" placeholder="请输入销量" ></el-input>
                         </el-form-item>
 
-                        <el-form-item label="状态 0:禁用 1:启用" prop="status" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.status" autocomplete="off" placeholder="请输入状态 0:禁用 1:启用" ></el-input>
+                        <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
+                            <el-select v-model="itemData.status" placeholder="请选择状态">
+                                <el-option label="禁用" :value="0"></el-option>
+                                <el-option label="启用" :value="1"></el-option>
+                            </el-select>
                         </el-form-item>
 
                         <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
@@ -194,7 +212,7 @@
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
-<script th:src="@{/static/vue/api.js}"></script>
+
 <script type="text/javascript" th:inline="javascript">
     let ctx = [[@{/}]];
         new Vue({
@@ -225,6 +243,7 @@
                     itemData: {
                         menuIdList:[],
                     },
+                    specValueList: [], // 规格属性列表
                     dialogTitle: '新增',
                     formLabelWidth: '100px',
                     formTimeLabelWidth: '120px',
@@ -260,9 +279,7 @@
                                     specName: [
                                         { required: true, message: '请输入规格名称', trigger: 'blur' },
                                     ],
-                                    specValues: [
-                                        { required: true, message: '请输入规格属性', trigger: 'blur' },
-                                    ],
+
                                     price: [
                                         { required: true, message: '请输入销售价', trigger: 'blur' },
                                     ],
@@ -335,14 +352,42 @@
                     this.dialogTitle = '新增';
                     this.dialogUrl=this.addUrl;
                     this.itemData = {};
+                    this.specValueList = [];
                 },
                 edit(row) {
                     this.addDialogVisible = true;
                     this.dialogTitle = '编辑';
                     this.itemData = row;
                     this.dialogUrl=this.editUrl;
+                    // 将JSON字符串转换为specValueList数组
+                    if (row.specValues) {
+                        try {
+                            const specValues = JSON.parse(row.specValues);
+                            this.specValueList = Object.entries(specValues).map(([key, value]) => ({ key, value }));
+                        } catch (e) {
+                            this.specValueList = [];
+                        }
+                    } else {
+                        this.specValueList = [];
+                    }
+                },
+                addSpec() {
+                    this.specValueList.push({ key: '', value: '' });
+                },
+                removeSpec(index) {
+                    this.specValueList.splice(index, 1);
                 },
                 saveOrUpdate(){
+                    // 将specValueList转换为JSON对象
+                    const specValuesObj = {};
+                    this.specValueList.forEach(item => {
+                        if (item.key) {
+                            specValuesObj[item.key] = item.value;
+                        }
+                    });
+                    // 将JSON对象转换为字符串并赋值给itemData.specValues
+                    this.itemData.specValues = JSON.stringify(specValuesObj);
+                    
                     this.$refs['itemData'].validate((valid) => {
                         if (valid) {
                             requestPost(this.dialogUrl, this.itemData);
@@ -388,6 +433,9 @@
                             message: '已取消删除'
                         });
                     });
+                },
+                viewJson(str){
+                    return formatJSON(str)
                 }
             }, created() {
                 this.searchList();

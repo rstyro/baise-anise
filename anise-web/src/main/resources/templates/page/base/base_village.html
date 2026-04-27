@@ -34,6 +34,15 @@
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
         <el-form :inline="true" :model="formDto" class="demo-form-inline">
+            <el-form-item label="省级编码">
+                <el-input v-model="formDto.provinceCode" placeholder="请输入省级编码"></el-input>
+            </el-form-item>
+            <el-form-item label="城市编码">
+                <el-input v-model="formDto.cityCode" placeholder="请输入城市编码"></el-input>
+            </el-form-item>
+            <el-form-item label="区级编码">
+                <el-input v-model="formDto.areaCode" placeholder="请输入区级编码"></el-input>
+            </el-form-item>
             <el-form-item label="关键词检索">
                 <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
             </el-form-item>

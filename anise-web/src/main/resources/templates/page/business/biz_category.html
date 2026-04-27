@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -9,17 +9,18 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>菜单按钮</title>
     <!-- element-ui 引入样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          th:href="@{/static/element-ui/index.css}">
     <style>
-        .container{
+        .container {
             padding: 5px;
         }
 
-        .container .search-box{
+        .container .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header{
+        .container .content-header {
             margin-bottom: 10px;
         }
 
@@ -46,11 +47,16 @@
         <section class="content-header">
             <el-row :gutter="2">
                 <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizCategory:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
-                    <el-button sa:hasPermissionOr="business:bizCategory:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                    <el-button sa:hasPermissionOr="business:bizCategory:list:add,admin" @click="add" type="success"
+                               size="mini" icon="el-icon-plus">新增
+                    </el-button>
+                    <el-button sa:hasPermissionOr="business:bizCategory:list:del,admin" @click="batchDel" type="danger"
+                               size="mini" icon="el-icon-delete">删除
+                    </el-button>
                 </el-col>
                 <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search"
+                               circle></el-button>
                 </div>
             </el-row>
 
@@ -66,25 +72,28 @@
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="id" label="主键ID" width="100" ></el-table-column>
-                    <el-table-column prop="parentId" label="父分类ID" width="100" ></el-table-column>
-                    <el-table-column prop="categoryName" label="分类名称" width="100" ></el-table-column>
-                    <el-table-column prop="categoryIcon" label="分类图标" width="100" ></el-table-column>
-                    <el-table-column prop="sortOrder" label="排序值" width="100" ></el-table-column>
-                    <el-table-column prop="extraJson" label="扩展字段" width="100" ></el-table-column>
-                    <el-table-column prop="createTime" label="创建时间" width="160" ></el-table-column>
-                    <el-table-column prop="updateTime" label="更新时间" width="160" ></el-table-column>
+                <el-table-column prop="id" label="主键ID" width="100"></el-table-column>
+                <el-table-column prop="parentId" label="父分类ID" width="100"></el-table-column>
+                <el-table-column prop="categoryName" label="分类名称" width="120"></el-table-column>
+                <el-table-column prop="categoryIcon" label="分类图标" width="130"></el-table-column>
+                <el-table-column prop="sortOrder" label="排序值" width="100"></el-table-column>
+                <el-table-column prop="extraJson" label="扩展字段"></el-table-column>
+                <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
                 <el-table-column
                         fixed="right"
                         label="操作"
-                        >
+                >
                     <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizCategory:list:edit,admin" class="item" effect="dark" content="编辑" placement="top-start">
+                        <el-tooltip sa:hasPermissionOr="business:bizCategory:list:edit,admin" class="item" effect="dark"
+                                    content="编辑" placement="top-start">
                             <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
                                        circle></el-button>
                         </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizCategory:list:del,admin" class="item" effect="dark" content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini"
+                        <el-tooltip sa:hasPermissionOr="business:bizCategory:list:del,admin" class="item" effect="dark"
+                                    content="删除" placement="top-start">
+                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger"
+                                       icon="el-icon-delete" size="mini"
                                        circle></el-button>
                         </el-tooltip>
                     </template>
@@ -113,51 +122,52 @@
     <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
         <el-form :model="itemData" :rules="rules" ref="itemData">
 
-                    <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                        <el-input v-model="itemData.id" autocomplete="off"></el-input>
-                    </el-form-item>
+            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
+                <el-input v-model="itemData.id" autocomplete="off"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="父分类ID 0=一级" prop="parentId" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.parentId" autocomplete="off" placeholder="请输入父分类ID 0=一级" ></el-input>
-                        </el-form-item>
+            <el-form-item label="父分类ID" prop="parentId" :label-width="formLabelWidth">
+                <el-input v-model="itemData.parentId" autocomplete="off" placeholder="请输入父分类ID 0=一级"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="分类名称" prop="categoryName" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.categoryName" autocomplete="off" placeholder="请输入分类名称" ></el-input>
-                        </el-form-item>
+            <el-form-item label="分类名称" prop="categoryName" :label-width="formLabelWidth">
+                <el-input v-model="itemData.categoryName" autocomplete="off" placeholder="请输入分类名称"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="分类图标" prop="categoryIcon" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.categoryIcon" autocomplete="off" placeholder="请输入分类图标" ></el-input>
-                        </el-form-item>
+            <el-form-item label="分类图标" prop="categoryIcon" :label-width="formLabelWidth">
+                <el-input v-model="itemData.categoryIcon" autocomplete="off" placeholder="请输入分类图标"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="排序值" prop="sortOrder" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.sortOrder" autocomplete="off" placeholder="请输入排序值" ></el-input>
-                        </el-form-item>
+            <el-form-item label="排序值" prop="sortOrder" :label-width="formLabelWidth">
+                <el-input v-model="itemData.sortOrder" autocomplete="off" placeholder="请输入排序值"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段" ></el-input>
-                        </el-form-item>
+            <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="itemData.extraJson" autocomplete="off"
+                          placeholder="请输入扩展字段"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.createTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
+            <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.createTime"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择日期"
+                        :picker-options="pickerOptions">
+                </el-date-picker>
+            </el-form-item>
 
-                        <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.updateTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
+            <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.updateTime"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择日期"
+                        :picker-options="pickerOptions">
+                </el-date-picker>
+            </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
             <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
@@ -167,7 +177,8 @@
 </div>
 <!-- element-ui -->
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}"
+        crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
 <script th:src="@{/static/vue/api.js}"></script>
 <script type="text/javascript" th:inline="javascript">
@@ -181,7 +192,7 @@
                     batchDelUrl: ctx + 'business/bizCategory/batchDel',
                     addUrl: ctx + 'business/bizCategory/add',
                     editUrl: ctx + 'business/bizCategory/edit',
-                    dialogUrl:'',
+                    dialogUrl: '',
                     tableData: [],
                     multipleSelection: [],
                     formDto: {
@@ -198,7 +209,7 @@
                     },
                     addDialogVisible: false,
                     itemData: {
-                        menuIdList:[],
+                        menuIdList: [],
                     },
                     dialogTitle: '新增',
                     formLabelWidth: '100px',
@@ -229,23 +240,12 @@
                         }]
                     },
                     rules: {
-                                    parentId: [
-                                        { required: true, message: '请输入父分类ID 0=一级', trigger: 'blur' },
-                                    ],
-                                    categoryName: [
-                                        { required: true, message: '请输入分类名称', trigger: 'blur' },
-                                    ],
-                                    categoryIcon: [
-                                        { required: true, message: '请输入分类图标', trigger: 'blur' },
-                                    ],
-                                    sortOrder: [
-                                        { required: true, message: '请输入排序值', trigger: 'blur' },
-                                    ],
-                                    extraJson: [
-                                        { required: true, message: '请输入扩展字段', trigger: 'blur' },
-                                    ],
-
-
+                        parentId: [
+                            {required: true, message: '请输入父分类ID 0=一级', trigger: 'blur'},
+                        ],
+                        categoryName: [
+                            {required: true, message: '请输入分类名称', trigger: 'blur'},
+                        ],
                     }
 
                 }
@@ -279,11 +279,11 @@
                     this.searchList();
                 },
                 handleSizeChange(val) {
-                    this.pageDto.pageSize=val;
+                    this.pageDto.pageSize = val;
                     this.searchList();
                 },
                 handleCurrentChange(val) {
-                    this.pageDto.currentPage=val;
+                    this.pageDto.currentPage = val;
                     this.searchList();
                 },
                 handleSelectionChange(val) {
@@ -296,16 +296,16 @@
                 add() {
                     this.addDialogVisible = true;
                     this.dialogTitle = '新增';
-                    this.dialogUrl=this.addUrl;
+                    this.dialogUrl = this.addUrl;
                     this.itemData = {};
                 },
                 edit(row) {
                     this.addDialogVisible = true;
                     this.dialogTitle = '编辑';
                     this.itemData = row;
-                    this.dialogUrl=this.editUrl;
+                    this.dialogUrl = this.editUrl;
                 },
-                saveOrUpdate(){
+                saveOrUpdate() {
                     this.$refs['itemData'].validate((valid) => {
                         if (valid) {
                             requestPost(this.dialogUrl, this.itemData);

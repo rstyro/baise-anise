@@ -76,7 +76,7 @@
                 <el-table-column prop="userId" label="用户ID" width="100"></el-table-column>
                 <el-table-column prop="realName" label="收货人姓名" width="100"></el-table-column>
                 <el-table-column prop="phone" label="收货人电话" width="120"></el-table-column>
-                <el-table-column prop="province" label="省份" width="100"></el-table-column>
+                <el-table-column prop="province" label="省份" width="140"></el-table-column>
                 <el-table-column prop="city" label="城市" width="100"></el-table-column>
                 <el-table-column prop="district" label="区县" width="100"></el-table-column>
                 <el-table-column prop="detailAddress" label="详细地址" width="200"></el-table-column>
@@ -171,7 +171,7 @@
             </el-form-item>
 
             <el-form-item label="详细地址" prop="detailAddress" :label-width="formLabelWidth">
-                <el-input v-model="itemData.detailAddress" autocomplete="off" placeholder="请输入详细地址"></el-input>
+                <el-input type="textarea"  v-model="itemData.detailAddress" autocomplete="off" placeholder="请输入详细地址"></el-input>
             </el-form-item>
 
             <el-form-item label="默认地址" prop="isDefault" :label-width="formLabelWidth">
@@ -301,6 +301,10 @@
             },
             methods: {
                 searchList: function () {
+                    this.pageDto.currentPage=1;
+                    this.requestData();
+                },
+                requestData: function () {
                     // 列表检索
                     let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
                     axios.post(url, this.formDto).then(r => {
@@ -321,19 +325,19 @@
                 },
                 prePage() {
                     this.pageDto.currentPage -= 1;
-                    this.searchList();
+                    this.requestData();
                 },
                 nextPage() {
                     this.pageDto.currentPage += 1;
-                    this.searchList();
+                    this.requestData();
                 },
                 handleSizeChange(val) {
                     this.pageDto.pageSize = val;
-                    this.searchList();
+                    this.requestData();
                 },
                 handleCurrentChange(val) {
                     this.pageDto.currentPage = val;
-                    this.searchList();
+                    this.requestData();
                 },
                 handleSelectionChange(val) {
                     //当选择项发生变化时会触发该事件

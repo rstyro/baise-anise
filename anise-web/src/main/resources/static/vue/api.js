@@ -35,3 +35,17 @@ function requestPost(url,data){
         });
     })
 }
+
+
+function formatJSON(jsonString) {
+    if (!jsonString) {
+        return false;
+    }
+    try {
+        const parsedJson = JSON.parse(jsonString);
+        return JSON.stringify(parsedJson, null, 2);
+    } catch (error) {
+        console.error('Invalid JSON string:', error);
+        return jsonString;
+    }
+}

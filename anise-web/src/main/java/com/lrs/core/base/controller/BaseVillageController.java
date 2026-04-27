@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lrs.common.utils.SecurityContextHolder;
 import com.lrs.common.vo.R;
 import com.lrs.core.base.BaseController;
+import com.lrs.core.base.dto.VillageDto;
 import com.lrs.core.base.entity.BaseVillage;
 import com.lrs.core.base.service.IBaseVillageService;
 import com.lrs.core.system.dto.BaseDto;
@@ -47,7 +48,7 @@ public class BaseVillageController extends BaseController {
     @SaCheckPermission(value = {"base:baseVillage:list", "base:baseVillage:list:view"}, mode = SaMode.OR)
     @PostMapping("/list")
     @ResponseBody
-    public R list(@RequestBody BaseDto dto) {
+    public R list(@RequestBody VillageDto dto) {
         Page<BaseVillage> menuPage = baseVillageService.getPage(new Page<>(SecurityContextHolder.getPageNo(), SecurityContextHolder.getPageSize()), dto);
         return R.ok(menuPage);
     }

@@ -2,6 +2,7 @@ package com.lrs.core.base.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lrs.core.base.dto.VillageDto;
 import com.lrs.core.base.entity.BaseVillage;
 import com.lrs.core.system.dto.BaseDto;
 
@@ -18,7 +19,7 @@ import java.util.List;
  */
 public interface IBaseVillageService extends IService<BaseVillage> {
 
-    Page<BaseVillage> getPage(Page page, BaseDto dto);
+    Page<BaseVillage> getPage(Page page, VillageDto dto);
     boolean add(BaseVillage item);
     boolean edit(BaseVillage item);
     boolean del(Long id);

@@ -4,10 +4,10 @@ package com.lrs.core.base.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lrs.core.base.dto.VillageDto;
 import com.lrs.core.base.entity.BaseVillage;
 import com.lrs.core.base.mapper.BaseVillageMapper;
 import com.lrs.core.base.service.IBaseVillageService;
-import com.lrs.core.system.dto.BaseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -27,10 +27,24 @@ public class BaseVillageServiceImpl extends ServiceImpl<BaseVillageMapper, BaseV
 
 
     @Override
-    public Page<BaseVillage> getPage(Page page, BaseDto dto) {
+    public Page<BaseVillage> getPage(Page page, VillageDto dto) {
         LambdaQueryWrapper<BaseVillage> queryWrapper = new LambdaQueryWrapper<>();
         if (!ObjectUtils.isEmpty(dto.getKeyword())) {
-            queryWrapper.like(BaseVillage::getName, dto.getKeyword());
+            queryWrapper.and(q->q.like(BaseVillage::getName, dto.getKeyword())
+                    .or().like(BaseVillage::getCode,dto.getKeyword()));
+        }
+
+        if (!ObjectUtils.isEmpty(dto.getProvinceCode())) {
+            queryWrapper.eq(BaseVillage::getProvinceCode, dto.getProvinceCode());
+        }
+        if (!ObjectUtils.isEmpty(dto.getCityCode())) {
+            queryWrapper.eq(BaseVillage::getCityCode, dto.getCityCode());
+        }
+        if (!ObjectUtils.isEmpty(dto.getAreaCode())) {
+            queryWrapper.eq(BaseVillage::getAreaCode, dto.getAreaCode());
+        }
+        if (!ObjectUtils.isEmpty(dto.getStreetCode())) {
+            queryWrapper.eq(BaseVillage::getStreetCode, dto.getStreetCode());
         }
         queryWrapper.orderByAsc(BaseVillage::getCode);
         return page(page, queryWrapper);

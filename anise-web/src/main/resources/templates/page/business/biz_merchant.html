@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -9,17 +9,18 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>菜单按钮</title>
     <!-- element-ui 引入样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+          th:href="@{/static/element-ui/index.css}">
     <style>
-        .container{
+        .container {
             padding: 5px;
         }
 
-        .container .search-box{
+        .container .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header{
+        .container .content-header {
             margin-bottom: 10px;
         }
 
@@ -46,11 +47,16 @@
         <section class="content-header">
             <el-row :gutter="2">
                 <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizMerchant:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
-                    <el-button sa:hasPermissionOr="business:bizMerchant:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                    <el-button sa:hasPermissionOr="business:bizMerchant:list:add,admin" @click="add" type="success"
+                               size="mini" icon="el-icon-plus">新增
+                    </el-button>
+                    <el-button sa:hasPermissionOr="business:bizMerchant:list:del,admin" @click="batchDel" type="danger"
+                               size="mini" icon="el-icon-delete">删除
+                    </el-button>
                 </el-col>
                 <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search"
+                               circle></el-button>
                 </div>
             </el-row>
 
@@ -66,43 +72,62 @@
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="id" label="主键ID" width="100" ></el-table-column>
-                    <el-table-column prop="userId" label="关联管理员" width="100" ></el-table-column>
-                    <el-table-column prop="merchantName" label="商家名称" width="100" ></el-table-column>
-                    <el-table-column prop="contactName" label="联系人" width="100" ></el-table-column>
-                    <el-table-column prop="contactPhone" label="联系电话" width="120" ></el-table-column>
-                    <el-table-column prop="originPlace" label="产地地址" width="120" ></el-table-column>
-                    <el-table-column prop="licenseImage" label="营业执照" width="100" ></el-table-column>
-                    <el-table-column prop="foodLicenseImage" label="食品经营许可证" width="100" ></el-table-column>
-                    <el-table-column prop="auditStatus" label="审核状态" width="100" >
-                        <template slot-scope="scope">
-                            <el-tag type="success" v-if="scope.row.auditStatus==1">通过</el-tag>
-                            <el-tag  v-if="scope.row.auditStatus==0">待审核</el-tag>
-                            <el-tag type="danger" v-if="scope.row.auditStatus==2">拒绝</el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="auditRemark" label="审核备注" width="100" ></el-table-column>
-                    <el-table-column prop="commissionRate" label="平台抽成比例(%)" width="100" ></el-table-column>
-                    <el-table-column prop="status" label="状态" width="100" >
-                        <template slot-scope="scope">
-                            <el-tag type="success" v-if="scope.row.status==1">正常</el-tag>
-                            <el-tag type="danger" v-if="scope.row.status==0">禁用</el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="extraJson" label="扩展字段" width="100" ></el-table-column>
-                    <el-table-column prop="createTime" label="创建时间" width="160" ></el-table-column>
-                    <el-table-column prop="updateTime" label="更新时间" width="160" ></el-table-column>
+                <el-table-column prop="id" label="主键ID" width="100"></el-table-column>
+                <el-table-column prop="userId" label="关联管理员" width="100"></el-table-column>
+                <el-table-column prop="merchantName" label="商家名称" width="200"></el-table-column>
+                <el-table-column prop="contactName" label="联系人" width="100"></el-table-column>
+                <el-table-column prop="contactPhone" label="联系电话" width="120"></el-table-column>
+                <el-table-column prop="originPlace" label="产地地址" width="220"></el-table-column>
+                <el-table-column prop="licenseImage" label="营业执照" width="100">
+                    <template slot-scope="scope">
+                        <el-image :src="scope.row.licenseImage">
+                            <div slot="error" class="image-slot">
+                                <i class="el-icon-picture-outline"></i>
+                            </div>
+                        </el-image>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="foodLicenseImage" label="食品经营许可证" width="120">
+                    <template slot-scope="scope">
+                        <el-image :src="scope.row.foodLicenseImage">
+                            <div slot="error" class="image-slot">
+                                <i class="el-icon-picture-outline"></i>
+                            </div>
+                        </el-image>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="auditStatus" label="审核状态" width="100">
+                    <template slot-scope="scope">
+                        <el-tag type="success" v-if="scope.row.auditStatus==1">通过</el-tag>
+                        <el-tag v-if="scope.row.auditStatus==0">待审核</el-tag>
+                        <el-tag type="danger" v-if="scope.row.auditStatus==2">拒绝</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="auditRemark" label="审核备注" width="100"></el-table-column>
+                <el-table-column prop="commissionRate" label="平台抽成(%)" width="120"></el-table-column>
+                <el-table-column prop="status" label="状态" width="100">
+                    <template slot-scope="scope">
+                        <el-tag type="success" v-if="scope.row.status==1">正常</el-tag>
+                        <el-tag type="danger" v-if="scope.row.status==0">禁用</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="extraJson" label="扩展字段" width="100"></el-table-column>
+                <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
                 <el-table-column
                         fixed="right"
                         label="操作"
                         width="140">
                     <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:edit,admin" class="item" effect="dark" content="编辑" placement="top-start">
+                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:edit,admin" class="item" effect="dark"
+                                    content="编辑" placement="top-start">
                             <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
                                        circle></el-button>
                         </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:del,admin" class="item" effect="dark" content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini"
+                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:del,admin" class="item" effect="dark"
+                                    content="删除" placement="top-start">
+                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger"
+                                       icon="el-icon-delete" size="mini"
                                        circle></el-button>
                         </el-tooltip>
                     </template>
@@ -131,79 +156,90 @@
     <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
         <el-form :model="itemData" :rules="rules" ref="itemData">
 
-                    <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                        <el-input v-model="itemData.id" autocomplete="off"></el-input>
-                    </el-form-item>
+            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
+                <el-input v-model="itemData.id" autocomplete="off"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="关联管理员用户ID" prop="userId" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.userId" autocomplete="off" placeholder="请输入关联管理员用户ID" ></el-input>
-                        </el-form-item>
+            <el-form-item label="关联管理员ID" prop="userId" :label-width="formLabelWidth">
+                <el-input v-model="itemData.userId" autocomplete="off" placeholder="请输入关联管理员用户ID"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="果园/商家名称" prop="merchantName" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.merchantName" autocomplete="off" placeholder="请输入果园/商家名称" ></el-input>
-                        </el-form-item>
+            <el-form-item label="果园/商家名称" prop="merchantName" :label-width="formLabelWidth">
+                <el-input v-model="itemData.merchantName" autocomplete="off"
+                          placeholder="请输入果园/商家名称"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="联系人" prop="contactName" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.contactName" autocomplete="off" placeholder="请输入联系人" ></el-input>
-                        </el-form-item>
+            <el-form-item label="联系人" prop="contactName" :label-width="formLabelWidth">
+                <el-input v-model="itemData.contactName" autocomplete="off" placeholder="请输入联系人"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="联系电话" prop="contactPhone" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.contactPhone" autocomplete="off" placeholder="请输入联系电话" ></el-input>
-                        </el-form-item>
+            <el-form-item label="联系电话" prop="contactPhone" :label-width="formLabelWidth">
+                <el-input v-model="itemData.contactPhone" autocomplete="off" placeholder="请输入联系电话"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="产地地址" prop="originPlace" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.originPlace" autocomplete="off" placeholder="请输入产地地址" ></el-input>
-                        </el-form-item>
+            <el-form-item label="产地地址" prop="originPlace" :label-width="formLabelWidth">
+                <el-input v-model="itemData.originPlace" autocomplete="off" placeholder="请输入产地地址"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="营业执照URL" prop="licenseImage" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.licenseImage" autocomplete="off" placeholder="请输入营业执照URL" ></el-input>
-                        </el-form-item>
+            <el-form-item label="营业执照URL" prop="licenseImage" :label-width="formLabelWidth">
+                <el-input v-model="itemData.licenseImage" autocomplete="off" placeholder="请输入营业执照URL"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="食品经营许可证URL" prop="foodLicenseImage" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.foodLicenseImage" autocomplete="off" placeholder="请输入食品经营许可证URL" ></el-input>
-                        </el-form-item>
+            <el-form-item label="经营许可证URL" prop="foodLicenseImage" :label-width="formLabelWidth">
+                <el-input v-model="itemData.foodLicenseImage" autocomplete="off"
+                          placeholder="请输入食品经营许可证URL"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="审核状态 0:待审核 1:通过 2:拒绝" prop="auditStatus" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.auditStatus" autocomplete="off" placeholder="请输入审核状态 0:待审核 1:通过 2:拒绝" ></el-input>
-                        </el-form-item>
+            <el-form-item label="审核状态" prop="auditStatus" :label-width="formLabelWidth">
+                <el-select v-model="itemData.auditStatus" placeholder="请输入审核状态">
+                    <el-option label="待审核" :value="0"></el-option>
+                    <el-option label="通过" :value="1"></el-option>
+                    <el-option label="拒绝" :value="2"></el-option>
+                </el-select>
+            </el-form-item>
 
-                        <el-form-item label="审核备注" prop="auditRemark" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.auditRemark" autocomplete="off" placeholder="请输入审核备注" ></el-input>
-                        </el-form-item>
+            <el-form-item label="审核备注" prop="auditRemark" :label-width="formLabelWidth">
+                <el-input v-model="itemData.auditRemark" autocomplete="off" placeholder="请输入审核备注"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="平台抽成比例(%)" prop="commissionRate" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.commissionRate" autocomplete="off" placeholder="请输入平台抽成比例(%)" ></el-input>
-                        </el-form-item>
+            <el-form-item label="平台抽成比例(%)" prop="commissionRate" :label-width="formLabelWidth">
+                <el-input v-model="itemData.commissionRate" autocomplete="off"
+                          placeholder="请输入平台抽成比例(%)"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="状态 0:禁用 1:正常" prop="status" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.status" autocomplete="off" placeholder="请输入状态 0:禁用 1:正常" ></el-input>
-                        </el-form-item>
+            <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
+                <el-select v-model="itemData.status" placeholder="请选择账号状态">
+                    <el-option label="禁用" :value="0"></el-option>
+                    <el-option label="正常" :value="1"></el-option>
+                </el-select>
+            </el-form-item>
 
-                        <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段" ></el-input>
-                        </el-form-item>
+            <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="itemData.extraJson" autocomplete="off"
+                          placeholder="请输入扩展字段"></el-input>
+            </el-form-item>
 
-                        <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.createTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
+            <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.createTime"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择日期"
+                        :picker-options="pickerOptions">
+                </el-date-picker>
+            </el-form-item>
 
-                        <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.updateTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
+            <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.updateTime"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择日期"
+                        :picker-options="pickerOptions">
+                </el-date-picker>
+            </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
             <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
@@ -213,7 +249,8 @@
 </div>
 <!-- element-ui -->
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}"
+        crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
 <script th:src="@{/static/vue/api.js}"></script>
 <script type="text/javascript" th:inline="javascript">
@@ -227,7 +264,7 @@
                     batchDelUrl: ctx + 'business/bizMerchant/batchDel',
                     addUrl: ctx + 'business/bizMerchant/add',
                     editUrl: ctx + 'business/bizMerchant/edit',
-                    dialogUrl:'',
+                    dialogUrl: '',
                     tableData: [],
                     multipleSelection: [],
                     formDto: {
@@ -244,10 +281,10 @@
                     },
                     addDialogVisible: false,
                     itemData: {
-                        menuIdList:[],
+                        menuIdList: [],
                     },
                     dialogTitle: '新增',
-                    formLabelWidth: '100px',
+                    formLabelWidth: '140px',
                     formTimeLabelWidth: '120px',
                     pickerOptions: {
                         disabledDate(time) {
@@ -275,43 +312,28 @@
                         }]
                     },
                     rules: {
-                                    userId: [
-                                        { required: true, message: '请输入关联管理员用户ID', trigger: 'blur' },
-                                    ],
-                                    merchantName: [
-                                        { required: true, message: '请输入果园/商家名称', trigger: 'blur' },
-                                    ],
-                                    contactName: [
-                                        { required: true, message: '请输入联系人', trigger: 'blur' },
-                                    ],
-                                    contactPhone: [
-                                        { required: true, message: '请输入联系电话', trigger: 'blur' },
-                                    ],
-                                    originPlace: [
-                                        { required: true, message: '请输入产地地址', trigger: 'blur' },
-                                    ],
-                                    licenseImage: [
-                                        { required: true, message: '请输入营业执照URL', trigger: 'blur' },
-                                    ],
-                                    foodLicenseImage: [
-                                        { required: true, message: '请输入食品经营许可证URL', trigger: 'blur' },
-                                    ],
-                                    auditStatus: [
-                                        { required: true, message: '请输入审核状态 0:待审核 1:通过 2:拒绝', trigger: 'blur' },
-                                    ],
-                                    auditRemark: [
-                                        { required: true, message: '请输入审核备注', trigger: 'blur' },
-                                    ],
-                                    commissionRate: [
-                                        { required: true, message: '请输入平台抽成比例(%)', trigger: 'blur' },
-                                    ],
-                                    status: [
-                                        { required: true, message: '请输入状态 0:禁用 1:正常', trigger: 'blur' },
-                                    ],
-                                    extraJson: [
-                                        { required: true, message: '请输入扩展字段', trigger: 'blur' },
-                                    ],
+                        userId: [
+                            {required: true, message: '请输入关联管理员用户ID', trigger: 'blur'},
+                        ],
+                        merchantName: [
+                            {required: true, message: '请输入果园/商家名称', trigger: 'blur'},
+                        ],
+                        contactName: [
+                            {required: true, message: '请输入联系人', trigger: 'blur'},
+                        ],
+                        contactPhone: [
+                            {required: true, message: '请输入联系电话', trigger: 'blur'},
+                        ],
+                        originPlace: [
+                            {required: true, message: '请输入产地地址', trigger: 'blur'},
+                        ],
 
+                        commissionRate: [
+                            {required: true, message: '请输入平台抽成比例(%)', trigger: 'blur'},
+                        ],
+                        status: [
+                            {required: true, message: '请输入状态 0:禁用 1:正常', trigger: 'blur'},
+                        ],
 
                     }
 
@@ -346,11 +368,11 @@
                     this.searchList();
                 },
                 handleSizeChange(val) {
-                    this.pageDto.pageSize=val;
+                    this.pageDto.pageSize = val;
                     this.searchList();
                 },
                 handleCurrentChange(val) {
-                    this.pageDto.currentPage=val;
+                    this.pageDto.currentPage = val;
                     this.searchList();
                 },
                 handleSelectionChange(val) {
@@ -363,16 +385,16 @@
                 add() {
                     this.addDialogVisible = true;
                     this.dialogTitle = '新增';
-                    this.dialogUrl=this.addUrl;
+                    this.dialogUrl = this.addUrl;
                     this.itemData = {};
                 },
                 edit(row) {
                     this.addDialogVisible = true;
                     this.dialogTitle = '编辑';
                     this.itemData = row;
-                    this.dialogUrl=this.editUrl;
+                    this.dialogUrl = this.editUrl;
                 },
-                saveOrUpdate(){
+                saveOrUpdate() {
                     this.$refs['itemData'].validate((valid) => {
                         if (valid) {
                             requestPost(this.dialogUrl, this.itemData);
