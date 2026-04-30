@@ -106,3 +106,5 @@ security:
     - /captcha**
     - /upload/**
     - /show/**
+    - /app/user/login
+    - /app/user/appletLogin

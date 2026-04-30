@@ -65,8 +65,8 @@ public class AppUser implements Serializable {
     /**
      * 头像URL
      */
-    @TableField("avatar")
-    private String avatar;
+    @TableField("avatar_url")
+    private String avatarUrl;
 
     /**
      * 角色类型 1:C端消费者 2:B端采购商 3:入驻商家 4:平台管理员

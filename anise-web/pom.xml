@@ -106,6 +106,16 @@
             <artifactId>redisson-spring-boot-starter</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>me.zhyd.oauth</groupId>
+            <artifactId>JustAuth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-template</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

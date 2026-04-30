@@ -16,6 +16,10 @@ public class CommonConfig {
      */
     private String systemName;
 
+    private String emailForm;
+    private String platformName;
+
+
     @ConfigurationProperties(prefix = "admin.common.upload")
     @Configuration
     @Data

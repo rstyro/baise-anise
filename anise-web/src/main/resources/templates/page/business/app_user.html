@@ -75,9 +75,9 @@
                 <el-table-column prop="id" label="主键ID" width="100"></el-table-column>
                 <el-table-column prop="username" label="用户名" width="100"></el-table-column>
                 <el-table-column prop="nickname" label="用户昵称" width="130"></el-table-column>
-                <el-table-column prop="avatar" label="头像" width="100">
+                <el-table-column prop="avatarUrl" label="头像" width="100">
                     <template slot-scope="scope">
-                        <el-avatar :size="35" :src="scope.row.avatar"></el-avatar>
+                        <el-avatar :size="35" :src="scope.row.avatarUrl"></el-avatar>
                     </template>
                 </el-table-column>
                 <el-table-column prop="roleType" label="角色类型" width="120">
@@ -167,8 +167,8 @@
                 <el-input v-model="itemData.nickname" autocomplete="off" placeholder="请输入用户昵称"></el-input>
             </el-form-item>
 
-            <el-form-item label="头像URL" prop="avatar" :label-width="formLabelWidth">
-                <el-input v-model="itemData.avatar" autocomplete="off"></el-input>
+            <el-form-item label="头像URL" prop="avatarUrl" :label-width="formLabelWidth">
+                <el-input v-model="itemData.avatarUrl" autocomplete="off"></el-input>
                 <el-upload
                         class="upload-demo"
                         drag
@@ -401,7 +401,7 @@
                 uploadSuccess(res, file, fileList) {
                     console.log("res:", res);
                     if (res.code === 200) {
-                        this.itemData.avatar = res.data;
+                        this.itemData.avatarUrl = res.data;
                     } else {
                         ELEMENT.Message({
                             showClose: true,
