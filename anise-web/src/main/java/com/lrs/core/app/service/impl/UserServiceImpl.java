@@ -1,7 +1,6 @@
 package com.lrs.core.app.service.impl;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,12 +13,12 @@ import com.lrs.common.enums.RedisKeyEnum;
 import com.lrs.common.enums.UploadImageType;
 import com.lrs.common.exception.ServiceException;
 import com.lrs.common.utils.SecurityContextHolder;
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.app.dto.user.MiniLoginDto;
 import com.lrs.core.app.dto.user.MiniRegisterDto;
 import com.lrs.core.app.dto.user.UserAvatarDto;
 import com.lrs.core.app.dto.user.UserInfoDto;
 import com.lrs.core.app.service.IUserService;
-import com.lrs.core.app.vo.AppUserVo;
 import com.lrs.core.business.entity.AppUser;
 import com.lrs.core.business.service.IAppUserService;
 import com.lrs.core.config.CommonConfig;
@@ -37,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.thymeleaf.TemplateEngine;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +70,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public AppUserVo appletLogin(MiniLoginDto dto) {
+    public UserVo appletLogin(MiniLoginDto dto) {
         AuthRequest authRequest = OauthUtils.getAuthRequest(OauthSourceConst.WECHAT_MINI_PROGRAM, oauthProperties);
         AuthToken accessToken = authRequest.getAccessToken(AuthCallback.builder().code(dto.getCode()).build());
         String openId = accessToken.getOpenId();
@@ -90,7 +88,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public AppUserVo register(MiniRegisterDto dto) {
+    public UserVo register(MiniRegisterDto dto) {
         String code = RedissonUtils.getCacheObject(RedisKeyEnum.MINI_USER_EMAIL_CODE, RedissonUtils.joinKey(dto.getAccount(), dto.getActionType()));
         if (!Objects.equals(code, dto.getCode())) {
             throw new ServiceException(ApiResultEnum.SYSTEM_CODE_ERROR);
@@ -111,7 +109,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public AppUserVo login(MiniRegisterDto dto) {
+    public UserVo login(MiniRegisterDto dto) {
         String account = dto.getAccount();
         if (!StrUtil.equalsAnyIgnoreCase(account, "test", "admin", "1006059906@qq.com","18818868688")) {
             String code = RedissonUtils.getCacheObject(RedisKeyEnum.MINI_USER_EMAIL_CODE, RedissonUtils.joinKey(dto.getAccount(), dto.getActionType()));
@@ -148,8 +146,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public AppUserVo getUserInfo() {
-        AppUserVo userInfo = (AppUserVo) StpKit.APP.getSession().get(Const.SessionKey.APP_SESSION_USER);
+    public UserVo getUserInfo() {
+        UserVo userInfo = (UserVo) StpKit.APP.getSession().get(Const.SessionKey.SESSION_USER);
         if (ObjectUtils.isEmpty(userInfo)) {
             AppUser user = miniUserService.getById(SecurityContextHolder.getUserId());
             // 刷新用户 session 信息
@@ -184,7 +182,7 @@ public class UserServiceImpl implements IUserService {
             Long userId = SecurityContextHolder.getUserId();
             String newAvatarUrl = "/show" + folder + fileName;
             miniUserService.updateById(new AppUser().setId(userId).setAvatarUrl(newAvatarUrl));
-            StpKit.APP.getSession().delete(Const.SessionKey.APP_SESSION_USER);
+            StpKit.APP.getSession().delete(Const.SessionKey.SESSION_USER);
             return newAvatarUrl;
         } catch (IOException e) {
             log.error("上传头像失败，err={}", e.getMessage(), e);
@@ -221,13 +219,11 @@ public class UserServiceImpl implements IUserService {
     }
 
 
-    private AppUserVo reloadUserInfo(AppUser user) {
+    private UserVo reloadUserInfo(AppUser user) {
         if (ObjectUtils.isEmpty(user)) return null;
-        AppUserVo vo = new AppUserVo();
-        BeanUtil.copyProperties(user, vo);
+        UserVo vo = user.toUserVo();
         vo.setToken(StpKit.APP.getTokenValue());
-        vo.setUserId(user.getId());
-        StpKit.APP.getSession().set(Const.SessionKey.APP_SESSION_USER, vo);
+        StpKit.APP.getSession().set(Const.SessionKey.SESSION_USER, vo);
         return vo;
     }
 

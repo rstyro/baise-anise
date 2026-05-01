@@ -240,7 +240,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         // 更新最后登录时间
         updateUserRecord(sysUser);
         SaSession session = StpUtil.getSession();
-        session.set(Const.SessionKey.SESSION_USER, sysUser);
+        session.set(Const.SessionKey.SESSION_USER, sysUser.toUserVo());
         System.out.println(JSON.toJSONString(sysUser));
         return sysUser;
     }

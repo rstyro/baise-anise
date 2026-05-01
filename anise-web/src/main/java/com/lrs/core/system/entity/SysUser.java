@@ -10,6 +10,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lrs.common.sensitive.Sensitive;
 import com.lrs.common.sensitive.SensitiveStrategy;
+import com.lrs.common.vo.UserVo;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -105,6 +106,16 @@ public class SysUser implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
+
+
+    public UserVo toUserVo(){
+        UserVo userVo = new UserVo();
+        userVo.setUserId(id);
+        userVo.setNickname(nickName);
+        userVo.setAvatarUrl(avatar);
+        return userVo;
+    }
 
 
 }

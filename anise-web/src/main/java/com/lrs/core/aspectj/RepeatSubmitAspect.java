@@ -7,6 +7,7 @@ import com.lrs.common.enums.RedisKeyEnum;
 import com.lrs.common.exception.ServiceException;
 import com.lrs.common.utils.AopUtil;
 import com.lrs.common.utils.RemoteIpUtil;
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.system.entity.SysUser;
 import com.lrs.core.util.RedisUtil;
@@ -109,8 +110,8 @@ public class RepeatSubmitAspect {
         // 根据锁类型添加不同标识
         switch (antiResubmit.lockType()) {
             case SYSTEM_USER:
-                SysUser loginSysUser = BaseController.getLoginSysUser();
-                String userId = loginSysUser != null?String.valueOf(loginSysUser.getId()):"";
+                UserVo loginSysUser = BaseController.getLoginSysUser();
+                String userId = loginSysUser != null?String.valueOf(loginSysUser.getUserId()):"";
                 if (StringUtils.hasText(userId)) {
                     addSeparator(keyBuilder);
                     keyBuilder.append("system_user:").append(userId);

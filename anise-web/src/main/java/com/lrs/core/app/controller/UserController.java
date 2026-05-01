@@ -3,22 +3,18 @@ package com.lrs.core.app.controller;
 import com.lrs.common.annotation.OperateLog;
 import com.lrs.common.constant.Const;
 import com.lrs.common.vo.R;
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.app.dto.user.MiniLoginDto;
 import com.lrs.core.app.dto.user.MiniRegisterDto;
 import com.lrs.core.app.dto.user.UserAvatarDto;
 import com.lrs.core.app.dto.user.UserInfoDto;
 import com.lrs.core.app.service.IUserService;
-import com.lrs.core.app.vo.AppUserVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.util.StpKit;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -95,11 +91,11 @@ public class UserController extends BaseController {
     public R testLogin(){
         Long userId = 1L;
         StpKit.APP.login(userId);
-        AppUserVo vo = new AppUserVo();
+        UserVo vo = new UserVo();
         vo.setUserId(userId);
         vo.setToken(StpKit.APP.getTokenValue());
         vo.setNickname("test");
-        StpKit.APP.getSession().set(Const.SessionKey.APP_SESSION_USER,vo);
+        StpKit.APP.getSession().set(Const.SessionKey.SESSION_USER,vo);
         return R.ok(vo);
     }
 

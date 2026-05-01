@@ -3,14 +3,14 @@ package com.lrs.core.oauth.config;
 import com.lrs.core.oauth.config.properties.OauthProperties;
 import com.lrs.core.oauth.util.AuthRedisStateCache;
 import me.zhyd.oauth.cache.AuthStateCache;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Social 配置属性
  */
-@AutoConfiguration
+@Configuration
 @EnableConfigurationProperties(OauthProperties.class)
 public class OauthAutoConfiguration {
 

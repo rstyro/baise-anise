@@ -33,12 +33,10 @@ public interface Const {
 		 */
 		String SESSION_CODE="SESSION_CODE";
 		/**
-		 * 后台用户
+		 * 用户session
 		 */
 		String SESSION_USER="SESSION_USER";
 
-		// app用户
-		String APP_SESSION_USER="APP_SESSION_USER";
 
 		String SESSION_ALL_MENU="SESSION_ALL_MENU";
 		String GLOBAL_SESSION="GLOBAL_SESSION";

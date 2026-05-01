@@ -1,10 +1,10 @@
 package com.lrs.core.app.service;
 
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.app.dto.user.MiniLoginDto;
 import com.lrs.core.app.dto.user.MiniRegisterDto;
 import com.lrs.core.app.dto.user.UserAvatarDto;
 import com.lrs.core.app.dto.user.UserInfoDto;
-import com.lrs.core.app.vo.AppUserVo;
 
 /**
  * <p>
@@ -21,18 +21,18 @@ public interface IUserService {
      * @param dto
      * @return
      */
-    AppUserVo appletLogin(MiniLoginDto dto);
+    UserVo appletLogin(MiniLoginDto dto);
 
     /**
      * 注册
      * @param dto 参数
      */
-    AppUserVo register(MiniRegisterDto dto);
-    AppUserVo login(MiniRegisterDto dto);
+    UserVo register(MiniRegisterDto dto);
+    UserVo login(MiniRegisterDto dto);
 
     boolean sendCode(MiniRegisterDto dto);
 
-    AppUserVo getUserInfo();
+    UserVo getUserInfo();
 
     String updateUserAvatar(UserAvatarDto dto);
 

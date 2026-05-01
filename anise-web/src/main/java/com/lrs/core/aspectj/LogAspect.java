@@ -11,6 +11,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.lrs.common.annotation.OperateLog;
 import com.lrs.common.constant.SystemConst;
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.system.entity.SysUser;
 import com.lrs.core.system.event.OperLogEvent;
@@ -93,8 +94,8 @@ public class LogAspect {
             // 请求的地址
             operLog.setOperIp(NetUtil.getLocalhostStr());
             operLog.setOperUrl(StrUtil.sub(BaseController.getRequest().getRequestURI(), 0, 255));
-            SysUser loginSysUser = BaseController.getLoginSysUser();
-            operLog.setOperName(loginSysUser.getUsername());
+            UserVo loginSysUser = BaseController.getLoginSysUser();
+            operLog.setOperName(loginSysUser.getNickname());
             if (e != null) {
                 operLog.setStatus(SystemConst.OperateLogStatus.FAIL);
                 operLog.setErrorMsg(StrUtil.sub(e.getMessage(), 0, 2000));

@@ -4,7 +4,9 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.convert.Convert;
 import com.lrs.common.constant.Const;
+import com.lrs.common.vo.UserVo;
 import com.lrs.core.system.entity.SysUser;
+import com.lrs.core.util.StpKit;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -94,10 +96,15 @@ public class BaseController {
         return params;
     }
 
-    public static SysUser getLoginSysUser() {
+    public static UserVo getLoginSysUser() {
         try {
-            SaSession session = StpUtil.getSession();
-            return Convert.convert(SysUser.class, session.get(Const.SessionKey.SESSION_USER));
+            SaSession session =null;
+            if( StpKit.ADMIN.isLogin()){
+                session = StpKit.ADMIN.getSession();
+            }else if(StpKit.APP.isLogin()){
+                session=StpKit.APP.getSession();
+            }
+            return Convert.convert(UserVo.class, session.get(Const.SessionKey.SESSION_USER));
         } catch (Exception e) {
             return null;
         }

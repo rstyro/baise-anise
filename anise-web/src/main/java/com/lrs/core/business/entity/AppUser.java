@@ -2,6 +2,7 @@ package com.lrs.core.business.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lrs.common.vo.UserVo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -121,5 +122,15 @@ public class AppUser implements Serializable {
     @TableLogic
     private Byte isDeleted;
 
+
+
+    public UserVo toUserVo(){
+        UserVo userVo = new UserVo();
+        userVo.setUserId(id);
+        userVo.setNickname(nickname);
+        userVo.setAvatarUrl(avatarUrl);
+        userVo.setPhone(phone);
+        return userVo;
+    }
 
 }
