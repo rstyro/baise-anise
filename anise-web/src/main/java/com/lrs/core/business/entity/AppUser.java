@@ -129,6 +129,7 @@ public class AppUser implements Serializable {
         userVo.setUserId(id);
         userVo.setNickname(nickname);
         userVo.setAvatarUrl(avatarUrl);
+        userVo.setUsername(username);
         userVo.setPhone(phone);
         return userVo;
     }

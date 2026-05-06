@@ -104,7 +104,8 @@ public class BaseController {
             }else if(StpKit.APP.isLogin()){
                 session=StpKit.APP.getSession();
             }
-            return Convert.convert(UserVo.class, session.get(Const.SessionKey.SESSION_USER));
+            UserVo userVo = Convert.convert(UserVo.class, session.get(Const.SessionKey.SESSION_USER));
+            return userVo!=null?userVo:new UserVo().setNickname("匿名");
         } catch (Exception e) {
             return null;
         }

@@ -11,6 +11,7 @@ public class UserInfoDto {
 
     // 昵称
     private String nickname;
+    private String username;
     private String avatarUrl;
     private Short sex;
     private String signature;

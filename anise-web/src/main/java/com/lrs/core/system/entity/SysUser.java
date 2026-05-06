@@ -113,6 +113,7 @@ public class SysUser implements Serializable {
         UserVo userVo = new UserVo();
         userVo.setUserId(id);
         userVo.setNickname(nickName);
+        userVo.setUsername(username);
         userVo.setAvatarUrl(avatar);
         return userVo;
     }

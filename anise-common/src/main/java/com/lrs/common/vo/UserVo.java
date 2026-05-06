@@ -2,7 +2,6 @@ package com.lrs.common.vo;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 
 @Accessors(chain = true)
 @Data
@@ -16,6 +15,8 @@ public class UserVo {
 
     //"昵称"
     private String nickname;
+    // 用户名
+    private String username;
 
     //"头像图片地址"
     private String avatarUrl;

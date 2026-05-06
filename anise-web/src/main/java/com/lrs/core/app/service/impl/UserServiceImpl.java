@@ -209,6 +209,10 @@ public class UserServiceImpl implements IUserService {
         setIfNotNull(user::setNickname, dto.getNickname());
         setIfNotNull(user::setAvatarUrl, dto.getAvatarUrl());
         setIfNotNull(user::setPhone, dto.getPhone());
+        // 如果没设置过用户名可以设置一次
+        if(ObjectUtils.isEmpty(user.getUsername())){
+            setIfNotNull(user::setUsername, dto.getUsername());
+        }
 
         boolean sucUpdate = miniUserService.updateById(user);
         if (sucUpdate) {
