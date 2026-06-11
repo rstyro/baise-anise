@@ -1,0 +1,107 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u-(.*)": "uview-pro/components/u-$1/u-$1.vue"
+		}
+	},
+	"pages": [
+		{
+			"path": "pages/tab-bar/index/index",
+			"name": "index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/tab-bar/me/me",
+			"name": "me",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+			{
+			"path": "pages/login/login",
+			"name": "login",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/pinia-demo/pinia-demo",
+			"name": "pinia-demo",
+			"style": {
+				"navigationBarTitleText": "Pinia 状态管理"
+			}
+		},
+		{
+			"path": "pages/uview-demo/uview-demo",
+			"name": "uview-demo",
+			"style": {
+				"navigationBarTitleText": "uView Plus 组件"
+			}
+		},
+		{
+			"path": "pages/auto-import-demo/auto-import-demo",
+			"name": "auto-import-demo",
+			"style": {
+				"navigationBarTitleText": "自动导入演示"
+			}
+		},
+		{
+			"path": "pages/http-demo/http-demo",
+			"name": "http-demo",
+			"style": {
+				"navigationBarTitleText": "HTTP 请求演示"
+			}
+		},
+		{
+			"path": "pages/audio-demo/audio-demo",
+			"name": "audio-demo",
+			"style": {
+				"navigationBarTitleText": "音频播放演示"
+			}
+		},
+		{
+			"path": "pages/user/userInfo/userInfo",
+			"name": "userInfo",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/setting/setting",
+			"name": "setting",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#909399",
+		"selectedColor": "#303133",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black",
+		"list": [{
+				"pagePath": "pages/tab-bar/index/index",
+				"iconPath": "static/images/tabbar/home.png",
+				"selectedIconPath": "static/images/tabbar/home-active.png",
+				"text": "首页"
+			},
+
+			{
+				"pagePath": "pages/tab-bar/me/me",
+				"iconPath": "static/images/tabbar/me.png",
+				"selectedIconPath": "static/images/tabbar/me-active.png",
+				"text": "我的"
+			}
+		]
+	}
+}
