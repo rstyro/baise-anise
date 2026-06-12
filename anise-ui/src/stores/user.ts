@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { getImageUrl } from '@/utils/image'
 
 interface UserInfo {
   userId: number
@@ -20,15 +21,13 @@ export const useUserStore = defineStore('user', () => {
   })
 
   const isLoggedIn = computed(() => !!token.value)
-  const welcomeText = computed(() => {
-    if (isLoggedIn.value) {
-      return `欢迎回来, ${userInfo.value.nickname}!`
-    }
-    return '请先登录'
-  })
 
   function login(newToken: string, info: Partial<UserInfo>) {
     token.value = newToken
+    // 头像URL标准化：非http开头时拼接BASE_URL
+    if (info.avatarUrl) {
+      info.avatarUrl = getImageUrl(info.avatarUrl)
+    }
     userInfo.value = { ...userInfo.value, ...info }
   }
 
@@ -48,14 +47,13 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function updateAvatar(newAvatarUrl: string) {
-    userInfo.value.avatarUrl = newAvatarUrl
+    userInfo.value.avatarUrl = getImageUrl(newAvatarUrl)
   }
 
   return {
     token,
     userInfo,
     isLoggedIn,
-    welcomeText,
     login,
     logout,
     updateName,

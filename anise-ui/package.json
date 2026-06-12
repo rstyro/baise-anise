@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev:custom": "cross-env NODE_ENV=development uni -p",
-    "dev:h5": "cross-env NODE_ENV=development uni",
+    "dev": "cross-env NODE_ENV=development uni",
     "dev:h5:ssr": "cross-env NODE_ENV=development uni --ssr",
     "dev:h5:test": "cross-env NODE_ENV=test uni",
     "dev:mp-alipay": "cross-env NODE_ENV=development uni -p mp-alipay",
@@ -77,7 +77,7 @@
     "typescript": "^4.9.4",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^32.0.0",
-    "uview-pro": "^0.5.18",
+    "uview-pro": "^0.6.6",
     "vite": "5.2.8",
     "vue-tsc": "^1.0.24"
   }

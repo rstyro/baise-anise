@@ -75,6 +75,12 @@ public class BizAddress implements Serializable {
     private String detailAddress;
 
     /**
+     * 标签（如 家、公司、学校）
+     */
+    @TableField("tags")
+    private String tags;
+
+    /**
      * 是否默认 0:否 1:是
      */
     @TableField("is_default")

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>售后管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
+    <style>.container { padding: 5px; }</style>
+</head>
+<body>
+<div id="app" class="container">
+    <el-card class="box-card" v-show="showSearch" style="margin-bottom:20px">
+        <el-form :inline="true" :model="formDto">
+            <el-form-item label="售后单号"><el-input v-model="formDto.keyword" placeholder="售后单号"></el-input></el-form-item>
+            <el-form-item><el-button type="primary" @click="searchList">查询</el-button></el-form-item>
+        </el-form>
+    </el-card>
+    <el-card class="box-card">
+        <el-row style="margin-bottom:10px">
+            <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle style="float:right"></el-button>
+        </el-row>
+        <el-table :data="tableData" style="width:100%;margin-bottom:20px" row-key="id" border @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="60"></el-table-column>
+            <el-table-column prop="afterSaleNo" label="售后单号" width="160"></el-table-column>
+            <el-table-column prop="orderId" label="订单ID" width="80"></el-table-column>
+            <el-table-column prop="userId" label="用户ID" width="80"></el-table-column>
+            <el-table-column prop="type" label="类型" width="100">
+                <template slot-scope="scope">
+                    <el-tag v-if="scope.row.type==1" type="warning">仅退款</el-tag>
+                    <el-tag v-if="scope.row.type==2" type="primary">退货退款</el-tag>
+                    <el-tag v-if="scope.row.type==3" type="danger">坏果赔付</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="refundAmount" label="退款金额" width="100"></el-table-column>
+            <el-table-column prop="status" label="状态" width="100">
+                <template slot-scope="scope">
+                    <el-tag v-if="scope.row.status==0" type="info">待处理</el-tag>
+                    <el-tag v-if="scope.row.status==1" type="success">已同意</el-tag>
+                    <el-tag v-if="scope.row.status==2" type="danger">已拒绝</el-tag>
+                    <el-tag v-if="scope.row.status==3">已完成</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="reason" label="原因"  show-overflow-tooltip></el-table-column>
+            <el-table-column prop="handleRemark" label="处理备注" width="200" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="createTime" label="申请时间" width="160"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="100">
+                <template slot-scope="scope">
+                    <el-button sa:hasPermissionOr="business:bizAfterSale:list:edit,admin" @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-pagination
+            @size-change="handleSizeChange" @current-change="handleCurrentChange"
+            :current-page="pageDto.currentPage" :page-size="pageDto.pageSize"
+            :page-count="pageDto.pageCount" :total="pageDto.total"
+            layout="sizes,prev,pager,next" :page-sizes="[10,20,30,50]">
+        </el-pagination>
+    </el-card>
+
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
+        <el-form :model="itemData" ref="itemData">
+            <el-form-item label="id" prop="id" style="display:none"><el-input v-model="itemData.id" /></el-form-item>
+            <el-form-item label="售后单号" prop="afterSaleNo" :label-width="formLabelWidth">
+                <el-input v-model="itemData.afterSaleNo" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="订单ID" prop="orderId" :label-width="formLabelWidth">
+                <el-input v-model.number="itemData.orderId" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="用户ID" prop="userId" :label-width="formLabelWidth">
+                <el-input v-model.number="itemData.userId" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="退款金额" prop="refundAmount" :label-width="formLabelWidth">
+                <el-input v-model="itemData.refundAmount" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="原因" prop="reason" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="itemData.reason" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="审核状态" prop="status" :label-width="formLabelWidth">
+                <el-radio-group v-model="itemData.status">
+                    <el-radio :label="1">同意</el-radio>
+                    <el-radio :label="2">拒绝</el-radio>
+                    <el-radio :label="3">完成</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item label="处理备注" prop="handleRemark" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="itemData.handleRemark" placeholder="审核备注"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer">
+            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+        </div>
+    </el-dialog>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
+<script th:src="@{/static/vue/api.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    let ctx = [[@{/}]];
+    new Vue({
+        el: '#app',
+        data: {
+            listUrl: ctx + 'business/bizAfterSale/list',
+            delUrl: ctx + 'business/bizAfterSale/del?id=',
+            batchDelUrl: ctx + 'business/bizAfterSale/batchDel',
+            addUrl: ctx + 'business/bizAfterSale/add',
+            editUrl: ctx + 'business/bizAfterSale/edit',
+            tableData: [], multipleSelection: [],
+            formDto: { keyword: '' }, showSearch: false,
+            pageDto: { currentPage: 1, pageSize: 10, total: 0, pageCount: 1 },
+            addDialogVisible: false, itemData: {}, dialogTitle: '处理售后', formLabelWidth: '100px'
+        },
+        methods: {
+            searchList() { this.pageDto.currentPage=1; this.requestData() },
+            requestData() {
+                let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                axios.post(url, this.formDto).then(r => {
+                    if (r.data.code === 200) {
+                        let d = r.data.data;
+                        this.pageDto.total = Number(d.total);
+                        this.pageDto.pageCount = Number(d.pages);
+                        this.tableData = d.records;
+                    }
+                })
+            },
+            handleSizeChange(v) { this.pageDto.pageSize = v; this.requestData() },
+            handleCurrentChange(v) { this.pageDto.currentPage = v; this.requestData() },
+            handleSelectionChange(v) { this.multipleSelection = v },
+            showSearchBox() { this.showSearch = !this.showSearch },
+            edit(row) { this.dialogTitle='处理售后'; this.itemData = {...row}; this.addDialogVisible = true },
+            saveOrUpdate() {
+                requestPost(this.editUrl, this.itemData)
+            }
+        },
+        created() { this.searchList() }
+    })
+</script>
+</body>
+</html>

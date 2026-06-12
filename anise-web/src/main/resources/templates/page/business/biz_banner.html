@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>菜单按钮</title>
+    <!-- element-ui 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
+    <style>
+        .container{
+            padding: 5px;
+        }
+
+        .container .search-box{
+            margin-bottom: 20px;
+        }
+
+        .container .content-header{
+            margin-bottom: 10px;
+        }
+
+        .container .content-header .content-header-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <el-card class="box-card search-box" v-show="showSearch">
+        <el-form :inline="true" :model="formDto" class="demo-form-inline">
+            <el-form-item label="关键词检索">
+                <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="searchList">查询</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+
+    <el-card class="box-card">
+        <section class="content-header">
+            <el-row :gutter="2">
+                <el-col :span="11">
+                    <el-button sa:hasPermissionOr="business:bizBanner:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
+                    <el-button sa:hasPermissionOr="business:bizBanner:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                </el-col>
+                <div class="content-header-right">
+                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+                </div>
+            </el-row>
+
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <el-table
+                    :data="tableData"
+                    style="width: 100%;margin-bottom: 20px;"
+                    row-key="id"
+                    border
+                    @selection-change="handleSelectionChange"
+            >
+                <el-table-column type="selection" width="55"></el-table-column>
+                    <el-table-column prop="id" label="主键ID" width="100" ></el-table-column>
+                    <el-table-column prop="imageUrl" label="图片" width="120" >
+                        <template slot-scope="scope">
+                            <img :src="scope.row.imageUrl" style="width:80px;height:40px;object-fit:cover;border-radius:4px" v-if="scope.row.imageUrl" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="title" label="标题"  ></el-table-column>
+                    <el-table-column prop="linkType" label="跳转类型" width="100" >
+                        <template slot-scope="scope">
+                            <span v-if="scope.row.linkType==0" >无跳转</span>
+                            <span v-if="scope.row.linkType==1" >商品</span>
+                            <span v-if="scope.row.linkType==2" >分类</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="linkId" label="跳转目标ID" width="100" ></el-table-column>
+                    <el-table-column prop="sortOrder" label="排序值" width="100" ></el-table-column>
+                    <el-table-column prop="status" label="状态" width="80" >
+                        <template slot-scope="scope">
+                            <el-tag v-if="scope.row.status==1" type="success">启用</el-tag>
+                            <el-tag v-if="scope.row.status==0" type="danger">禁用</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="createTime" label="创建时间" width="160" ></el-table-column>
+                    <el-table-column prop="updateTime" label="更新时间" width="160" ></el-table-column>
+                    <el-table-column prop="isDeleted" label="逻辑删除" width="100" ></el-table-column>
+                <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="140">
+                    <template slot-scope="scope">
+                        <el-tooltip sa:hasPermissionOr="business:bizBanner:list:edit,admin" class="item" effect="dark" content="编辑" placement="top-start">
+                            <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
+                                       circle></el-button>
+                        </el-tooltip>
+                        <el-tooltip sa:hasPermissionOr="business:bizBanner:list:del,admin" class="item" effect="dark" content="删除" placement="top-start">
+                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini"
+                                       circle></el-button>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div class="page-box" v-show="pageDto.pageCount>1">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        @prev-click="prePage"
+                        @next-click="nextPage"
+                        :current-page="pageDto.currentPage"
+                        :page-size="pageDto.pagerCount"
+                        :page-count="pageDto.pageCount"
+                        :pager-count="pageDto.pagerCount"
+                        layout="sizes,prev, pager, next"
+                        :page-sizes="[10, 20, 30, 40, 50, 100]"
+                        :total="pageDto.total">
+                </el-pagination>
+            </div>
+        </section>
+    </el-card>
+
+
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
+        <el-form :model="itemData" :rules="rules" ref="itemData">
+
+                    <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
+                        <el-input v-model="itemData.id" autocomplete="off"></el-input>
+                    </el-form-item>
+
+                        <el-form-item label="图片URL" prop="imageUrl" :label-width="formLabelWidth">
+                            <el-input v-model="itemData.imageUrl" autocomplete="off" placeholder="请输入或上传图片" ></el-input>
+                            <el-upload
+                                    class="upload-demo"
+                                    drag
+                                    :limit="1"
+                                    :before-upload="beforeAvatarUpload"
+                                    :on-success="uploadSuccess"
+                                    :action="uploadUrl"
+                                    list-type="picture">
+                                <i class="el-icon-upload"></i>
+                                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                                <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+                            </el-upload>
+                        </el-form-item>
+
+                        <el-form-item label="标题" prop="title" :label-width="formLabelWidth">
+                            <el-input v-model="itemData.title" autocomplete="off" placeholder="请输入标题" ></el-input>
+                        </el-form-item>
+
+                        <el-form-item label="跳转类型" prop="linkType" :label-width="formLabelWidth">
+                            <el-radio-group v-model="itemData.linkType">
+                                <el-radio :label="0">无跳转</el-radio>
+                                <el-radio :label="1">商品</el-radio>
+                                <el-radio :label="2">分类</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                        <el-form-item label="跳转目标ID" prop="linkId" :label-width="formLabelWidth">
+                            <el-input v-model="itemData.linkId" autocomplete="off" placeholder="请输入跳转目标ID" ></el-input>
+                        </el-form-item>
+
+                        <el-form-item label="排序值" prop="sortOrder" :label-width="formLabelWidth">
+                            <el-input v-model="itemData.sortOrder" autocomplete="off" placeholder="请输入排序值" ></el-input>
+                        </el-form-item>
+
+                        <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
+                            <el-radio-group v-model="itemData.status">
+                                <el-radio :label="1">启用</el-radio>
+                                <el-radio :label="0">禁用</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                        <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
+                            <el-date-picker
+                                    v-model="itemData.createTime"
+                                    align="right"
+                                    type="datetime"
+                                    value-format="yyyy-MM-dd HH:mm:ss"
+                                    placeholder="选择日期"
+                                    :picker-options="pickerOptions">
+                            </el-date-picker>
+                        </el-form-item>
+
+                        <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
+                            <el-date-picker
+                                    v-model="itemData.updateTime"
+                                    align="right"
+                                    type="datetime"
+                                    value-format="yyyy-MM-dd HH:mm:ss"
+                                    placeholder="选择日期"
+                                    :picker-options="pickerOptions">
+                            </el-date-picker>
+                        </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+        </div>
+    </el-dialog>
+
+</div>
+<!-- element-ui -->
+<script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
+<script th:src="@{/static/vue/api.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    let ctx = [[@{/}]];
+        new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    listUrl: ctx + 'business/bizBanner/list',
+                    delUrl: ctx + 'business/bizBanner/del?id=',
+                    batchDelUrl: ctx + 'business/bizBanner/batchDel',
+                    addUrl: ctx + 'business/bizBanner/add',
+                    editUrl: ctx + 'business/bizBanner/edit',
+                    uploadUrl: ctx + 'upload/image?type=banner',
+                    dialogUrl:'',
+                    tableData: [],
+                    multipleSelection: [],
+                    formDto: {
+                        keyword: '',
+                        region: ''
+                    },
+                    showSearch: false,
+                    pageDto: {
+                        currentPage: 1,
+                        pageSize: 10,
+                        total: 110,
+                        pageCount: 1, //总页数
+                        pagerCount: 9, //页码按钮的数量
+                    },
+                    addDialogVisible: false,
+                    itemData: {
+                        menuIdList:[],
+                    },
+                    dialogTitle: '新增',
+                    formLabelWidth: '100px',
+                    formTimeLabelWidth: '120px',
+                    pickerOptions: {
+                        disabledDate(time) {
+                            return time.getTime() > Date.now();
+                        },
+                        shortcuts: [{
+                            text: '今天',
+                            onClick(picker) {
+                                picker.$emit('pick', new Date());
+                            }
+                        }, {
+                            text: '昨天',
+                            onClick(picker) {
+                                const date = new Date();
+                                date.setTime(date.getTime() - 3600 * 1000 * 24);
+                                picker.$emit('pick', date);
+                            }
+                        }, {
+                            text: '一周前',
+                            onClick(picker) {
+                                const date = new Date();
+                                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                                picker.$emit('pick', date);
+                            }
+                        }]
+                    },
+                    rules: {
+                                    imageUrl: [
+                                        { required: true, message: '请输入图片URL', trigger: 'blur' },
+                                    ],
+                                    title: [
+                                        { required: true, message: '请输入标题', trigger: 'blur' },
+                                    ],
+                                    linkType: [
+                                        { required: true, message: '请输入跳转类型 0:无 1:商品 2:分类', trigger: 'blur' },
+                                    ],
+                                    linkId: [
+                                        { required: true, message: '请输入跳转目标ID', trigger: 'blur' },
+                                    ],
+                                    sortOrder: [
+                                        { required: true, message: '请输入排序值', trigger: 'blur' },
+                                    ],
+                                    status: [
+                                        { required: true, message: '请输入状态 0:禁用 1:启用', trigger: 'blur' },
+                                    ],
+
+
+                    }
+
+                }
+            },
+            methods: {
+                searchList: function () {
+                    this.pageDto.currentPage=1;
+                    this.requestData();
+                },
+                requestData: function () {
+                    // 列表检索
+                    let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                    axios.post(url, this.formDto).then(r => {
+                        if (r.data.code === 200) {
+                            let data = r.data.data;
+                            this.pageDto.total = Number(data.total);
+                            this.pageDto.pageCount = Number(data.pages);
+                            this.tableData = data.records;
+                        }
+                    }).catch(error => {
+                        console.error("请求失败：", error);
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "请求失败，请稍后重试",
+                            type: 'error'
+                        });
+                    })
+                },
+                prePage() {
+                    this.pageDto.currentPage -= 1;
+                    this.requestData();
+                },
+                nextPage() {
+                    this.pageDto.currentPage += 1;
+                    this.requestData();
+                },
+                handleSizeChange(val) {
+                    this.pageDto.pageSize=val;
+                    this.requestData();
+                },
+                handleCurrentChange(val) {
+                    this.pageDto.currentPage=val;
+                    this.requestData();
+                },
+                handleSelectionChange(val) {
+                    //当选择项发生变化时会触发该事件
+                    this.multipleSelection = val;
+                },
+                showSearchBox() {
+                    this.showSearch = !this.showSearch;
+                },
+                add() {
+                    this.addDialogVisible = true;
+                    this.dialogTitle = '新增';
+                    this.dialogUrl=this.addUrl;
+                    this.itemData = {};
+                },
+                edit(row) {
+                    this.addDialogVisible = true;
+                    this.dialogTitle = '编辑';
+                    this.itemData = row;
+                    this.dialogUrl=this.editUrl;
+                },
+                beforeAvatarUpload(file) {
+                    const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
+                    const isLt500K = file.size / 1024 < 10240;
+                    if (!isJPG) { this.$message.error('只能上传JPG/PNG格式!'); return false }
+                    if (!isLt500K) { this.$message.error('图片大小不能超过500KB!'); return false }
+                    return true;
+                },
+                uploadSuccess(response) {
+                    if (response.code === 200) {
+                        this.itemData.imageUrl = response.data;
+                        this.$message.success('上传成功');
+                    }
+                },
+                saveOrUpdate(){
+                    this.$refs['itemData'].validate((valid) => {
+                        if (valid) {
+                            requestPost(this.dialogUrl, this.itemData);
+                        } else {
+                            return false;
+                        }
+                    });
+                },
+                batchDel() {
+                    let ids = this.multipleSelection.map(i => i.id);
+                    if (!ids.length) {
+                        // 数组为空
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "您未选中任何内容",
+                            type: 'warning'
+                        });
+                        return false;
+                    }
+                    ELEMENT.MessageBox.confirm('确定删除选中的列表数据?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        requestPost(this.batchDelUrl, ids);
+                    }).catch(() => {
+                        ELEMENT.Message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                },
+                del(id) {
+                    ELEMENT.MessageBox.confirm('确定删除该数据吗?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        requestGet(this.delUrl + id);
+                    }).catch(() => {
+                        ELEMENT.Message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });
+                    });
+                }
+            }, created() {
+                this.searchList();
+            }
+        });
+</script>
+
+</body>
+</html>

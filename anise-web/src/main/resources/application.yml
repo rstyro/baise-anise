@@ -108,3 +108,4 @@ security:
     - /show/**
     - /app/user/login
     - /app/user/appletLogin
+    - /app/pay/notify

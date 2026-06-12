@@ -9,93 +9,88 @@
 		{
 			"path": "pages/tab-bar/index/index",
 			"name": "index",
-			"style": {
-				"navigationBarTitleText": "首页"
-			}
+			"style": { "navigationBarTitleText": "首页" }
+		},
+		{
+			"path": "pages/tab-bar/cart/cart",
+			"name": "cart",
+			"style": { "navigationBarTitleText": "购物车" }
 		},
 		{
 			"path": "pages/tab-bar/me/me",
 			"name": "me",
-			"style": {
-				"navigationBarTitleText": "我的"
-			}
+			"style": { "navigationBarTitleText": "我的" }
 		},
-			{
+		{
 			"path": "pages/login/login",
 			"name": "login",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "登录"
-			}
+			"style": { "navigationStyle": "custom", "navigationBarTitleText": "登录" }
 		},
 		{
-			"path": "pages/pinia-demo/pinia-demo",
-			"name": "pinia-demo",
-			"style": {
-				"navigationBarTitleText": "Pinia 状态管理"
-			}
+			"path": "pages/product/detail/detail",
+			"name": "productDetail",
+			"style": { "navigationBarTitleText": "商品详情" }
 		},
 		{
-			"path": "pages/uview-demo/uview-demo",
-			"name": "uview-demo",
-			"style": {
-				"navigationBarTitleText": "uView Plus 组件"
-			}
+			"path": "pages/order/confirm/confirm",
+			"name": "orderConfirm",
+			"style": { "navigationBarTitleText": "确认订单" }
 		},
 		{
-			"path": "pages/auto-import-demo/auto-import-demo",
-			"name": "auto-import-demo",
-			"style": {
-				"navigationBarTitleText": "自动导入演示"
-			}
+			"path": "pages/order/list/list",
+			"name": "orderList",
+			"style": { "navigationBarTitleText": "我的订单" }
 		},
 		{
-			"path": "pages/http-demo/http-demo",
-			"name": "http-demo",
-			"style": {
-				"navigationBarTitleText": "HTTP 请求演示"
-			}
+			"path": "pages/order/detail/detail",
+			"name": "orderDetail",
+			"style": { "navigationBarTitleText": "订单详情" }
 		},
 		{
-			"path": "pages/audio-demo/audio-demo",
-			"name": "audio-demo",
-			"style": {
-				"navigationBarTitleText": "音频播放演示"
-			}
+			"path": "pages/address/list/list",
+			"name": "addressList",
+			"style": { "navigationBarTitleText": "收货地址" }
+		},
+		{
+			"path": "pages/address/edit/edit",
+			"name": "addressEdit",
+			"style": { "navigationBarTitleText": "编辑地址" }
 		},
 		{
 			"path": "pages/user/userInfo/userInfo",
 			"name": "userInfo",
-			"style": {
-				"navigationBarTitleText": ""
-			}
+			"style": { "navigationBarTitleText": "个人信息" }
 		},
 		{
 			"path": "pages/setting/setting",
 			"name": "setting",
-			"style": {
-				"navigationBarTitleText": ""
-			}
+			"style": { "navigationBarTitleText": "设置" }
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "百色八角",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F5F9F5"
 	},
 	"tabBar": {
-		"color": "#909399",
-		"selectedColor": "#303133",
+		"color": "#999999",
+		"selectedColor": "#4CAF50",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
-		"list": [{
+		"list": [
+			{
 				"pagePath": "pages/tab-bar/index/index",
 				"iconPath": "static/images/tabbar/home.png",
 				"selectedIconPath": "static/images/tabbar/home-active.png",
 				"text": "首页"
 			},
-
+			{
+				"pagePath": "pages/tab-bar/cart/cart",
+				"iconPath": "static/images/tabbar/cart.png",
+				"selectedIconPath": "static/images/tabbar/cart-active.png",
+				"text": "购物车"
+			},
 			{
 				"pagePath": "pages/tab-bar/me/me",
 				"iconPath": "static/images/tabbar/me.png",

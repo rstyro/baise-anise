@@ -204,7 +204,7 @@ const handleLogin = async () => {
 		if (result.token && result.userId) {
 			setLoginInfo(result)
 			uni.$u.toast('登录成功')
-			uni.switchTab({ url: '/pages/tab-bar/index/index' })
+			uni.$grouter.switchTab('index')
 		} else {
 			uni.$u.toast('登录失败，请重试')
 		}
@@ -305,7 +305,7 @@ const handleBind = async () => {
 			bindPhone.value = ''
 			bindCode.value = ''
 			uni.$u.toast('绑定成功，登录成功')
-			uni.switchTab({ url: '/pages/tab-bar/index/index' })
+			uni.$grouter.switchTab('index')
 		} else {
 			uni.$u.toast('绑定失败，请重试')
 		}

@@ -75,7 +75,16 @@
                 <el-table-column prop="id" label="主键ID" width="100"></el-table-column>
                 <el-table-column prop="parentId" label="父分类ID" width="100"></el-table-column>
                 <el-table-column prop="categoryName" label="分类名称" width="120"></el-table-column>
-                <el-table-column prop="categoryIcon" label="分类图标" width="130"></el-table-column>
+                <el-table-column prop="categoryIcon" label="分类图标" width="130">
+                    <template slot-scope="scope">
+                        <el-image v-if="scope.row.categoryIcon" :src="scope.row.categoryIcon" fit="cover" style="width: 60px; height: 60px; border-radius: 8px;">
+                            <div slot="error" class="image-slot">
+                                <i class="el-icon-picture-outline"></i>
+                            </div>
+                        </el-image>
+                        <span v-else style="color: #999;">暂无</span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="sortOrder" label="排序值" width="100"></el-table-column>
                 <el-table-column prop="extraJson" label="扩展字段"></el-table-column>
                 <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
@@ -135,7 +144,26 @@
             </el-form-item>
 
             <el-form-item label="分类图标" prop="categoryIcon" :label-width="formLabelWidth">
-                <el-input v-model="itemData.categoryIcon" autocomplete="off" placeholder="请输入分类图标"></el-input>
+                <div v-if="itemData.categoryIcon" style="margin-bottom: 10px;">
+                    <el-image :src="itemData.categoryIcon" fit="cover" style="width: 120px; height: 120px; border-radius: 12px; border: 1px solid #dcdfe6;">
+                        <div slot="error" class="image-slot">
+                            <i class="el-icon-picture-outline"></i>
+                        </div>
+                    </el-image>
+                </div>
+                <el-upload
+                        class="upload-demo"
+                        drag
+                        :limit="1"
+                        :before-upload="beforeAvatarUpload"
+                        :on-success="uploadSuccess"
+                        :action="uploadUrl"
+                        list-type="picture">
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
+                <el-input v-model="itemData.categoryIcon" autocomplete="off" placeholder="或手动输入图片路径" style="margin-top: 8px;"></el-input>
             </el-form-item>
 
             <el-form-item label="排序值" prop="sortOrder" :label-width="formLabelWidth">
@@ -192,6 +220,7 @@
                     batchDelUrl: ctx + 'business/bizCategory/batchDel',
                     addUrl: ctx + 'business/bizCategory/add',
                     editUrl: ctx + 'business/bizCategory/edit',
+                    uploadUrl: ctx + 'upload/image?type=category',
                     dialogUrl: '',
                     tableData: [],
                     multipleSelection: [],
@@ -313,6 +342,28 @@
                             return false;
                         }
                     });
+                },
+                uploadSuccess(res, file, fileList) {
+                    if (res.code === 200) {
+                        this.itemData.categoryIcon = res.data;
+                    } else {
+                        ELEMENT.Message({
+                            showClose: true,
+                            message: "上传失败，请稍后重试",
+                            type: 'warning'
+                        });
+                    }
+                },
+                beforeAvatarUpload(file) {
+                    const isJPG = (file.type === 'image/jpeg' || file.type === 'image/png');
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+                    if (!isJPG) {
+                        ELEMENT.Message.error('上传图片只能是 JPG/PNG 格式!');
+                    }
+                    if (!isLt2M) {
+                        ELEMENT.Message.error('上传图片大小不能超过 2MB!');
+                    }
+                    return isJPG && isLt2M;
                 },
                 batchDel() {
                     let ids = this.multipleSelection.map(i => i.id);

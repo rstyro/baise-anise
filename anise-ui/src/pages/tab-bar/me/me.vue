@@ -1,498 +1,228 @@
 <template>
-	<view class="page">
-		<!-- 顶部渐变背景区域 -->
-		<view class="top-banner">
-			<!-- <image class="banner-wave" src="/static/logo.png" mode="scaleToFill"></image> -->
-		</view>
+  <view class="page">
+    <!-- 顶部渐变背景 -->
+    <view class="top-banner" />
 
-		<!-- 用户信息卡片 -->
-		<view class="user-card">
-			<view class="card-content">
-				<view class="user-avatar-wrapper" @click="toPage('userInfo')">
-					<image :src="userInfo.avatarUrl" class="user-avatar" :mode="mode"></image>
-					<view class="status-dot"></view>
-				</view>
-				<view class="user-info">
-					<!-- <view class="user-name">{{userInfo.nickName}}</view> -->
-					<view class="user-name">
-						<input type="nickname" class="nickname-input" v-model="userInfo.nickName" placeholder="请输入昵称" />
-					</view>
-					
-					<view class="user-tagline">我就是我不一样的烟火 🎉</view>
-					<view class="user-badges">
-						<view class="badge" :class="userInfo.vip?'vip':'normal'">{{userInfo.vip?'VIP会员':'普通会员'}}</view>
-						<!-- <view class="badge normal">铂金用户</view> -->
-					</view>
-				</view>
-			</view>
-			<view class="stats-bar">
-				<view class="stat-item">
-					<text class="stat-number">{{userInfo.score}}</text>
-					<text class="stat-label">积分</text>
-				</view>
-				<view class="stat-divider"></view>
-				<view class="stat-item">
-					<text class="stat-number">{{userInfo.badge}}</text>
-					<text class="stat-label">勋章</text>
-				</view>
-				<view class="stat-divider"></view>
-				<view class="stat-item">
-					<text class="stat-number">0</text>
-					<text class="stat-label">关注</text>
-				</view>
-			</view>
-		</view>
+    <!-- 用户信息卡片 -->
+    <view class="user-card">
+      <view class="card-content">
+        <!-- #ifdef MP-WEIXIN -->
+        <button class="avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
+          <image :src="userStore.userInfo.avatarUrl || '/static/logo.png'" class="user-avatar" mode="aspectFill" />
+        </button>
+        <!-- #endif -->
+        <!-- #ifndef MP-WEIXIN -->
+        <view class="user-avatar-wrapper" @click="chooseAvatarForH5">
+          <image :src="userStore.userInfo.avatarUrl || '/static/logo.png'" class="user-avatar" mode="aspectFill" />
+        </view>
+        <!-- #endif -->
+        <view class="user-info">
+          <view class="user-name" @click="userStore.isLoggedIn ? toPage('userInfo') : toLogin()">
+            {{ userStore.isLoggedIn ? userStore.userInfo.nickname : '点击登录' }}
+          </view>
+          <view class="user-phone" v-if="userStore.isLoggedIn && userStore.userInfo.phone">
+            {{ userStore.userInfo.phone }}
+          </view>
+          <view class="user-tagline" v-else>登录后享受更多服务</view>
+        </view>
+      </view>
 
-		<!-- 功能列表 -->
-		<view class="list-card">
-			<view class="card">
-				<view class="item" @click="toPage('follow')">
-					<view class="left flex-center">
-						<u-icon custom-prefix="icon" size="36" name="shoucang" color="#4f99ff"></u-icon>
-					</view>
-					<view class="center">
-						<text>关注公众号</text>
-					</view>
-					<view class="right flex-center">
-						<u-icon name="arrow-right" color="#aaa"></u-icon>
-					</view>
-				</view>
-				<view class="item item-bottom-solid" @click="toOtherMiniProgram">
-					<view class="left flex-center">
-						<u-icon name="thumb-up" size="36" color="#4f99ff"></u-icon>
-					</view>
-					<view class="center">
-						<text>我的其他小程序</text>
-						<text class="item-tag">新功能</text>
-					</view>
-					<view class="right flex-center">
-						<u-icon name="arrow-right"  color="#aaa"></u-icon>
-					</view>
-				</view>
+      <!-- 订单统计 -->
+      <view class="stats-bar">
+        <view class="stat-item" @click="goOrder(1)">
+          <text class="stat-number">0</text>
+          <text class="stat-label">待付款</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item" @click="goOrder(2)">
+          <text class="stat-number">0</text>
+          <text class="stat-label">待发货</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item" @click="goOrder(3)">
+          <text class="stat-number">0</text>
+          <text class="stat-label">待收货</text>
+        </view>
+        <view class="stat-divider" />
+        <view class="stat-item" @click="goOrder(0)">
+          <text class="stat-number">0</text>
+          <text class="stat-label">全部</text>
+        </view>
+      </view>
+    </view>
 
+    <!-- 登录/头像区域 -->
+    <view class="button-area" v-if="!userStore.isLoggedIn">
+      <!-- #ifdef MP-WEIXIN -->
+      <button class="login-btn avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
+        微信一键登录
+      </button>
+      <!-- #endif -->
+      <!-- #ifndef MP-WEIXIN -->
+      <button class="login-btn" @click="chooseAvatarForH5">登录账号</button>
+      <!-- #endif -->
+    </view>
 
-			</view>
-		</view>
+    <!-- 功能菜单 -->
+    <view class="menu-card">
+      <view class="menu-item" @click="goOrder(0)">
+        <view class="menu-left"><text style="font-size:36rpx;">📋</text></view>
+        <view class="menu-center">我的订单</view>
+        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
+      </view>
+      <view class="menu-item" @click="goAddress">
+        <view class="menu-left"><text style="font-size:36rpx;">📍</text></view>
+        <view class="menu-center">收货地址</view>
+        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
+      </view>
+    </view>
 
-		<!-- 其他功能卡片 -->
-				<view class="list-card">
-			<view class="card">
-				<view class="item" @click="toPage('setting')">
-					<view class="left flex-center">
-						<u-icon name="setting" size="36" color="#4f99ff"></u-icon>
-					</view>
-					<view class="center">
-						<text>系统设置</text>
-					</view>
-					<view class="right flex-center">
-						<u-icon name="arrow-right" color="#aaa"></u-icon>
-					</view>
-				</view>
-		
-			</view>
-		</view>
+    <view class="menu-card">
+      <view class="menu-item" @click="toPage('setting')">
+        <view class="menu-left"><u-icon name="setting" size="36" color="#4caf50" /></view>
+        <view class="menu-center">系统设置</view>
+        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
+      </view>
+    </view>
 
-
-		<!-- 退出/登录按钮 -->
-		<view class="button-area">
-
-			<!-- H5专用点击区域 -->
-			<!-- #ifdef H5 -->
-			<button class="login-btn" v-if="userInfo.needLogin" @click="chooseAvatarForH5">
-				登录账号
-			</button>
-			<!-- #endif -->
-			
-			
-			<!-- 微信小程序专用按钮 -->
-			<!-- #ifndef H5 -->
-			<button :disabled="isChoosingAvatar" open-type="chooseAvatar" @chooseavatar="onChooseAvatar"
-				v-if="userInfo.needLogin" class="login-btn">获取头像</button>
-			<!-- #endif -->
-
-
-			<button v-else class="logout-btn" @click="logout">重置头像</button>
-
-
-		</view>
-
-	</view>
+    <!-- 退出登录 -->
+    <view class="button-area" v-if="userStore.isLoggedIn">
+      <button class="logout-btn" @click="handleLogout">退出登录</button>
+    </view>
+  </view>
 </template>
 
 <script setup>
-import { ref, reactive,getCurrentInstance } from 'vue'
+import { ref } from 'vue'
+import { useUserStore } from '@/stores/user'
 
-// 响应式数据 - 使用 reactive 包裹对象
-const userInfo = reactive({
-  avatarUrl: '/static/logo.png',
-  nickName: '胖不了小陆',
-  needLogin: true,
-  vip: true,
-  score: 999,
-  badge: 10
-})
-
+const userStore = useUserStore()
 const isChoosingAvatar = ref(false)
-const mode = ref('aspectFill')
 
-// 方法
+const toPage = (pageName) => {
+  uni.$grouter.navigateTo(pageName)
+}
+
+const toLogin = () => {
+  uni.$grouter.navigateTo('login')
+}
+
+const goOrder = (status) => {
+  uni.$grouter.navigateTo('orderList', { query: { status } })
+}
+
+const goAddress = () => {
+  uni.$grouter.navigateTo('addressList')
+}
+
+// 微信小程序 - 选择头像
 const onChooseAvatar = async (e) => {
   try {
     isChoosingAvatar.value = true
-    let tempPath = ''
     if (e.detail?.avatarUrl) {
-      tempPath = e.detail.avatarUrl
+      userStore.updateAvatar(e.detail.avatarUrl)
+      // 头像更换成功后自动视为已登录
+      if (!userStore.isLoggedIn) {
+        userStore.login('wechat_quick', { nickname: '微信用户' })
+      }
+      uni.showToast({ title: '头像更新成功', icon: 'success' })
     }
-    if (!tempPath) {
-	  uni.$u.toast('获取头像失败');
-      return
-    }
-    userInfo.avatarUrl = tempPath
-    userInfo.needLogin = false
-    userInfo.vip = false
-    userInfo.score = 0
-    userInfo.badge = 0
-    uni.$u.toast('头像更新成功');
-  } catch (error) {
-    console.error('头像处理失败:', error)
-    uni.$u.toast('登录失败，请重试');
+  } catch (err) {
+    console.error('头像处理失败:', err)
+    uni.showToast({ title: '头像更新失败，请重试', icon: 'none' })
   } finally {
     isChoosingAvatar.value = false
   }
 }
 
-// H5专用头像选择方法
+// H5专用头像选择
 const chooseAvatarForH5 = () => {
-  uni.$u.toast('未开放登录功能');
+  if (!userStore.isLoggedIn) {
+  uni.$grouter.navigateTo('login')
+    return
+  }
+  toPage('userInfo')
 }
 
-const logout = () => {
-	uni.showModal({
+const handleLogout = () => {
+  uni.showModal({
     title: '确认退出',
     content: '确定要退出当前账号吗？',
     success: (res) => {
       if (res.confirm) {
-        userInfo.nickName = '胖不了小陆'
-        userInfo.avatarUrl = '/static/images/avatar.jpg'
-        userInfo.needLogin = true
-        userInfo.score = 999
-        userInfo.badge = 10
-        uni.$u.toast('已退出');
+        userStore.logout()
+        uni.showToast({ title: '已退出', icon: 'none' })
       }
     }
   })
-}
-
-const toPage = (pageName) => {
-  // 注意：$Router 可能是第三方路由库，此处保持不变
-  // 如果未注册，可改用 uni.navigateTo 等
-  uni.$grouter.navigateTo(pageName)
-}
-
-const toOtherMiniProgram = () => {
-  uni.showModal({
-    title: '打开小程序',
-    content: '即将打开关联小程序，是否继续？',
-    success: (res) => {
-      if (res.confirm) {
-        // #ifdef MP-WEIXIN
-        uni.navigateToMiniProgram({
-          appId: 'wxd3072da1362bf642',
-          success: () => {
-            console.log('打开小程序成功')
-          },
-          fail: (err) => {
-            uni.showToast({
-              title: '打开失败，请重试',
-              icon: 'none'
-            })
-            console.error('打开小程序失败:', err)
-          }
-        })
-        // #endif
-        // #ifndef MP-WEIXIN
-        uni.showToast({
-          title: '请在微信小程序中使用此功能',
-          icon: 'none'
-        })
-        // #endif
-      }
-    }
-  })
-}
-
-const navigateTo = (page) => {
-  uni.showToast({
-    title: '正在开发中',
-    icon: 'none'
-  })
-  
 }
 </script>
 
 <style lang="scss" scoped>
-	.page {
-		background: linear-gradient(to bottom, #f9fafd, #f0f5ff);
-		min-height: 100vh;
-		padding-bottom: 120rpx;
-		position: relative;
-	}
+.page { background: #f5f9f5; min-height: 100vh; padding-bottom: 120rpx; }
 
-	.top-banner {
-		height: 300rpx;
-		position: relative;
-		overflow: hidden;
-		background: linear-gradient(135deg, #5199ff, #7e8cfa);
+.top-banner {
+  height: 240rpx; background: linear-gradient(135deg, #4caf50, #81c784);
+}
 
-		.banner-wave {
-			position: absolute;
-			width: 100%;
-			bottom: 0;
-			height: 80rpx;
-		}
-	}
+/* 微信头像按钮 — 去掉默认button样式 */
+.avatar-btn {
+  padding: 0; margin: 0; background: transparent; border: none; line-height: 1;
+}
+.avatar-btn::after { border: none; }
 
-	.user-card {
-		position: relative;
-		margin: -100rpx 25rpx 40rpx;
-		background: #ffffff;
-		border-radius: 24rpx;
-		box-shadow: 0 10rpx 30rpx rgba(79, 153, 255, 0.15);
-		overflow: hidden;
-		z-index: 10;
+.user-card {
+  position: relative; margin: -80rpx 25rpx 30rpx;
+  background: #fff; border-radius: 24rpx;
+  box-shadow: 0 10rpx 30rpx rgba(76, 175, 80, 0.12); overflow: hidden;
+  .card-content { padding: 40rpx 30rpx 30rpx; display: flex; align-items: center; }
+  .user-avatar-wrapper { margin-right: 24rpx; }
+  .user-avatar {
+    width: 130rpx; height: 130rpx; border-radius: 50%;
+    border: 4rpx solid #e8f5e9; background: #f5f5f5;
+    display: block;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 36rpx; font-weight: 600; color: #2e3b2e; margin-bottom: 6rpx; }
+  .user-phone { font-size: 26rpx; color: #999; margin-bottom: 4rpx; }
+  .user-tagline { font-size: 24rpx; color: #999; }
 
-		.card-content {
-			padding: 40rpx 30rpx 30rpx;
-			display: flex;
-			align-items: center;
-		}
+  .stats-bar {
+    display: flex; height: 90rpx; background: #f9fdf9; border-top: 1rpx solid #e8f5e9;
+    .stat-item {
+      flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      .stat-number { font-size: 32rpx; font-weight: 700; color: #4caf50; }
+      .stat-label { font-size: 22rpx; color: #999; margin-top: 4rpx; }
+    }
+    .stat-divider { width: 1px; height: 50rpx; background: #e8f5e9; margin: auto 0; }
+  }
+}
 
-		.user-avatar-wrapper {
-			position: relative;
-			margin-right: 30rpx;
+.menu-card {
+  margin: 0 25rpx 30rpx; background: #fff; border-radius: 20rpx;
+  overflow: hidden; box-shadow: 0 8rpx 25rpx rgba(76,175,80,0.06);
+  .menu-item {
+    display: flex; height: 96rpx; align-items: center; padding: 0 30rpx;
+    &:active { background: #f9fdf9; }
+    .menu-left { width: 70rpx; }
+    .menu-center { flex: 1; font-size: 30rpx; color: #333; }
+    .menu-right { width: 50rpx; text-align: right; }
+  }
+}
 
-			.user-avatar {
-				width: 150rpx;
-				height: 150rpx;
-				border-radius: 50%;
-				border: 5rpx solid #fff;
-				box-shadow: 0 5rpx 15rpx rgba(0, 0, 0, 0.1);
-				background: #f5f5f5;
-			}
-
-			.status-dot {
-				position: absolute;
-				width: 24rpx;
-				height: 24rpx;
-				background: #4bd48d;
-				border-radius: 50%;
-				border: 3rpx solid #fff;
-				bottom: 10rpx;
-				right: 5rpx;
-			}
-		}
-
-		.user-info {
-			flex: 1;
-
-			.user-name {
-				font-size: 38rpx;
-				font-weight: 600;
-				color: #333;
-				margin-bottom: 8rpx;
-			}
-
-			.user-tagline {
-				font-size: 26rpx;
-				color: #7e8cfa;
-				margin-bottom: 16rpx;
-			}
-
-			.user-badges {
-				display: flex;
-
-				.badge {
-					font-size: 22rpx;
-					color: #fff;
-
-					padding: 4rpx 16rpx;
-					border-radius: 30rpx;
-					margin-right: 10rpx;
-				}
-
-				.vip {
-					background: linear-gradient(to right, #ffa87d, #ff7e67);
-				}
-
-				.normal {
-					background: linear-gradient(to right, #7e8cfa, #5199ff);
-				}
-
-
-			}
-		}
-
-		.stats-bar {
-			display: flex;
-			height: 100rpx;
-			background: #f9faff;
-			border-top: 1rpx solid #f0f5ff;
-
-			.stat-item {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-
-				.stat-number {
-					font-size: 36rpx;
-					font-weight: 700;
-					color: #5199ff;
-				}
-
-				.stat-label {
-					font-size: 24rpx;
-					color: #8a9bb9;
-					margin-top: 6rpx;
-				}
-			}
-
-			.stat-divider {
-				width: 1px;
-				height: 50rpx;
-				background: #f0f5ff;
-				margin: auto 0;
-			}
-		}
-	}
-
-	.list-card {
-		margin: 0 25rpx 30rpx;
-
-		.card {
-			background: #ffffff;
-			border-radius: 20rpx;
-			overflow: hidden;
-			box-shadow: 0 8rpx 25rpx rgba(151, 169, 217, 0.12);
-		}
-
-		.item {
-			display: flex;
-			height: 100rpx;
-			align-items: center;
-			padding: 0 30rpx;
-			position: relative;
-
-			&:active {
-				background-color: #f9fafd;
-			}
-
-			.left {
-				width: 80rpx;
-
-				.icon {
-					color: #5199ff;
-				}
-			}
-
-			.center {
-				flex: 1;
-				font-size: 32rpx;
-				color: #333;
-				display: flex;
-				align-items: center;
-
-				.item-tag {
-					font-size: 22rpx;
-					background: linear-gradient(to right, #ff9b9c, #ff6b77);
-					color: white;
-					border-radius: 20rpx;
-					padding: 2rpx 15rpx;
-					margin-left: 20rpx;
-					transform: scale(0.85);
-				}
-			}
-
-			.right {
-				width: 60rpx;
-
-				.icon {
-					color: #ccc;
-				}
-			}
-		}
-
-		.item-bottom-solid {
-			&::after {
-				content: '';
-				position: absolute;
-				left: 30rpx;
-				right: 30rpx;
-				bottom: 0;
-				height: 1px;
-				background: linear-gradient(to right, transparent, #f0f5ff, transparent);
-			}
-		}
-	}
-
-	.button-area {
-		margin: 50rpx 30rpx;
-
-		button {
-			height: 95rpx;
-			line-height: 95rpx;
-			font-size: 32rpx;
-			border-radius: 50rpx;
-			transition: all 0.3s;
-			box-shadow: 0 10rpx 20rpx rgba(79, 153, 255, 0.3);
-
-			&:active {
-				transform: translateY(5rpx);
-				box-shadow: 0 5rpx 10rpx rgba(79, 153, 255, 0.2);
-			}
-		}
-
-		.login-btn {
-			background: linear-gradient(to right, #7e8cfa, #5199ff);
-			color: white;
-		}
-
-		.logout-btn {
-			background: linear-gradient(to right, #ff9b9c, #ff6b77);
-			color: white;
-		}
-	}
-
-
-	.flex-center {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	/* 在style区域添加以下样式 */
-	// .feedback-btn {
-	//   width: 100%;
-	//   height: 100%;
-	//   background: transparent;
-	//   color: #333;
-	//   font-size: 32rpx;
-	//   text-align: left;
-	//   padding: 0;
-	//   margin: 0;
-	//   border: none;
-	//   border-radius: 0;
-	//   line-height: 1;
-	//   display: flex;
-	//   align-items: center;
-	// }
-
-	// .feedback-btn::after {
-	//   border: none !important;
-	// }
-
-	// .item .center {
-	//   height: 100%;
-	// }
+.button-area {
+  margin: 0 25rpx 30rpx;
+  .login-btn {
+    height: 90rpx; line-height: 90rpx; font-size: 30rpx; border-radius: 50rpx;
+    background: linear-gradient(to right, #4caf50, #81c784); color: #fff;
+    border: none; box-shadow: 0 8rpx 20rpx rgba(76, 175, 80, 0.2);
+    text-align: center;
+  }
+  .login-btn::after { border: none; }
+  .logout-btn {
+    height: 90rpx; line-height: 90rpx; font-size: 30rpx; border-radius: 50rpx;
+    background: linear-gradient(to right, #ff8f00, #ffb74d); color: #fff;
+    border: none; box-shadow: 0 10rpx 20rpx rgba(255, 143, 0, 0.2);
+  }
+}
 </style>

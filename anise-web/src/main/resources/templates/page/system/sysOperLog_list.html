@@ -78,7 +78,7 @@
             >
                 <el-table-column type="selection" width="55"></el-table-column>
                 <!--                    <el-table-column prop="id" label="日志主键" width="100" ></el-table-column>-->
-                <el-table-column prop="title" label="模块标题" width="100"></el-table-column>
+                <el-table-column prop="title" label="模块标题" width="200"></el-table-column>
                 <el-table-column prop="businessType" label="业务类型" width="100">
                     <template slot-scope="scope">
                         <el-tag type="info" v-if="scope.row.businessType==0">其它</el-tag>
@@ -94,7 +94,7 @@
                         <el-tag type="danger" v-if="scope.row.status==1">异常</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="operName" label="操作人员" width="100"></el-table-column>
+                <el-table-column prop="operName" label="操作人员" width="150"></el-table-column>
                 <!--                    <el-table-column prop="deptName" label="部门名称" width="100" ></el-table-column>-->
                 <el-table-column prop="operIp" label="主机地址" width="150"></el-table-column>
                 <el-table-column prop="operLocation" label="操作地点" ></el-table-column>
