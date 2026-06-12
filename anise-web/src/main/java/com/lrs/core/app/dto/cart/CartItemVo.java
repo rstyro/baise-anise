@@ -18,6 +18,9 @@ public class CartItemVo {
     /** 购物车记录ID */
     private Long id;
 
+    /** 商家ID */
+    private Long merchantId;
+
     /** 商品ID */
     private Long productId;
 

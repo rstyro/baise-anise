@@ -11,7 +11,7 @@
  Target Server Version : 80043
  File Encoding         : 65001
 
- Date: 12/06/2026 17:38:51
+ Date: 12/06/2026 18:53:23
 */
 
 SET NAMES utf8mb4;
@@ -47999,6 +47999,7 @@ CREATE TABLE `biz_after_sale`  (
   `after_sale_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '售后单号',
   `order_id` bigint NOT NULL COMMENT '订单ID',
   `user_id` bigint NOT NULL COMMENT '用户ID',
+  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
   `type` tinyint NOT NULL COMMENT '售后类型 1:仅退款 2:退货退款 3:坏果赔付',
   `reason` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '售后原因',
   `evidence_images` json NULL COMMENT '凭证图片',
@@ -48010,13 +48011,14 @@ CREATE TABLE `biz_after_sale`  (
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_after_sale_no`(`after_sale_no`) USING BTREE,
-  INDEX `idx_order_id`(`order_id`) USING BTREE
+  INDEX `idx_order_id`(`order_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '售后申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_after_sale
 -- ----------------------------
-INSERT INTO `biz_after_sale` VALUES (1, 'AS202606070001', 14, 2, 3, '收到的八角有部分受潮发霉，申请坏果赔付', '[\"evidence1.jpg\", \"evidence2.jpg\"]', 20.00, 2, NULL, '2026-06-07 10:00:00', '2026-06-07 10:00:00', 0);
+INSERT INTO `biz_after_sale` VALUES (1, 'AS202606070001', 14, 2, 1, 3, '收到的八角有部分受潮发霉，申请坏果赔付', '[\"evidence1.jpg\", \"evidence2.jpg\"]', 20.00, 2, NULL, '2026-06-07 10:00:00', '2026-06-12 18:07:52', 0);
 
 -- ----------------------------
 -- Table structure for biz_agent
@@ -48047,6 +48049,7 @@ CREATE TABLE `biz_agent`  (
 DROP TABLE IF EXISTS `biz_banner`;
 CREATE TABLE `biz_banner`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台级',
   `image_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片URL',
   `title` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标题',
   `link_type` tinyint NOT NULL DEFAULT 0 COMMENT '跳转类型 0:无 1:商品 2:分类',
@@ -48056,15 +48059,16 @@ CREATE TABLE `biz_banner`  (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Banner轮播图表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_banner
 -- ----------------------------
-INSERT INTO `biz_banner` VALUES (1, '/show/other/1781233818775.png', '百色八角 · 自家果园直供', 1, 1, 1, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
-INSERT INTO `biz_banner` VALUES (2, '/show/other/1781233804156.png', '新鲜采摘 · 足干无硫', 0, 1, 2, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
-INSERT INTO `biz_banner` VALUES (3, '/show/other/1781233848612.png', 'www', 1, 2, 3, 1, '2026-06-12 11:11:09', '2026-06-12 11:11:09', 0);
+INSERT INTO `biz_banner` VALUES (1, 0, '/show/other/1781233818775.png', '百色八角 · 自家果园直供', 1, 1, 1, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
+INSERT INTO `biz_banner` VALUES (2, 0, '/show/other/1781233804156.png', '新鲜采摘 · 足干无硫', 0, 1, 2, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
+INSERT INTO `biz_banner` VALUES (3, 0, '/show/other/1781233848612.png', 'www', 1, 2, 3, 1, '2026-06-12 11:11:09', '2026-06-12 11:11:09', 0);
 
 -- ----------------------------
 -- Table structure for biz_cart
@@ -48073,6 +48077,7 @@ DROP TABLE IF EXISTS `biz_cart`;
 CREATE TABLE `biz_cart`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_id` bigint NOT NULL COMMENT '用户ID',
+  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
   `product_id` bigint NOT NULL COMMENT '商品ID',
   `sku_id` bigint NOT NULL COMMENT 'SKU规格ID',
   `quantity` int NOT NULL DEFAULT 1 COMMENT '购买数量',
@@ -48080,8 +48085,9 @@ CREATE TABLE `biz_cart`  (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `idx_user_sku`(`user_id`, `sku_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '购物车表' ROW_FORMAT = DYNAMIC;
+  UNIQUE INDEX `idx_user_sku`(`user_id`, `sku_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '购物车表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_cart
@@ -48093,6 +48099,7 @@ CREATE TABLE `biz_cart`  (
 DROP TABLE IF EXISTS `biz_category`;
 CREATE TABLE `biz_category`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台通用',
   `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '父分类ID 0=一级',
   `category_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '分类名称',
   `category_icon` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分类图标',
@@ -48101,14 +48108,15 @@ CREATE TABLE `biz_category`  (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品分类表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_category
 -- ----------------------------
-INSERT INTO `biz_category` VALUES (1, 0, '八角干货', '/show/other/1781235177962.png', 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
-INSERT INTO `biz_category` VALUES (2, 0, '时令水果', '/show/other/1781235136376.png', 2, NULL, '2026-06-11 19:58:28', '2026-06-11 19:58:28', 0);
+INSERT INTO `biz_category` VALUES (1, 0, 0, '八角干货', '/show/other/1781235177962.png', 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_category` VALUES (2, 0, 0, '时令水果', '/show/other/1781235136376.png', 2, NULL, '2026-06-11 19:58:28', '2026-06-11 19:58:28', 0);
 
 -- ----------------------------
 -- Table structure for biz_finance_log
@@ -48144,6 +48152,8 @@ CREATE TABLE `biz_merchant`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_id` bigint NOT NULL COMMENT '关联管理员用户ID',
   `merchant_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '果园/商家名称',
+  `logo_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '店铺Logo',
+  `description` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '店铺简介',
   `contact_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '联系人',
   `contact_phone` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '联系电话',
   `origin_place` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '产地地址',
@@ -48152,6 +48162,7 @@ CREATE TABLE `biz_merchant`  (
   `audit_status` tinyint NOT NULL DEFAULT 0 COMMENT '审核状态 0:待审核 1:通过 2:拒绝',
   `audit_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '审核备注',
   `commission_rate` decimal(5, 2) NOT NULL DEFAULT 3.00 COMMENT '平台抽成比例(%)',
+  `settlement_type` tinyint NOT NULL DEFAULT 1 COMMENT '结算方式 1:T+1 7:T+7 30:T+30',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -48164,7 +48175,81 @@ CREATE TABLE `biz_merchant`  (
 -- ----------------------------
 -- Records of biz_merchant
 -- ----------------------------
-INSERT INTO `biz_merchant` VALUES (1, 1, '百色田阳自家八角种植园', '李先生', '13800138000', '广西百色市田阳区', '/upload/license/demo.jpg', '/upload/food_license/demo.jpg', 1, NULL, 0.00, 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_merchant` VALUES (1, 1, '百色田阳自家八角种植园', NULL, NULL, '李先生', '13800138000', '广西百色市田阳区', '/upload/license/demo.jpg', '/upload/food_license/demo.jpg', 1, NULL, 0.00, 1, 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+
+-- ----------------------------
+-- Table structure for biz_merchant_account
+-- ----------------------------
+DROP TABLE IF EXISTS `biz_merchant_account`;
+CREATE TABLE `biz_merchant_account`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint NOT NULL COMMENT '商家ID',
+  `total_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '累计收入',
+  `freeze_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '冻结金额',
+  `available_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '可提现金额',
+  `total_withdraw` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '累计提现',
+  `total_refund` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '累计退款',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家结算账户表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of biz_merchant_account
+-- ----------------------------
+INSERT INTO `biz_merchant_account` VALUES (1, 1, 0.00, 0.00, 0.00, 0.00, 0.00, '2026-06-12 18:07:53', '2026-06-12 18:07:53');
+
+-- ----------------------------
+-- Table structure for biz_merchant_user
+-- ----------------------------
+DROP TABLE IF EXISTS `biz_merchant_user`;
+CREATE TABLE `biz_merchant_user`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint NOT NULL COMMENT '商家ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID(app_user.id)',
+  `is_owner` tinyint NOT NULL DEFAULT 0 COMMENT '是否创始人 0:否 1:是',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_merchant_user`(`merchant_id`, `user_id`) USING BTREE,
+  INDEX `idx_user_id`(`user_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家用户关联表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of biz_merchant_user
+-- ----------------------------
+INSERT INTO `biz_merchant_user` VALUES (1, 1, 1, 1, 1, '2026-06-12 18:07:52', '2026-06-12 18:07:52', 0);
+
+-- ----------------------------
+-- Table structure for biz_merchant_withdraw
+-- ----------------------------
+DROP TABLE IF EXISTS `biz_merchant_withdraw`;
+CREATE TABLE `biz_merchant_withdraw`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint NOT NULL COMMENT '商家ID',
+  `apply_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '申请单号',
+  `amount` decimal(10, 2) NOT NULL COMMENT '提现金额',
+  `fee_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '手续费',
+  `real_amount` decimal(10, 2) NOT NULL COMMENT '实际到账',
+  `bank_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行名称',
+  `bank_account` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行账号',
+  `bank_username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '开户姓名',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态 0:待审核 1:已打款 2:已拒绝',
+  `handle_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '处理备注',
+  `handle_time` datetime NULL DEFAULT NULL COMMENT '处理时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_apply_no`(`apply_no`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家提现申请表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of biz_merchant_withdraw
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for biz_order
@@ -48216,6 +48301,7 @@ INSERT INTO `biz_order` VALUES (18, 'BX2026061120345174f925', 1, 1, 1, 79.90, 79
 INSERT INTO `biz_order` VALUES (19, 'BX202606112035312f72e8', 1, 1, 1, 54.80, 54.80, 0.00, 0.00, 1, 1, '2026-06-11 20:52:43', 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-11 20:35:32', '2026-06-11 20:52:43', 0);
 INSERT INTO `biz_order` VALUES (20, 'BX20260611204547f61d03', 1, 1, 1, 44.90, 44.90, 0.00, 0.00, 1, 1, '2026-06-11 20:52:37', 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-11 20:45:47', '2026-06-11 20:52:37', 0);
 INSERT INTO `biz_order` VALUES (21, 'BX2026061214421623c9d2', 1, 1, 1, 167.80, 167.80, 0.00, 0.00, NULL, 0, NULL, 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-12 14:42:16', '2026-06-12 15:12:44', 0);
+INSERT INTO `biz_order` VALUES (22, '2026061218495981380000', 1, 1, 1, 54.80, 54.80, 0.00, 0.00, NULL, 0, NULL, 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 'aaaaa', 1, NULL, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
 
 -- ----------------------------
 -- Table structure for biz_order_item
@@ -48224,6 +48310,7 @@ DROP TABLE IF EXISTS `biz_order_item`;
 CREATE TABLE `biz_order_item`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `order_id` bigint NOT NULL COMMENT '订单ID',
+  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
   `product_id` bigint NOT NULL COMMENT '商品ID',
   `sku_id` bigint NOT NULL COMMENT '规格ID',
   `product_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品名称快照',
@@ -48236,37 +48323,41 @@ CREATE TABLE `biz_order_item`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_order_id`(`order_id`) USING BTREE
+  INDEX `idx_order_id`(`order_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单明细表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_order_item
 -- ----------------------------
-INSERT INTO `biz_order_item` VALUES (1, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-04-14 10:44:47', '2026-06-11 19:54:15', 0);
-INSERT INTO `biz_order_item` VALUES (2, 10, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 10:30:00', '2026-06-11 19:54:16', 0);
-INSERT INTO `biz_order_item` VALUES (3, 11, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-10 14:18:00', '2026-06-11 19:54:16', 0);
-INSERT INTO `biz_order_item` VALUES (4, 11, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-10 14:18:00', '2026-06-11 19:54:17', 0);
-INSERT INTO `biz_order_item` VALUES (5, 12, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-08 10:25:00', '2026-06-11 19:54:17', 0);
-INSERT INTO `biz_order_item` VALUES (6, 12, 1, 3, '百色无硫大红八角', '10kg/箱', '/show/product/1777280058519.jpg', 780.00, 1, 780.00, '2026-06-08 10:25:00', '2026-06-11 19:54:18', 0);
-INSERT INTO `biz_order_item` VALUES (7, 13, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 2, 19.80, '2026-06-01 15:55:00', '2026-06-11 19:54:18', 0);
-INSERT INTO `biz_order_item` VALUES (8, 14, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-05 08:55:00', '2026-06-11 19:54:19', 0);
-INSERT INTO `biz_order_item` VALUES (9, 14, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-05 08:55:00', '2026-06-11 19:54:20', 0);
-INSERT INTO `biz_order_item` VALUES (10, 15, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 5, 99.50, '2026-06-11 20:18:56', '2026-06-11 20:18:56', 0);
-INSERT INTO `biz_order_item` VALUES (11, 15, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 6, 150.00, '2026-06-11 20:18:56', '2026-06-11 20:18:56', 0);
-INSERT INTO `biz_order_item` VALUES (12, 16, 3, 12, '广西武鸣沃柑', '10斤装/箱', '/upload/product/orange_main.jpg', 55.00, 1, 55.00, '2026-06-11 20:30:56', '2026-06-11 20:30:56', 0);
-INSERT INTO `biz_order_item` VALUES (13, 16, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:30:56', '2026-06-11 20:30:56', 0);
-INSERT INTO `biz_order_item` VALUES (14, 17, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:31:52', '2026-06-11 20:31:52', 0);
-INSERT INTO `biz_order_item` VALUES (15, 18, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:34:52', '2026-06-11 20:34:52', 0);
-INSERT INTO `biz_order_item` VALUES (16, 18, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 20:34:52', '2026-06-11 20:34:52', 0);
-INSERT INTO `biz_order_item` VALUES (17, 18, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:34:52', '2026-06-11 20:34:52', 0);
-INSERT INTO `biz_order_item` VALUES (18, 19, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:35:32', '2026-06-11 20:35:32', 0);
-INSERT INTO `biz_order_item` VALUES (19, 19, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:35:32', '2026-06-11 20:35:32', 0);
-INSERT INTO `biz_order_item` VALUES (20, 19, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:35:32', '2026-06-11 20:35:32', 0);
-INSERT INTO `biz_order_item` VALUES (21, 20, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:45:47', '2026-06-11 20:45:47', 0);
-INSERT INTO `biz_order_item` VALUES (22, 20, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:45:47', '2026-06-11 20:45:47', 0);
-INSERT INTO `biz_order_item` VALUES (23, 21, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '3斤装/箱', '/show/product/1781233113129.png', 19.90, 2, 39.80, '2026-06-12 14:42:16', '2026-06-12 14:42:16', 0);
-INSERT INTO `biz_order_item` VALUES (24, 21, 4, 13, '百色台农芒果', '3斤装/箱', '/show/product/1781233070001.png', 25.00, 2, 50.00, '2026-06-12 14:42:16', '2026-06-12 14:42:16', 0);
-INSERT INTO `biz_order_item` VALUES (25, 21, 4, 14, '百色台农芒果', '5斤装/箱', '/show/product/1781233070001.png', 39.00, 2, 78.00, '2026-06-12 14:42:16', '2026-06-12 14:42:16', 0);
+INSERT INTO `biz_order_item` VALUES (1, 1, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-04-14 10:44:47', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (2, 10, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 10:30:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (3, 11, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-10 14:18:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (4, 11, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-10 14:18:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (5, 12, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-08 10:25:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (6, 12, 1, 1, 3, '百色无硫大红八角', '10kg/箱', '/show/product/1777280058519.jpg', 780.00, 1, 780.00, '2026-06-08 10:25:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (7, 13, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 2, 19.80, '2026-06-01 15:55:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (8, 14, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-05 08:55:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (9, 14, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-05 08:55:00', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (10, 15, 1, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 5, 99.50, '2026-06-11 20:18:56', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (11, 15, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 6, 150.00, '2026-06-11 20:18:56', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (12, 16, 1, 3, 12, '广西武鸣沃柑', '10斤装/箱', '/upload/product/orange_main.jpg', 55.00, 1, 55.00, '2026-06-11 20:30:56', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (13, 16, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:30:56', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (14, 17, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:31:52', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (15, 18, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (16, 18, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (17, 18, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (18, 19, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (19, 19, 1, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (20, 19, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (21, 20, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:45:47', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (22, 20, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:45:47', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (23, 21, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '3斤装/箱', '/show/product/1781233113129.png', 19.90, 2, 39.80, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (24, 21, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/show/product/1781233070001.png', 25.00, 2, 50.00, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (25, 21, 1, 4, 14, '百色台农芒果', '5斤装/箱', '/show/product/1781233070001.png', 39.00, 2, 78.00, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
+INSERT INTO `biz_order_item` VALUES (26, 22, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1781233153561.png', 9.90, 1, 9.90, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
+INSERT INTO `biz_order_item` VALUES (27, 22, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '3斤装/箱', '/show/product/1781233113129.png', 19.90, 1, 19.90, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
+INSERT INTO `biz_order_item` VALUES (28, 22, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/show/product/1781233070001.png', 25.00, 1, 25.00, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
 
 -- ----------------------------
 -- Table structure for biz_product
@@ -48329,13 +48420,13 @@ CREATE TABLE `biz_product_sku`  (
 -- ----------------------------
 -- Records of biz_product_sku
 -- ----------------------------
-INSERT INTO `biz_product_sku` VALUES (1, 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 15.00, NULL, 999, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_product_sku` VALUES (1, 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 15.00, NULL, 998, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 INSERT INTO `biz_product_sku` VALUES (2, 1, '500g/袋', '{\"包装\": \"食品袋\", \"重量\": \"500g\"}', 45.00, 59.00, 39.00, 500, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 INSERT INTO `biz_product_sku` VALUES (3, 1, '10kg/箱', '{\"包装\": \"纸箱\", \"大小\": \"大果\", \"重量\": \"10kg\"}', 780.00, 880.00, 720.00, 100, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
-INSERT INTO `biz_product_sku` VALUES (10, 3, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 29.90, NULL, 791, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (10, 3, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 29.90, NULL, 790, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (11, 3, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 29.90, 45.00, NULL, 600, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (12, 3, '10斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"10斤装\"}', 55.00, 79.00, NULL, 299, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
-INSERT INTO `biz_product_sku` VALUES (13, 4, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 38.00, NULL, 488, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (13, 4, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 38.00, NULL, 487, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (14, 4, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 39.00, 58.00, NULL, 398, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (15, 4, '10斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"10斤装\"}', 72.00, 98.00, NULL, 200, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 
@@ -48923,6 +49014,19 @@ INSERT INTO `sys_oper_log` VALUES (331, '小程序-查看商品详情', 0, 'com.
 INSERT INTO `sys_oper_log` VALUES (332, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 15:21:23', 26);
 INSERT INTO `sys_oper_log` VALUES (333, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 15:22:34', 41);
 INSERT INTO `sys_oper_log` VALUES (334, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 15:22:59', 46);
+INSERT INTO `sys_oper_log` VALUES (335, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '10.1.160.196', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/8f60106afc684a4395a98fb5482881b1.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"38b6e84ee74443d39d140566f7255e00\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:16', 1047);
+INSERT INTO `sys_oper_log` VALUES (336, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:19', 176);
+INSERT INTO `sys_oper_log` VALUES (337, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{\"categoryId\":1}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:20', 41);
+INSERT INTO `sys_oper_log` VALUES (338, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{\"categoryId\":2}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0}],\"size\":10,\"total\":2},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:21', 34);
+INSERT INTO `sys_oper_log` VALUES (339, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '10.1.160.196', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781233088457.png\",\"/show/product/1781233093645.png\",\"/show/product/1781233096578.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":488},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:22', 44);
+INSERT INTO `sys_oper_log` VALUES (340, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '10.1.160.196', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:27', 39);
+INSERT INTO `sys_oper_log` VALUES (341, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '10.1.160.196', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:30', 34);
+INSERT INTO `sys_oper_log` VALUES (342, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '10.1.160.196', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781233088457.png\",\"/show/product/1781233093645.png\",\"/show/product/1781233096578.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233070001.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":488},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:31', 27);
+INSERT INTO `sys_oper_log` VALUES (343, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '10.1.160.196', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781233122480.png\",\"/show/product/1781233131091.png\",\"/show/product/1781233134022.png\",\"/show/product/1781233138058.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233113129.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":791},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":600},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:33', 19);
+INSERT INTO `sys_oper_log` VALUES (344, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '10.1.160.196', '内网IP', '{\"quantity\":1,\"skuId\":10}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:34', 32);
+INSERT INTO `sys_oper_log` VALUES (345, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '10.1.160.196', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781233160220.png\",\"/show/product/1781233165576.png\",\"/show/product/1781233168140.png\",\"/show/product/1781233172276.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":999},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:36', 21);
+INSERT INTO `sys_oper_log` VALUES (346, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '10.1.160.196', '内网IP', '{\"quantity\":1,\"skuId\":1}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:37', 31);
+INSERT INTO `sys_oper_log` VALUES (347, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '10.1.160.196', '内网IP', '{\"addressId\":3,\"cartIds\":[20,19,18],\"merchantId\":1,\"remark\":\"aaaaa\"}', '{\"code\":200,\"data\":{\"orderId\":22,\"orderNo\":\"2026061218495981380000\",\"payAmount\":54.80},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:50:00', 106);
 
 -- ----------------------------
 -- Table structure for sys_role

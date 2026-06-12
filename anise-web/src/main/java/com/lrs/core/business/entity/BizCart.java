@@ -33,6 +33,10 @@ public class BizCart implements Serializable {
     @TableField("user_id")
     private Long userId;
 
+    /** 商家ID */
+    @TableField("merchant_id")
+    private Long merchantId;
+
     /** 商品ID */
     @TableField("product_id")
     private Long productId;

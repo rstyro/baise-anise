@@ -32,6 +32,11 @@ public class BizOrderItemVo {
     private Long skuId;
 
     /**
+     * 商家ID
+     */
+    private Long merchantId;
+
+    /**
      * 商品名称
      */
     private String productName;

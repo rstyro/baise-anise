@@ -55,6 +55,12 @@ public class BizOrderItem implements Serializable {
     private Long skuId;
 
     /**
+     * 商家ID（每个商品项归属的商家）
+     */
+    @TableField("merchant_id")
+    private Long merchantId;
+
+    /**
      * 商品名称快照
      */
     @TableField("product_name")

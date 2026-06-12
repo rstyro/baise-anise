@@ -82,8 +82,13 @@ public class AppCartController extends BaseController {
             existing.setUpdateTime(LocalDateTime.now());
             bizCartService.updateById(existing);
         } else {
+            // 获取商品信息以获取商家ID
+            BizProduct product = bizProductService.getById(sku.getProductId());
+            Long merchantId = product != null ? product.getMerchantId() : 1L;
+            
             BizCart cart = new BizCart()
                     .setUserId(userId)
+                    .setMerchantId(merchantId)
                     .setProductId(sku.getProductId())
                     .setSkuId(skuId)
                     .setQuantity(quantity)
@@ -124,8 +129,13 @@ public class AppCartController extends BaseController {
         List<CartItemVo> voList = cartList.stream().map(cart -> {
             BizProduct product = productMap.get(cart.getProductId());
             BizProductSku sku = skuMap.get(cart.getSkuId());
+            // 获取商家ID（优先从商品获取，没有则用购物车记录的）
+            Long merchantId = (product != null && product.getMerchantId() != null) 
+                    ? product.getMerchantId() 
+                    : (cart.getMerchantId() != null ? cart.getMerchantId() : 1L);
             CartItemVo vo = new CartItemVo()
                     .setId(cart.getId())
+                    .setMerchantId(merchantId)
                     .setProductId(cart.getProductId())
                     .setSkuId(cart.getSkuId())
                     .setQuantity(cart.getQuantity())

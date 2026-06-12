@@ -50,6 +50,7 @@ const cartIds = ref([])
 const selectedAddress = ref(null)
 const goodsList = ref([])
 const remark = ref('')
+const merchantId = ref(null)  // 商家ID
 
 onShow(() => {
   const addr = getApp().globalData.selectedAddress
@@ -66,6 +67,11 @@ onLoad(async (options) => {
   // 加载购物车选中商品
   const cart = await cartApi.list()
   goodsList.value = (cart || []).filter(i => i.selected === 1 && (cartIds.value.length === 0 || cartIds.value.includes(i.id)))
+  
+  // 获取商家ID（从购物车商品中获取，支持多商家）
+  if (goodsList.value.length > 0) {
+    merchantId.value = goodsList.value[0].merchantId || 1  // 默认1号商家
+  }
 
   // 加载默认地址
   const addrs = await addressApi.list()
@@ -77,7 +83,12 @@ const selectAddress = () => uni.$grouter.navigateTo('addressList', { query: { mo
 const submitOrder = async () => {
   if (!selectedAddress.value) { uni.showToast({ title: '请选择收货地址', icon: 'none' }); return }
   try {
-    const res = await orderApi.submit({ addressId: selectedAddress.value.id, remark: remark.value, cartIds: cartIds.value.length > 0 ? cartIds.value : undefined })
+    const res = await orderApi.submit({ 
+      addressId: selectedAddress.value.id, 
+      remark: remark.value, 
+      cartIds: cartIds.value.length > 0 ? cartIds.value : undefined,
+      merchantId: merchantId.value  // 提交商家ID
+    })
     // 模拟支付成功
     // await payApi.mockPaySuccess(res.orderId)
     uni.showToast({ title: '下单成功', icon: 'success' })

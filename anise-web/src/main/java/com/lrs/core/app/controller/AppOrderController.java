@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lrs.common.annotation.OperateLog;
+import com.lrs.common.utils.OrderNumberGenerator;
 import com.lrs.common.utils.SecurityContextHolder;
 import com.lrs.common.vo.R;
 import com.lrs.common.vo.UserVo;
@@ -101,9 +102,9 @@ public class AppOrderController extends BaseController {
 
         // 创建订单
         BizOrder order = new BizOrder()
-                .setOrderNo("BX" + DateUtil.format(LocalDateTime.now(), "yyyyMMddHHmmss") + IdUtil.fastSimpleUUID().substring(0, 6))
+                .setOrderNo(OrderNumberGenerator.nextId())
                 .setUserId(userId)
-                .setMerchantId(1L) // 当前固定自家店铺
+                .setMerchantId(dto.getMerchantId() != null ? dto.getMerchantId() : 1L)  // 使用传入的商家ID，默认1号商家
                 .setOrderType((byte) 1)
                 .setTotalAmount(totalAmount)
                 .setPayAmount(totalAmount)
@@ -126,6 +127,7 @@ public class AppOrderController extends BaseController {
 
             BizOrderItem orderItem = new BizOrderItem()
                     .setOrderId(order.getId())
+                    .setMerchantId(order.getMerchantId())  // 设置商家ID
                     .setProductId(item.getProductId())
                     .setSkuId(item.getSkuId())
                     .setProductName(product != null ? product.getProductName() : "")

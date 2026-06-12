@@ -24,4 +24,7 @@ public class OrderSubmitDto {
     /** 购物车项ID列表（从购物车下单时使用） */
     private java.util.List<Long> cartIds;
 
+    /** 商家ID */
+    private Long merchantId;
+
 }
