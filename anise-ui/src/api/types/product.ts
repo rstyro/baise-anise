@@ -17,6 +17,8 @@ export interface ProductItem {
 /** 购物车列表项 */
 export interface CartItem {
   id: number
+  merchantId: number
+  merchantName: string
   productId: number
   skuId: number
   productName: string

@@ -21,6 +21,9 @@ public class CartItemVo {
     /** 商家ID */
     private Long merchantId;
 
+    /** 商家名称 */
+    private String merchantName;
+
     /** 商品ID */
     private Long productId;
 

@@ -1,7 +1,10 @@
 package com.lrs.core.business.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.lrs.core.app.dto.cart.CartItemVo;
 import com.lrs.core.business.entity.BizCart;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,5 +16,6 @@ import com.lrs.core.business.entity.BizCart;
  */
 public interface BizCartMapper extends BaseMapper<BizCart> {
 
+    List<CartItemVo> selectCartListWithDetails(Long userId);
 }
 

@@ -9,12 +9,12 @@
 		{
 			"path": "pages/tab-bar/index/index",
 			"name": "index",
-			"style": { "navigationBarTitleText": "首页" }
+			"style": { "navigationBarTitleText": "首页", "enablePullDownRefresh": true }
 		},
 		{
 			"path": "pages/tab-bar/cart/cart",
 			"name": "cart",
-			"style": { "navigationBarTitleText": "购物车" }
+			"style": { "navigationBarTitleText": "购物车", "enablePullDownRefresh": true }
 		},
 		{
 			"path": "pages/tab-bar/me/me",

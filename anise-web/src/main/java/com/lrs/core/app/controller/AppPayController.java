@@ -83,9 +83,9 @@ public class AppPayController extends BaseController {
         Long orderId = dto.getOrderId();
         BizOrder order = bizOrderService.getById(orderId);
         if (order == null) return R.error("订单不存在");
+        if (order.getStatus() != BizOrder.STATUS_PENDING_PAY) return R.error("订单状态不正确，仅待支付订单可支付");
 
-        order.setPayStatus((byte) 1);
-        order.setStatus((byte) 2);
+        order.setStatus(BizOrder.STATUS_PENDING_DELIVERY);
         order.setPayTime(LocalDateTime.now());
         order.setPayType((byte) 1);
         order.setUpdateTime(LocalDateTime.now());

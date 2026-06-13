@@ -21,7 +21,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: abcsee2see
+#      password: abcsee2see
 
 
 
@@ -31,7 +31,7 @@ justauth:
   type:
     wechatmini:
       clientId: wxb17c548aacf18210
-      clientSecret: 432e40823eefc7dae4b518cf958943b6
+      clientSecret: ${CLIENT_SECRET}
       # 因为justauth会校验 redirectUri地址，不设置会报错
       redirectUri: https://5f73-183-240-211-140.ngrok-free.app
       unionId: true

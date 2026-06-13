@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
+import { onReachBottom, onPullDownRefresh, onShow } from '@dcloudio/uni-app'
 import { productApi } from '@/api/productApi'
 import { getImageUrl } from '@/utils/image'
 
@@ -209,10 +209,23 @@ onPullDownRefresh(() => {
   loadProducts(true).finally(() => uni.stopPullDownRefresh())
 })
 
-onMounted(() => {
+// 初始化加载
+const init = () => {
   loadBanners()
   loadCategories()
   loadProducts(true)
+}
+
+onMounted(init)
+
+onShow(() => {
+  // 检查是否需要刷新（登录后返回场景）
+  const app = getApp() as any
+  if (app.globalData?.refreshPages?.index) {
+    init()
+    // 重置刷新标记
+    app.globalData.refreshPages.index = false
+  }
 })
 </script>
 

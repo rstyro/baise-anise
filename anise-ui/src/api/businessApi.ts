@@ -31,7 +31,7 @@ export const cartApi = {
 
 export const orderApi = {
   /** 提交订单 */
-  submit(data: { addressId: number; remark?: string; cartIds?: number[] }): Promise<{ orderId: number; orderNo: string; payAmount: number }> {
+  submit(data: { addressId: number; remark?: string; cartIds?: number[]; skuId?: number; quantity?: number; merchantId?: number }): Promise<{ orderId: number; orderNo: string; payAmount: number }> {
     return http.post(`${baseUrl}/app/order/submit`, data, { showLoading: true, loadingText: '提交中...' })
   },
   /** 订单列表 */
@@ -50,6 +50,10 @@ export const orderApi = {
   /** 确认收货 */
   confirmReceive(orderId: number): Promise<void> {
     return http.post(`${baseUrl}/app/order/confirmReceive`, { orderId })
+  },
+  /** 订单统计 */
+  count(): Promise<{ pendingPayment: number; pendingDelivery: number; pendingReceive: number; total: number }> {
+    return http.post(`${baseUrl}/app/order/count`)
   },
 }
 

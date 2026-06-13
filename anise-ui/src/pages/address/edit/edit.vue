@@ -1,5 +1,5 @@
 <template>
-  <demo-page hide-tabs show-wx-tips nav-title="地址编辑">
+  <view class="page">
     <view class="wrap">
       <view class="top">
         <view class="item">
@@ -68,7 +68,7 @@
       </view>
       <u-picker mode="region" v-model="show" @confirm="confirm" />
     </view>
-  </demo-page>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -192,6 +192,7 @@ onLoad((options: any) => {
 </script>
 
 <style lang="scss" scoped>
+
 ::v-deep .line {
   color: $u-light-color;
   font-size: 28rpx;

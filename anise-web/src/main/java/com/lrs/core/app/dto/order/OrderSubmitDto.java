@@ -27,4 +27,10 @@ public class OrderSubmitDto {
     /** 商家ID */
     private Long merchantId;
 
+    /** SKU ID（立即购买时使用） */
+    private Long skuId;
+
+    /** 购买数量（立即购买时使用） */
+    private Integer quantity;
+
 }

@@ -39,9 +39,19 @@ public class OrderDetailVo {
     private BigDecimal freightAmount;
 
     /**
-     * 支付状态
+     * 优惠金额
      */
-    private Byte payStatus;
+    private BigDecimal discountAmount;
+
+    /**
+     * 订单状态 0:已取消 1:待支付 2:待发货 3:已发货 4:已收货 5:已完成 6:退款中 7:已退款
+     */
+    private Byte status;
+
+    /**
+     * 支付方式 1:微信支付 2:余额支付 3:线下转账
+     */
+    private Byte payType;
 
     /**
      * 支付时间
@@ -49,29 +59,29 @@ public class OrderDetailVo {
     private LocalDateTime payTime;
 
     /**
-     * 发货状态
+     * 支付流水号
      */
-    private Byte deliveryStatus;
+    private String payTransactionId;
+
+    /**
+     * 配送方式 1:快递 2:自提 3:送货上门
+     */
+    private Byte deliveryType;
+
+    /**
+     * 快递公司
+     */
+    private String expressCompany;
+
+    /**
+     * 快递单号
+     */
+    private String expressNo;
 
     /**
      * 发货时间
      */
-    private LocalDateTime deliveryTime;
-
-    /**
-     * 订单状态
-     */
-    private Byte status;
-
-    /**
-     * 备注
-     */
-    private String remark;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
+    private LocalDateTime shipTime;
 
     /**
      * 收货时间
@@ -79,12 +89,32 @@ public class OrderDetailVo {
     private LocalDateTime receiveTime;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
+     * 取消原因
+     */
+    private String cancelReason;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
+
+    /**
+     * 收货地址快照
+     */
+    private Map<String, Object> address;
+
+    /**
      * 订单明细列表
      */
     private List<BizOrderItemVo> items;
 
     /**
-     * 收货地址
+     * 子订单列表（多商家订单）
      */
-    private Map<String, Object> address;
+    private List<Map<String, Object>> subList;
 }

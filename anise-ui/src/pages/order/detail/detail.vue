@@ -67,13 +67,13 @@
       </view>
       <view class="goods-item" v-for="item in order.items" :key="item.skuId || item.productId" @click="goProduct(item.productId)">
         <image
-          :src="getImageUrl(item.mainImage)"
+          :src="getImageUrl(item.productImage)"
           class="goods-img"
           mode="aspectFill"
         />
         <view class="goods-info">
           <view class="goods-name u-line-2">{{ item.productName }}</view>
-          <view class="goods-spec" v-if="item.specName">{{ item.specName }}</view>
+          <view class="goods-spec" v-if="item.skuName">{{ item.skuName }}</view>
         </view>
         <view class="goods-right">
           <text class="goods-price">¥{{ item.price }}</text>

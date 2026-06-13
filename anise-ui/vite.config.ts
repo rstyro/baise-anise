@@ -61,7 +61,7 @@ export default async () => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: '@import "uview-pro/theme.scss";',
+          additionalData: `@import "uview-pro/theme.scss";@import "@/uni.scss";`,
           api: 'modern-compiler',
            // 静默 import 和 legacy-js-api 弃用警告
           silenceDeprecations: ['import','legacy-js-api'],

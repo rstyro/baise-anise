@@ -96,6 +96,11 @@
 
     <!-- 底部操作栏 -->
     <view class="bottom-bar">
+      <view class="bar-left" @click="toMerchant">
+        <u-icon custom-prefix="icon" name="shangquan" size="44" color="#666" />
+        <text class="bar-label">店铺</text>
+      </view>
+
       <view class="bar-left" @click="goCart">
         <u-icon name="shopping-cart" size="44" color="#666" />
         <text class="bar-label">购物车</text>
@@ -109,12 +114,13 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { productApi } from '@/api/productApi'
 import { cartApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import { useCartStore } from '@/stores/cart'
 
 const detail = ref({
   imageList: [],
@@ -122,6 +128,7 @@ const detail = ref({
 })
 const selectedSku = ref(null)
 const quantity = ref(1)
+const cartStore = useCartStore()
 
 onLoad((options) => {
   const productId = Number(options.id)
@@ -168,6 +175,18 @@ const buyNow = () => {
     uni.showToast({ title: '请选择规格', icon: 'none' })
     return
   }
+  // 保存立即购买的商品信息到 Pinia store
+  cartStore.setDirectBuyGoods({
+    productId: detail.value.id,
+    productName: detail.value.productName,
+    mainImage: detail.value.mainImage,
+    merchantId: detail.value.merchantId,
+    merchantName: detail.value.merchantName,
+    skuId: selectedSku.value.id,
+    specName: selectedSku.value.specName,
+    price: selectedSku.value.price,
+    quantity: quantity.value
+  })
   uni.$grouter.navigateTo('orderConfirm')
 }
 

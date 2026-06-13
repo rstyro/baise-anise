@@ -23,8 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * 小程序 - 购物车 Controller
@@ -108,51 +107,7 @@ public class AppCartController extends BaseController {
     @ResponseBody
     public R list() {
         Long userId = getUserId();
-
-        LambdaQueryWrapper<BizCart> query = new LambdaQueryWrapper<>();
-        query.eq(BizCart::getUserId, userId).orderByDesc(BizCart::getId);
-        List<BizCart> cartList = bizCartService.list(query);
-
-        if (cartList.isEmpty()) {
-            return R.ok(Collections.emptyList());
-        }
-
-        // 批量查商品和SKU
-        Set<Long> productIds = cartList.stream().map(BizCart::getProductId).collect(Collectors.toSet());
-        Set<Long> skuIds = cartList.stream().map(BizCart::getSkuId).collect(Collectors.toSet());
-
-        Map<Long, BizProduct> productMap = bizProductService.listByIds(productIds).stream()
-                .collect(Collectors.toMap(BizProduct::getId, p -> p, (a, b) -> a));
-        Map<Long, BizProductSku> skuMap = bizProductSkuService.listByIds(skuIds).stream()
-                .collect(Collectors.toMap(BizProductSku::getId, s -> s, (a, b) -> a));
-
-        List<CartItemVo> voList = cartList.stream().map(cart -> {
-            BizProduct product = productMap.get(cart.getProductId());
-            BizProductSku sku = skuMap.get(cart.getSkuId());
-            // 获取商家ID（优先从商品获取，没有则用购物车记录的）
-            Long merchantId = (product != null && product.getMerchantId() != null) 
-                    ? product.getMerchantId() 
-                    : (cart.getMerchantId() != null ? cart.getMerchantId() : 1L);
-            CartItemVo vo = new CartItemVo()
-                    .setId(cart.getId())
-                    .setMerchantId(merchantId)
-                    .setProductId(cart.getProductId())
-                    .setSkuId(cart.getSkuId())
-                    .setQuantity(cart.getQuantity())
-                    .setSelected(cart.getSelected());
-            if (product != null) {
-                vo.setProductName(product.getProductName())
-                   .setMainImage(product.getMainImage());
-            }
-            if (sku != null) {
-                vo.setSpecName(sku.getSpecName())
-                   .setPrice(sku.getPrice())
-                   .setOriginalPrice(sku.getOriginalPrice())
-                   .setStock(sku.getStock());
-            }
-            return vo;
-        }).collect(Collectors.toList());
-
+        List<CartItemVo> voList = bizCartService.listWithDetails(userId);
         return R.ok(voList);
     }
 

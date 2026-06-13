@@ -1,43 +1,49 @@
 <template>
   <view class="page">
-    <!-- 店铺头部 -->
-    <view class="shop-header">
-      <u-icon name="shop" size="22" color="#4caf50" />
-      <text class="shop-name">百色田阳自家八角种植园</text>
-    </view>
-
-    <!-- 购物车列表 -->
-    <view v-if="cartList.length > 0" class="cart-list">
-      <u-swipe-action
-        v-for="item in cartList"
-        :key="item.id"
-        :options="delOptions"
-        @click="delItem(item)"
-      >
-        <view class="cart-item">
-          <u-checkbox
-            :modelValue="item.selected === 1"
-            @change="(val) => toggleItem(item, val)"
-            shape="circle"
-            activeColor="#4caf50"
-          />
-          <image :src="getImageUrl(item.mainImage)" class="item-img" mode="aspectFill" @click="goProduct(item.productId)" />
-          <view class="item-body" @click="goProduct(item.productId)">
-            <view class="item-name">{{ item.productName }}</view>
-            <view class="item-spec">{{ item.specName }}</view>
-            <view class="item-price-row">
-              <text class="item-price">¥{{ item.price }}</text>
-              <u-number-box
-                v-model="item.quantity"
-                :min="1"
-                :max="item.stock"
-                integer
-                @change="onQtyChange(item)"
-              />
-            </view>
-          </view>
+    <!-- 按商铺分组显示 -->
+    <view v-if="groupedCartList.length > 0" class="cart-groups">
+      <view v-for="group in groupedCartList" :key="group.merchantId" class="cart-group">
+        <!-- 店铺头部 -->
+        <view class="shop-header">
+          <u-icon name="shop" size="22" color="#4caf50" />
+          <text class="shop-name">{{ group.merchantName }}</text>
         </view>
-      </u-swipe-action>
+
+        <!-- 购物车列表 -->
+        <view class="cart-list">
+          <u-swipe-action
+            v-for="(item, idx) in group.items"
+            :key="item.id"
+            :index="idx"
+            :options="delOptions"
+            @click="onSwipeClick(item, $event)"
+          >
+            <view class="cart-item">
+              <u-checkbox
+                :modelValue="item.selected === 1"
+                @change="(val) => toggleItem(item, val)"
+                shape="circle"
+                activeColor="#4caf50"
+              />
+              <image :src="getImageUrl(item.mainImage)" class="item-img" mode="aspectFill" @click="goProduct(item.productId)" />
+              <view class="item-body" @click="goProduct(item.productId)">
+                <view class="item-name">{{ item.productName }}</view>
+                <view class="item-spec">{{ item.specName }}</view>
+                <view class="item-price-row">
+                  <text class="item-price">¥{{ item.price }}</text>
+                  <u-number-box
+                    v-model="item.quantity"
+                    :min="1"
+                    :max="item.stock"
+                    integer
+                    @change="onQtyChange(item)"
+                  />
+                </view>
+              </view>
+            </view>
+          </u-swipe-action>
+        </view>
+      </view>
     </view>
 
     <!-- 空购物车 -->
@@ -70,40 +76,78 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import { cartApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import type { CartItem } from '@/api/types/product'
 
-const cartList = ref([])
+const cartList = ref<CartItem[]>([])
 const delOptions = ref([{ text: '删除', style: { backgroundColor: '#ff4d4f' } }])
+const loading = ref(false)
+
+// 按商铺分组
+interface CartGroup {
+  merchantId: number
+  merchantName: string
+  items: CartItem[]
+}
+
+const groupedCartList = computed<CartGroup[]>(() => {
+  const groups: Map<number, CartGroup> = new Map()
+  cartList.value.forEach(item => {
+    const merchantId = item.merchantId || 0
+    if (!groups.has(merchantId)) {
+      groups.set(merchantId, {
+        merchantId,
+        merchantName: item.merchantName || '默认店铺',
+        items: []
+      })
+    }
+    groups.get(merchantId)!.items.push(item)
+  })
+  return Array.from(groups.values())
+})
 
 const loadCart = async () => {
+  if (loading.value) return
+  loading.value = true
   try {
-    cartList.value = await cartApi.list() || []
+    const list = await cartApi.list() || []
+    // 过滤掉可能的 null/undefined 元素，确保数据完整性
+    cartList.value = list.filter(item => item && item.id)
   } catch (e) {
     console.error('加载购物车失败', e)
+    cartList.value = []
+  } finally {
+    loading.value = false
   }
 }
 
-const toggleItem = async (item, checked) => {
+const toggleItem = async (item: CartItem, checked: boolean) => {
+  if (!item || !item.id) return
   item.selected = checked ? 1 : 0
   await cartApi.updateSelected(item.id, item.selected)
 }
 
-const onToggleAll = async (checked) => {
+const onToggleAll = async (checked: boolean) => {
   await cartApi.selectAll(checked ? 1 : 0)
   await loadCart()
 }
 
-const onQtyChange = async (item) => {
+const onQtyChange = async (item: CartItem) => {
+  if (!item || !item.id) return
   await cartApi.updateQuantity(item.id, item.quantity)
 }
 
-const delItem = async (item) => {
-  const res = await uni.showModal({ title: '删除', content: '确定删除该商品吗？' })
-  if (res.confirm) {
-    await cartApi.delete(item.id)
-    await loadCart()
+// 处理滑动删除按钮点击
+const onSwipeClick = async (item: CartItem, buttonIndex: number) => {
+  if (!item) return
+  if (buttonIndex === 0) { // 删除按钮
+    const res = await uni.showModal({ title: '删除', content: '确定删除该商品吗？' })
+    if (res.confirm) {
+      await cartApi.delete(item.id)
+      await loadCart()
+    }
   }
 }
 
@@ -128,21 +172,41 @@ const goProduct = (productId: number) => {
   uni.$grouter.navigateTo('productDetail', { query: { id: productId } })
 }
 
-onShow(loadCart)
+onPullDownRefresh(async () => {
+  await loadCart()
+  uni.stopPullDownRefresh()
+})
+
+onLoad(() => {
+  loadCart()
+})
+
+onShow(() => {
+  const app = getApp() as any
+  if (app.globalData?.refreshPages?.cart) {
+    loadCart()
+    app.globalData.refreshPages.cart = false
+  }
+})
 </script>
 
 <style lang="scss" scoped>
 .page { background: #f5f9f5; min-height: 100vh; padding-bottom: 100rpx; }
+
+.cart-groups { padding: 0 16rpx; }
+.cart-group { margin-bottom: 16rpx; }
+
 .shop-header {
   background: #fff; padding: 20rpx 24rpx; display: flex; align-items: center; gap: 10rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 2rpx; border-radius: 16rpx 16rpx 0 0;
   .shop-name { font-size: 28rpx; font-weight: 600; color: #2e3b2e; }
 }
 
-.cart-list { padding: 0 16rpx; }
+.cart-list { }
 .cart-item {
-  background: #fff; border-radius: 16rpx; padding: 20rpx 16rpx;
+  background: #fff; border-radius: 0; padding: 20rpx 16rpx;
   display: flex; align-items: center; gap: 12rpx;
+  &:last-child { border-radius: 0 0 16rpx 16rpx; }
   .item-img { width: 140rpx; height: 140rpx; border-radius: 12rpx; background: #e8f5e9; flex-shrink: 0; }
   .item-body { flex: 1; min-width: 0; }
   .item-name {

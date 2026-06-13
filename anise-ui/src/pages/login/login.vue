@@ -125,7 +125,7 @@
 	</view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import UserInfo from '../user/userInfo/userInfo.vue'
 import { useUserStore } from '@/stores/user'
@@ -263,6 +263,14 @@ const setLoginInfo = (userInfo) => {
 	uni.setStorageSync('userId', userInfo.userId)
 	
 	userStore.login(userInfo.token, userInfo)
+	
+	// 标记首页、购物车和我的页面需要刷新
+	const app = getApp()
+	app.globalData.refreshPages = {
+		index: true,
+		cart: true,
+		me: true
+	}
 }
 
 const getBindCode = () => {

@@ -2,4 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lrs.core.business.mapper.BizOrderMapper">
 
+    <resultMap id="OrderGoodsVoResultMap" type="com.lrs.core.app.vo.OrderGoodsVo">
+        <id column="item_id" property="id"/>
+        <result column="order_id" property="orderId"/>
+        <result column="merchant_id" property="merchantId"/>
+        <result column="merchant_name" property="merchantName"/>
+        <result column="goods_url" property="goodsUrl"/>
+        <result column="title" property="title"/>
+        <result column="type" property="type"/>
+        <result column="price" property="price"/>
+        <result column="number" property="number"/>
+    </resultMap>
+
+    <select id="selectOrderGoodsList" resultMap="OrderGoodsVoResultMap">
+        SELECT
+            oi.id AS item_id,
+            oi.order_id,
+            oi.merchant_id,
+            COALESCE(m.merchant_name, '默认店铺') AS merchant_name,
+            oi.product_image AS goods_url,
+            oi.product_name AS title,
+            oi.sku_name AS type,
+            oi.price,
+            oi.quantity AS number
+        FROM biz_order_item oi
+        LEFT JOIN biz_merchant m ON oi.merchant_id = m.id
+        WHERE oi.order_id IN
+        <foreach collection="orderIds" item="orderId" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+        ORDER BY oi.order_id, oi.id
+    </select>
+
+    <select id="countByStatus" resultType="map">
+        SELECT
+            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) AS cancelled,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS pendingPayment,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS pendingDelivery,
+            SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) AS pendingReceive,
+            SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) AS completed,
+            COUNT(*) AS total
+        FROM biz_order
+        WHERE user_id = #{userId}
+    </select>
+
 </mapper>

@@ -1,5 +1,5 @@
 <template>
-  <demo-page hide-tabs nav-title="收货地址">
+  <view class="page">
     <view class="wrap">
       <view class="item" v-for="res in siteList" :key="res.id" @click="onItemClick(res)">
         <view class="top">
@@ -30,7 +30,7 @@
         </view>
       </view>
     </view>
-  </demo-page>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -92,6 +92,10 @@ onShow(loadList)
 </script>
 
 <style lang="scss" scoped>
+.page {
+  background: #f5f9f5;
+  min-height: 100vh;
+}
 .wrap {
   background-color: $u-bg-white;
 }

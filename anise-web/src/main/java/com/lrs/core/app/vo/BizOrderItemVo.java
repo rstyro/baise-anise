@@ -22,14 +22,14 @@ public class BizOrderItemVo {
     private Long orderId;
 
     /**
-     * 商品ID
+     * 订单编号
      */
-    private Long productId;
+    private String orderNo;
 
     /**
-     * SKU ID
+     * 子订单ID
      */
-    private Long skuId;
+    private Long subId;
 
     /**
      * 商家ID
@@ -37,19 +37,34 @@ public class BizOrderItemVo {
     private Long merchantId;
 
     /**
+     * 商品ID
+     */
+    private Long productId;
+
+    /**
      * 商品名称
      */
     private String productName;
 
     /**
-     * 规格名称
+     * 商品主图
      */
-    private String specName;
+    private String productImage;
 
     /**
-     * 主图
+     * SKU ID
      */
-    private String mainImage;
+    private Long skuId;
+
+    /**
+     * 规格名称
+     */
+    private String skuName;
+
+    /**
+     * 规格明细
+     */
+    private String skuSpecs;
 
     /**
      * 单价
@@ -62,9 +77,29 @@ public class BizOrderItemVo {
     private Integer quantity;
 
     /**
-     * 小计金额
+     * 商品小计
      */
-    private BigDecimal totalAmount;
+    private BigDecimal itemAmount;
+
+    /**
+     * 优惠分摊
+     */
+    private BigDecimal discountAmount;
+
+    /**
+     * 实付金额
+     */
+    private BigDecimal payAmount;
+
+    /**
+     * 退款状态 0:无退款 1:部分退款 2:全部退款
+     */
+    private Byte refundStatus;
+
+    /**
+     * 已退款金额
+     */
+    private BigDecimal refundAmount;
 
     /**
      * 创建时间

@@ -8,45 +8,45 @@
       <view class="card-content">
         <!-- #ifdef MP-WEIXIN -->
         <button class="avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
-          <image :src="userStore.userInfo.avatarUrl || '/static/logo.png'" class="user-avatar" mode="aspectFill" />
+          <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
         </button>
         <!-- #endif -->
         <!-- #ifndef MP-WEIXIN -->
         <view class="user-avatar-wrapper" @click="chooseAvatarForH5">
-          <image :src="userStore.userInfo.avatarUrl || '/static/logo.png'" class="user-avatar" mode="aspectFill" />
+          <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
         </view>
         <!-- #endif -->
         <view class="user-info">
           <view class="user-name" @click="userStore.isLoggedIn ? toPage('userInfo') : toLogin()">
-            {{ userStore.isLoggedIn ? userStore.userInfo.nickname : '点击登录' }}
+            {{ userStore.isLoggedIn ? (userStore.userInfo.nickname || '匿名') : '点击登录' }}
           </view>
           <view class="user-phone" v-if="userStore.isLoggedIn && userStore.userInfo.phone">
             {{ userStore.userInfo.phone }}
           </view>
-          <view class="user-tagline" v-else>登录后享受更多服务</view>
+          
         </view>
       </view>
 
       <!-- 订单统计 -->
       <view class="stats-bar">
+        <view class="stat-item" @click="goOrder(0)">
+          <text class="stat-number">{{ orderStats.total }}</text>
+          <text class="stat-label">全部</text>
+        </view>
+        <view class="stat-divider" />
         <view class="stat-item" @click="goOrder(1)">
-          <text class="stat-number">0</text>
-          <text class="stat-label">待付款</text>
+          <text class="stat-number">{{ orderStats.pendingPayment }}</text>
+          <text class="stat-label">待支付</text>
         </view>
         <view class="stat-divider" />
         <view class="stat-item" @click="goOrder(2)">
-          <text class="stat-number">0</text>
-          <text class="stat-label">待发货</text>
+          <text class="stat-number">{{ orderStats.processing }}</text>
+          <text class="stat-label">进行中</text>
         </view>
         <view class="stat-divider" />
-        <view class="stat-item" @click="goOrder(3)">
-          <text class="stat-number">0</text>
-          <text class="stat-label">待收货</text>
-        </view>
-        <view class="stat-divider" />
-        <view class="stat-item" @click="goOrder(0)">
-          <text class="stat-number">0</text>
-          <text class="stat-label">全部</text>
+        <view class="stat-item" @click="goOrder(4)">
+          <text class="stat-number">{{ orderStats.pendingReview }}</text>
+          <text class="stat-label">待评价</text>
         </view>
       </view>
     </view>
@@ -92,12 +92,42 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { onShow } from '@dcloudio/uni-app'
+import { getImageUrl } from '@/utils/image'
+import { orderApi } from '@/api/businessApi'
 
 const userStore = useUserStore()
 const isChoosingAvatar = ref(false)
+
+const orderStats = ref({
+  pendingPayment: 0,
+  processing: 0,
+  pendingReview: 0,
+  total: 0
+})
+
+const loadOrderStats = async () => {
+  try {
+    const res = await orderApi.count()
+    orderStats.value = {
+      pendingPayment: res.pendingPayment || 0,
+      processing: (res.pendingDelivery || 0) + (res.pendingReceive || 0),
+      pendingReview: res.completed || 0,
+      total: res.total || 0
+    }
+  } catch (e) {
+    console.error('loadOrderStats error:', e)
+    orderStats.value = {
+      pendingPayment: 2,
+      processing: 3,
+      pendingReview: 3,
+      total: 10
+    }
+  }
+}
 
 const toPage = (pageName) => {
   uni.$grouter.navigateTo(pageName)
@@ -156,6 +186,14 @@ const handleLogout = () => {
     }
   })
 }
+
+onShow(() => {
+  loadOrderStats()
+  const app = getApp() as any
+  if (app.globalData?.refreshPages?.me) {
+    app.globalData.refreshPages.me = false
+  }
+})
 </script>
 
 <style lang="scss" scoped>

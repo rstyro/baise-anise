@@ -1,10 +1,14 @@
 package com.lrs.core.business.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lrs.core.app.dto.cart.CartItemVo;
 import com.lrs.core.business.entity.BizCart;
 import com.lrs.core.business.mapper.BizCartMapper;
 import com.lrs.core.business.service.IBizCartService;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * <p>
@@ -17,5 +21,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class BizCartServiceImpl extends ServiceImpl<BizCartMapper, BizCart> implements IBizCartService {
 
+    @Override
+    public List<CartItemVo> listWithDetails(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        return getBaseMapper().selectCartListWithDetails(userId);
+    }
 }
 

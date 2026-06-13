@@ -107,8 +107,8 @@ public class AppAfterSaleController extends BaseController {
                 List<BizOrderItem> items = itemMap.get(as.getOrderId());
                 if (items != null && !items.isEmpty()) {
                     vo.setGoodsName(items.get(0).getProductName());
-                    vo.setSpecName(items.get(0).getSpecName());
-                    vo.setMainImage(items.get(0).getMainImage());
+                    vo.setProductName(items.get(0).getProductName());
+                    vo.setProductImage(items.get(0).getProductImage());
                 }
                 return vo;
             }).collect(Collectors.toList());

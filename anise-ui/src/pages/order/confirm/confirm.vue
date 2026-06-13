@@ -11,9 +11,10 @@
       <view class="addr-empty" v-else @click="selectAddress">+ 请选择收货地址</view>
     </view>
 
-    <view class="section">
-      <view class="shop-header"><u-icon name="shop" size="20" color="#4caf50" /> 百色田阳自家八角种植园</view>
-      <view class="goods-item" v-for="item in goodsList" :key="item.id">
+    <!-- 按商铺分组显示商品 -->
+    <view class="section" v-for="group in groupedGoodsList" :key="group.merchantId">
+      <view class="shop-header"><u-icon name="shop" size="20" color="#4caf50" /> {{ group.merchantName }}</view>
+      <view class="goods-item" v-for="item in group.items" :key="item.id">
         <image :src="getImageUrl(item.mainImage)" class="goods-img" mode="aspectFill" />
         <view class="goods-info">
           <view class="goods-name">{{ item.productName }}</view>
@@ -40,17 +41,44 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { cartApi, orderApi, addressApi, payApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import type { CartItem } from '@/api/types/product'
+import { useCartStore } from '@/stores/cart'
 
-const cartIds = ref([])
-const selectedAddress = ref(null)
-const goodsList = ref([])
+const cartIds = ref<number[]>([])
+const selectedAddress = ref<any>(null)
+const goodsList = ref<CartItem[]>([])
 const remark = ref('')
-const merchantId = ref(null)  // 商家ID
+const merchantId = ref<number | null>(null)
+const cartStore = useCartStore()
+const isDirectBuy = ref(false)
+
+// 按商铺分组
+interface GoodsGroup {
+  merchantId: number
+  merchantName: string
+  items: CartItem[]
+}
+
+const groupedGoodsList = computed<GoodsGroup[]>(() => {
+  const groups: Map<number, GoodsGroup> = new Map()
+  goodsList.value.forEach(item => {
+    const merchantId = item.merchantId || 0
+    if (!groups.has(merchantId)) {
+      groups.set(merchantId, {
+        merchantId,
+        merchantName: item.merchantName || '默认店铺',
+        items: []
+      })
+    }
+    groups.get(merchantId)!.items.push(item)
+  })
+  return Array.from(groups.values())
+})
 
 onShow(() => {
   const addr = getApp().globalData.selectedAddress
@@ -61,16 +89,43 @@ onShow(() => {
 })
 const totalAmount = computed(() => goodsList.value.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(2))
 
-onLoad(async (options) => {
-  if (options.cartIds) cartIds.value = options.cartIds.split(',').map(Number)
+onLoad(async (options: { cartIds?: string } | any) => {
+  console.log("options:", options)
+  // 兼容 H5 和微信小程序的参数传递方式
+  const cartIdsStr = options?.cartIds || options?.query?.cartIds || ''
+  if (cartIdsStr) {
+    cartIds.value = cartIdsStr.split(',').map(Number).filter(id => !isNaN(id))
+  }
+  console.log("cartIds parsed:", cartIds.value)
 
-  // 加载购物车选中商品
-  const cart = await cartApi.list()
-  goodsList.value = (cart || []).filter(i => i.selected === 1 && (cartIds.value.length === 0 || cartIds.value.includes(i.id)))
-  
-  // 获取商家ID（从购物车商品中获取，支持多商家）
-  if (goodsList.value.length > 0) {
-    merchantId.value = goodsList.value[0].merchantId || 1  // 默认1号商家
+  // 检查是否是立即购买（优先）
+  const buyNowGoods = cartStore.getAndClearDirectBuyGoods()
+  if (buyNowGoods) {
+    // 立即购买：使用保存的商品信息
+    goodsList.value = [{
+      id: buyNowGoods.skuId,
+      productId: buyNowGoods.productId,
+      productName: buyNowGoods.productName,
+      mainImage: buyNowGoods.mainImage,
+      merchantId: buyNowGoods.merchantId,
+      merchantName: buyNowGoods.merchantName,
+      specName: buyNowGoods.specName,
+      price: buyNowGoods.price,
+      quantity: buyNowGoods.quantity,
+      selected: 1
+    }]
+    merchantId.value = buyNowGoods.merchantId
+    isDirectBuy.value = true
+    cartIds.value = [buyNowGoods.skuId]
+    console.log("立即购买商品:", goodsList.value)
+  } else {
+    // 购物车结算：加载购物车选中商品
+    const cart = await cartApi.list();
+    goodsList.value = (cart || []).filter(i => i.selected === 1 && (cartIds.value.length === 0 || cartIds.value.includes(i.id)))
+    console.log("购物车商品:", goodsList.value)
+    if (goodsList.value.length > 0) {
+      merchantId.value = goodsList.value[0].merchantId || 1
+    }
   }
 
   // 加载默认地址
@@ -83,12 +138,21 @@ const selectAddress = () => uni.$grouter.navigateTo('addressList', { query: { mo
 const submitOrder = async () => {
   if (!selectedAddress.value) { uni.showToast({ title: '请选择收货地址', icon: 'none' }); return }
   try {
-    const res = await orderApi.submit({ 
-      addressId: selectedAddress.value.id, 
-      remark: remark.value, 
-      cartIds: cartIds.value.length > 0 ? cartIds.value : undefined,
-      merchantId: merchantId.value  // 提交商家ID
-    })
+    const submitData = {
+      addressId: selectedAddress.value.id,
+      remark: remark.value,
+      merchantId: merchantId.value
+    }
+    if (isDirectBuy.value && goodsList.value.length > 0) {
+      // 立即购买：直接传递商品信息
+      const item = goodsList.value[0]
+      submitData['skuId'] = item.id
+      submitData['quantity'] = item.quantity
+    } else {
+      // 购物车结算：传递购物车ID列表
+      submitData['cartIds'] = cartIds.value.length > 0 ? cartIds.value : undefined
+    }
+    const res = await orderApi.submit(submitData)
     // 模拟支付成功
     // await payApi.mockPaySuccess(res.orderId)
     uni.showToast({ title: '下单成功', icon: 'success' })

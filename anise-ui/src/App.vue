@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+
 onLaunch(() => {
   console.log("App Launch");
 });
@@ -11,14 +12,17 @@ onHide(() => {
 });
 </script>
 
-<!-- <template>
-  <view class="app">
-    <slot />
-    <u-toast global />
-    <u-modal global />
-  </view>
-</template> -->
+<script lang="ts">
+export default {
+  globalData: {
+    // 记录需要刷新的页面
+    refreshPages: {} as Record<string, boolean>
+  }
+}
+</script>
 
-<style>
-	@import "static/css/iconfont.css";
+<style lang="scss" >
+//@import "uview-pro/index.scss";
+@import "static/css/iconfont.css";
+
 </style>

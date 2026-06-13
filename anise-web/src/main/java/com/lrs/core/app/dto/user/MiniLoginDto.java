@@ -11,7 +11,7 @@ public class MiniLoginDto {
     private String code;
 
     //微信登录返回的信息
-    private String nickName;
+    private String nickname;
     // 头像地址
     private String avatarUrl;
     // 性别：0-男，1-女，2-保密

@@ -1,41 +1,38 @@
 package com.lrs.core.app.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lrs.common.annotation.OperateLog;
 import com.lrs.common.utils.SecurityContextHolder;
 import com.lrs.common.vo.R;
-import com.lrs.core.app.dto.order.OrderIdDto;
+import com.lrs.core.app.dto.order.MerchantSubIdDto;
 import com.lrs.core.app.dto.order.OrderQueryDto;
 import com.lrs.core.app.utils.MerchantContextHolder;
-import com.lrs.core.app.vo.BizOrderItemVo;
-import com.lrs.core.app.vo.OrderDetailVo;
-import com.lrs.core.app.vo.OrderGoodsVo;
-import com.lrs.core.app.vo.OrderListVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.entity.BizOrderItem;
+import com.lrs.core.business.entity.BizOrderSub;
 import com.lrs.core.business.service.IBizOrderItemService;
 import com.lrs.core.business.service.IBizOrderService;
+import com.lrs.core.business.service.IBizOrderSubService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 商家后台 - 订单管理 Controller
- * 
- * <p>商家管理员可以管理自己店铺的订单，数据通过 merchant_id 隔离。
+ * <p>
+ * 商家后台 - 订单管理 Controller（多商家版本）
  * </p>
- * 
+ *
  * @author rstyro
- * @since 2026-06-12
+ * @since 2026-06-13
  */
 @Slf4j
 @RestController
@@ -45,6 +42,9 @@ public class MerchantOrderController extends BaseController {
 
     @Resource
     private IBizOrderService bizOrderService;
+
+    @Resource
+    private IBizOrderSubService bizOrderSubService;
 
     @Resource
     private IBizOrderItemService bizOrderItemService;
@@ -61,56 +61,63 @@ public class MerchantOrderController extends BaseController {
     }
 
     /**
-     * 商家订单列表（分页）
+     * 商家订单列表（分页）- 基于子订单查询
      */
     @PostMapping("/list")
     @ResponseBody
     public R list(@RequestBody(required = false) OrderQueryDto dto) {
         Long merchantId = getMerchantId();
-        
-        LambdaQueryWrapper<BizOrder> query = new LambdaQueryWrapper<>();
-        query.eq(BizOrder::getMerchantId, merchantId)
-             .orderByDesc(BizOrder::getId);
+
+        // 查询该商家的所有子订单
+        LambdaQueryWrapper<BizOrderSub> subQuery = new LambdaQueryWrapper<>();
+        subQuery.eq(BizOrderSub::getMerchantId, merchantId)
+                .orderByDesc(BizOrderSub::getId);
 
         if (dto != null && dto.getStatus() != null && dto.getStatus() > 0) {
-            query.eq(BizOrder::getStatus, dto.getStatus());
+            // 根据状态筛选子订单
+            subQuery.eq(BizOrderSub::getDeliveryStatus, dto.getStatus());
         }
 
-        Page<BizOrder> page = new Page<>(
+        Page<BizOrderSub> page = new Page<>(
                 SecurityContextHolder.getPageNo(),
                 SecurityContextHolder.getPageSize()
         );
-        Page<BizOrder> result = bizOrderService.page(page, query);
+        Page<BizOrderSub> result = bizOrderSubService.page(page, subQuery);
 
         if (!result.getRecords().isEmpty()) {
+            // 查询订单主表信息
             List<Long> orderIds = result.getRecords().stream()
-                    .map(BizOrder::getId)
+                    .map(BizOrderSub::getOrderId)
+                    .distinct()
                     .collect(Collectors.toList());
+            Map<Long, BizOrder> orderMap = bizOrderService.listByIds(orderIds).stream()
+                    .collect(Collectors.toMap(BizOrder::getId, o -> o));
 
-            LambdaQueryWrapper<BizOrderItem> itemQuery = new LambdaQueryWrapper<>();
-            itemQuery.in(BizOrderItem::getOrderId, orderIds);
-            Map<Long, List<BizOrderItem>> itemMap = bizOrderItemService.list(itemQuery).stream()
-                    .collect(Collectors.groupingBy(BizOrderItem::getOrderId));
+            List<Map<String, Object>> voList = result.getRecords().stream().map(sub -> {
+                Map<String, Object> vo = new LinkedHashMap<>();
+                vo.put("subId", sub.getId());
+                vo.put("subNo", sub.getSubNo());
+                vo.put("orderId", sub.getOrderId());
+                vo.put("orderNo", sub.getOrderNo());
+                vo.put("merchantName", sub.getMerchantName());
+                vo.put("itemAmount", sub.getItemAmount());
+                vo.put("freightAmount", sub.getFreightAmount());
+                vo.put("payAmount", sub.getPayAmount());
+                vo.put("deliveryStatus", sub.getDeliveryStatus());
+                vo.put("deliveryTime", sub.getDeliveryTime());
+                vo.put("createTime", sub.getCreateTime());
 
-            List<OrderListVo> voList = result.getRecords().stream().map(order -> {
-                OrderListVo vo = new OrderListVo();
-                BeanUtil.copyProperties(order, vo);
-
-                List<BizOrderItem> items = itemMap.getOrDefault(order.getId(), List.of());
-                vo.setGoodsList(items.stream().map(item -> {
-                    OrderGoodsVo goods = new OrderGoodsVo();
-                    goods.setGoodsUrl(item.getMainImage());
-                    goods.setTitle(item.getProductName());
-                    goods.setType(item.getSpecName());
-                    goods.setPrice(item.getPrice());
-                    goods.setNumber(item.getQuantity());
-                    return goods;
-                }).collect(Collectors.toList()));
-
+                // 关联主订单信息
+                BizOrder order = orderMap.get(sub.getOrderId());
+                if (order != null) {
+                    vo.put("orderStatus", order.getStatus());
+                    vo.put("addressSnapshot", order.getAddressSnapshot());
+                    vo.put("remark", order.getRemark());
+                }
                 return vo;
             }).collect(Collectors.toList());
 
-            Map<String, Object> pageResult = new java.util.LinkedHashMap<>();
+            Map<String, Object> pageResult = new LinkedHashMap<>();
             pageResult.put("records", voList);
             pageResult.put("total", result.getTotal());
             pageResult.put("current", result.getCurrent());
@@ -122,81 +129,154 @@ public class MerchantOrderController extends BaseController {
     }
 
     /**
-     * 获取订单详情
+     * 获取商家子订单详情
      */
-    @PostMapping("/detail")
+    @PostMapping("/subDetail")
     @ResponseBody
-    public R detail(@RequestBody OrderIdDto dto) {
+    public R subDetail(@RequestBody MerchantSubIdDto dto) {
         Long merchantId = getMerchantId();
-        Long orderId = dto.getOrderId();
+        Long subId = dto.getSubId();
 
-        BizOrder order = bizOrderService.getById(orderId);
-        if (order == null || !order.getMerchantId().equals(merchantId)) {
-            return R.error("订单不存在");
+        BizOrderSub sub = bizOrderSubService.getById(subId);
+        if (sub == null || !sub.getMerchantId().equals(merchantId)) {
+            return R.error("子订单不存在");
         }
 
+        // 查询订单主表
+        BizOrder order = bizOrderService.getById(sub.getOrderId());
+
+        // 查询子订单下的商品明细
         LambdaQueryWrapper<BizOrderItem> itemQuery = new LambdaQueryWrapper<>();
-        itemQuery.eq(BizOrderItem::getOrderId, orderId);
+        itemQuery.eq(BizOrderItem::getSubId, subId);
         List<BizOrderItem> items = bizOrderItemService.list(itemQuery);
 
-        OrderDetailVo vo = new OrderDetailVo();
-        BeanUtil.copyProperties(order, vo);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("sub", sub);
+        result.put("order", order);
+        result.put("items", items);
 
-        List<BizOrderItemVo> itemVoList = items.stream()
-                .map(item -> BeanUtil.toBean(item, BizOrderItemVo.class))
-                .collect(Collectors.toList());
-        vo.setItems(itemVoList);
-
-        return R.ok(vo);
+        return R.ok(result);
     }
 
     /**
-     * 商家发货
+     * 商家发货（基于子订单发货）
      */
     @OperateLog(title = "商家后台-发货")
     @PostMapping("/delivery")
     @ResponseBody
-    public R delivery(@RequestBody OrderIdDto dto) {
+    public R delivery(@RequestBody OrderSubDeliveryDto dto) {
         Long merchantId = getMerchantId();
-        Long orderId = dto.getOrderId();
+        Long subId = dto.getSubId();
 
-        BizOrder order = bizOrderService.getById(orderId);
-        if (order == null || !order.getMerchantId().equals(merchantId)) {
-            return R.error("订单不存在");
+        BizOrderSub sub = bizOrderSubService.getById(subId);
+        if (sub == null || !sub.getMerchantId().equals(merchantId)) {
+            return R.error("子订单不存在");
         }
-        if (order.getStatus() != 2) {
-            return R.error("当前订单状态不可发货");
+        if (sub.getDeliveryStatus() != BizOrderSub.DELIVERY_STATUS_PENDING) {
+            return R.error("当前子订单状态不可发货");
         }
 
-        order.setDeliveryStatus((byte) 1);
-        order.setDeliveryTime(LocalDateTime.now());
-        order.setStatus((byte) 3);
-        bizOrderService.updateById(order);
+        // 更新子订单发货状态
+        sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_SHIPPED);
+        sub.setDeliveryTime(LocalDateTime.now());
+        sub.setExpressCompany(dto.getExpressCompany());
+        sub.setExpressNo(dto.getExpressNo());
+        bizOrderSubService.updateById(sub);
+
+        // 检查是否所有子订单都已发货，更新主订单状态
+        Long orderId = sub.getOrderId();
+        List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(orderId);
+        boolean allDelivered = allSubs.stream()
+                .allMatch(s -> s.getDeliveryStatus() == BizOrderSub.DELIVERY_STATUS_SHIPPED
+                        || s.getDeliveryStatus() == BizOrderSub.DELIVERY_STATUS_RECEIVED);
+
+        if (allDelivered) {
+            BizOrder order = bizOrderService.getById(orderId);
+            if (order != null) {
+                // 取最后一个快递信息作为主订单快递信息
+                BizOrderSub lastSub = allSubs.get(allSubs.size() - 1);
+                order.setStatus(BizOrder.STATUS_DELIVERED);
+                order.setShipTime(LocalDateTime.now());
+                order.setExpressCompany(lastSub.getExpressCompany());
+                order.setExpressNo(lastSub.getExpressNo());
+                bizOrderService.updateById(order);
+            }
+        }
 
         return R.ok();
     }
 
     /**
-     * 取消订单（商家端）
+     * 取消子订单（商家端）
      */
-    @OperateLog(title = "商家后台-取消订单")
-    @PostMapping("/cancel")
+    @OperateLog(title = "商家后台-取消子订单")
+    @PostMapping("/cancelSub")
     @ResponseBody
-    public R cancel(@RequestBody OrderIdDto dto) {
+    public R cancelSub(@RequestBody OrderSubCancelDto dto) {
         Long merchantId = getMerchantId();
-        Long orderId = dto.getOrderId();
+        Long subId = dto.getSubId();
+        String reason = dto.getCancelReason();
 
-        BizOrder order = bizOrderService.getById(orderId);
-        if (order == null || !order.getMerchantId().equals(merchantId)) {
-            return R.error("订单不存在");
+        BizOrderSub sub = bizOrderSubService.getById(subId);
+        if (sub == null || !sub.getMerchantId().equals(merchantId)) {
+            return R.error("子订单不存在");
         }
-        if (order.getStatus() != 1) {
-            return R.error("当前订单状态不可取消");
+        if (sub.getDeliveryStatus() != BizOrderSub.DELIVERY_STATUS_PENDING) {
+            return R.error("当前子订单状态不可取消");
         }
 
-        order.setStatus((byte) 0);
-        bizOrderService.updateById(order);
+        // 标记子订单为已删除（逻辑删除）
+        sub.setIsDeleted((byte) 1);
+        sub.setMerchantRemark(reason);
+        bizOrderSubService.updateById(sub);
+
+        // 检查是否所有子订单都已取消，更新主订单状态
+        Long orderId = sub.getOrderId();
+        List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(orderId);
+        boolean allCancelled = allSubs.stream()
+                .allMatch(s -> s.getIsDeleted() == 1);
+
+        if (allCancelled) {
+            BizOrder order = bizOrderService.getById(orderId);
+            if (order != null) {
+                order.setStatus(BizOrder.STATUS_CANCELLED);
+                order.setCancelReason("所有商家已取消");
+                order.setCancelTime(LocalDateTime.now());
+                bizOrderService.updateById(order);
+            }
+        }
 
         return R.ok();
+    }
+
+    // ==================== DTO内部类 ====================
+
+    /**
+     * 子订单发货DTO
+     */
+    public static class OrderSubDeliveryDto {
+        private Long subId;
+        private String expressCompany;
+        private String expressNo;
+
+        public Long getSubId() { return subId; }
+        public void setSubId(Long subId) { this.subId = subId; }
+        public String getExpressCompany() { return expressCompany; }
+        public void setExpressCompany(String expressCompany) { this.expressCompany = expressCompany; }
+        public String getExpressNo() { return expressNo; }
+        public void setExpressNo(String expressNo) { this.expressNo = expressNo; }
+    }
+
+    /**
+     * 子订单取消DTO
+     */
+    public static class OrderSubCancelDto {
+        private Long subId;
+        private String cancelReason;
+
+        public Long getSubId() { return subId; }
+        public void setSubId(Long subId) { this.subId = subId; }
+        public String getCancelReason() { return cancelReason; }
+        public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
     }
 }

@@ -3,15 +3,15 @@
 
  Source Server         : localhost
  Source Server Type    : MySQL
- Source Server Version : 80043
+ Source Server Version : 80016
  Source Host           : localhost:3306
  Source Schema         : baise_star_anise
 
  Target Server Type    : MySQL
- Target Server Version : 80043
+ Target Server Version : 80016
  File Encoding         : 65001
 
- Date: 12/06/2026 18:53:23
+ Date: 13/06/2026 21:50:55
 */
 
 SET NAMES utf8mb4;
@@ -22,31 +22,32 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `app_user`;
 CREATE TABLE `app_user`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `openid` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '微信小程序OpenID',
   `unionid` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '微信UnionID',
   `username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户名/手机号',
   `password` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '加密密码',
   `nickname` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户昵称',
   `avatar_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像URL',
-  `role_type` tinyint NOT NULL DEFAULT 1 COMMENT '角色类型 1:C端消费者 2:B端采购商 3:入驻商家 4:平台管理员',
+  `role_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '角色类型 1:C端消费者 2:B端采购商 3:入驻商家 4:平台管理员',
   `real_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '真实姓名',
   `phone` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '手机号',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '账号状态 0:禁用 1:正常',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '账号状态 0:禁用 1:正常',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_openid`(`openid`) USING BTREE,
   UNIQUE INDEX `idx_username`(`username`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of app_user
 -- ----------------------------
-INSERT INTO `app_user` VALUES (1, '', '', 'admin', '21232f297a57a5a743894a0e4a801fc3', '八角果园管理员', '/show/avatar/8f60106afc684a4395a98fb5482881b1.png', 4, '百色果农', '18818868688', 1, '{\"success\": {\"message\": \"Welcome to JSON Viewer Pro\", \"status_code\": 200}}', '2026-04-14 10:44:47', '2026-05-06 11:31:45', 0);
+INSERT INTO `app_user` VALUES (1, '', '', 'admin', '21232f297a57a5a743894a0e4a801fc3', '八角果园管理员', '/show/avatar/abe2bb583b6d41ada2ecbe8f1c89cbaf.png', 4, '百色果农', '18818868688', 1, '{\"success\": {\"message\": \"Welcome to JSON Viewer Pro\", \"status_code\": 200}}', '2026-04-14 10:44:47', '2026-06-13 13:02:12', 0);
 INSERT INTO `app_user` VALUES (2, 'oXxxxxxTestOpenIdxxx', NULL, NULL, NULL, '测试买家', NULL, 1, NULL, '13900139000', 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `app_user` VALUES (3, 'okB7_6_VI8EuWQR6izHKm7Sd6xC4', NULL, NULL, NULL, '陆先生', '/show/avatar/450696759cd245708362dea114d17b9a.png', 1, NULL, NULL, 1, NULL, '2026-06-13 13:31:55', '2026-06-13 14:41:52', 0);
 
 -- ----------------------------
 -- Table structure for base_area
@@ -58,7 +59,7 @@ CREATE TABLE `base_area`  (
   `cityCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `provinceCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   PRIMARY KEY (`code`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of base_area
@@ -3047,7 +3048,7 @@ INSERT INTO `base_area` VALUES ('659012', '白杨市', '6590', '65');
 -- ----------------------------
 DROP TABLE IF EXISTS `base_region`;
 CREATE TABLE `base_region`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '行政代码',
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '名称',
   `level` tinyint(1) NOT NULL COMMENT '层级: 1-省, 2-市, 3-区/县, 4-乡镇/街道',
@@ -3057,7 +3058,7 @@ CREATE TABLE `base_region`  (
   UNIQUE INDEX `uk_code`(`code`) USING BTREE,
   INDEX `idx_parent`(`parent_code`) USING BTREE,
   INDEX `idx_level`(`level`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 70366 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '国内省市区数据表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 70366 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '国内省市区数据表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of base_region
@@ -47964,8 +47965,8 @@ INSERT INTO `base_region` VALUES (70365, '710613', '复兴区', 3, '710600', NUL
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_address`;
 CREATE TABLE `biz_address`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
   `real_name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '收货人姓名',
   `phone` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '收货人电话',
   `province` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '省份',
@@ -47973,13 +47974,13 @@ CREATE TABLE `biz_address`  (
   `district` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '区县',
   `detail_address` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '详细地址',
   `tags` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标签，逗号分隔（如 家,公司）',
-  `is_default` tinyint NOT NULL DEFAULT 0 COMMENT '是否默认 0:否 1:是',
+  `is_default` tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否默认 0:否 1:是',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '收货地址表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '收货地址表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_address
@@ -47989,55 +47990,73 @@ INSERT INTO `biz_address` VALUES (2, 1, 'test', '111', '新疆维吾尔自治区
 INSERT INTO `biz_address` VALUES (3, 1, '陆线上', '18818864644', '广西壮族自治区', '百色市', '右江区', 'aasdf', '家', 1, '2026-06-11 19:21:13', '2026-06-11 19:51:50', 0);
 INSERT INTO `biz_address` VALUES (4, 1, '发发发', '111111', '天津市', '市辖区', '河东区', '11', '家', 0, '2026-06-11 19:27:20', '2026-06-11 19:51:36', 0);
 INSERT INTO `biz_address` VALUES (5, 1, '啊啊啊啊', '1188188655555', '河北省', '唐山市', '古冶区', '1111', '公司', 0, '2026-06-12 09:30:46', '2026-06-12 10:40:35', 0);
+INSERT INTO `biz_address` VALUES (6, 3, 'aa', '18818864644', '北京市', '市辖区', '东城区', 'ssssss', '家', 0, '2026-06-13 14:47:53', '2026-06-13 14:47:53', 0);
+INSERT INTO `biz_address` VALUES (7, 3, '11', '111', '广西壮族自治区', '百色市', '右江区', '111', '', 0, '2026-06-13 15:17:37', '2026-06-13 15:17:37', 0);
+INSERT INTO `biz_address` VALUES (8, 3, 'abc', '18818864644', '北京市', '市辖区', '东城区', 'aaaa', '家', 0, '2026-06-13 17:20:33', '2026-06-13 17:20:33', 0);
+INSERT INTO `biz_address` VALUES (9, 3, '陆先生', '18818868688', '广西壮族自治区', '百色市', '右江区', '站前大道108号', '家', 1, '2026-06-13 18:59:09', '2026-06-13 18:59:09', 0);
 
 -- ----------------------------
 -- Table structure for biz_after_sale
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_after_sale`;
 CREATE TABLE `biz_after_sale`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `after_sale_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '售后单号',
-  `order_id` bigint NOT NULL COMMENT '订单ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
-  `type` tinyint NOT NULL COMMENT '售后类型 1:仅退款 2:退货退款 3:坏果赔付',
+  `order_id` bigint(20) NOT NULL COMMENT '订单ID',
+  `order_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单编号（冗余）',
+  `sub_id` bigint(20) NOT NULL COMMENT '子订单ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `type` tinyint(4) NOT NULL COMMENT '售后类型 1:仅退款 2:退货退款 3:换货 4:坏果赔付',
   `reason` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '售后原因',
   `evidence_images` json NULL COMMENT '凭证图片',
-  `refund_amount` decimal(10, 2) NOT NULL COMMENT '退款金额',
-  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态 0:待处理 1:同意 2:拒绝 3:完成',
+  `user_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户备注',
+  `apply_amount` decimal(10, 2) NOT NULL COMMENT '申请退款金额',
+  `refund_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '实际退款金额',
+  `return_express_company` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '退货快递公司',
+  `return_express_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '退货快递单号',
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '状态 0:待处理 1:商家审核中 2:已同意 3:已拒绝 4:已退款 5:已退货 6:已换货 7:已取消 8:平台介入',
+  `handle_result` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '处理结果',
   `handle_remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '处理备注',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `handle_time` datetime NULL DEFAULT NULL COMMENT '处理时间',
+  `appeal_status` tinyint(4) NULL DEFAULT NULL COMMENT '申诉状态 0:无申诉 1:申诉中 2:平台介入',
+  `appeal_reason` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '申诉原因',
+  `appeal_time` datetime NULL DEFAULT NULL COMMENT '申诉时间',
+  `complete_time` datetime NULL DEFAULT NULL COMMENT '完成时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_after_sale_no`(`after_sale_no`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE,
-  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '售后申请表' ROW_FORMAT = Dynamic;
+  INDEX `idx_sub_id`(`sub_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE,
+  INDEX `idx_user_id`(`user_id`) USING BTREE,
+  INDEX `idx_status`(`status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 100 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '售后申请表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_after_sale
 -- ----------------------------
-INSERT INTO `biz_after_sale` VALUES (1, 'AS202606070001', 14, 2, 1, 3, '收到的八角有部分受潮发霉，申请坏果赔付', '[\"evidence1.jpg\", \"evidence2.jpg\"]', 20.00, 2, NULL, '2026-06-07 10:00:00', '2026-06-12 18:07:52', 0);
 
 -- ----------------------------
 -- Table structure for biz_agent
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_agent`;
 CREATE TABLE `biz_agent`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `user_id` bigint NOT NULL COMMENT '代理用户ID',
-  `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '上级代理ID',
-  `level` tinyint NOT NULL DEFAULT 1 COMMENT '代理等级',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '代理用户ID',
+  `parent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '上级代理ID',
+  `level` tinyint(4) NOT NULL DEFAULT 1 COMMENT '代理等级',
   `commission_rate` decimal(5, 2) NOT NULL DEFAULT 0.00 COMMENT '佣金比例(%)',
   `total_income` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '累计收益',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '分销代理表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '分销代理表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_agent
@@ -48048,46 +48067,48 @@ CREATE TABLE `biz_agent`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_banner`;
 CREATE TABLE `biz_banner`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台级',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台级',
   `image_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '图片URL',
   `title` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '标题',
-  `link_type` tinyint NOT NULL DEFAULT 0 COMMENT '跳转类型 0:无 1:商品 2:分类',
-  `link_id` bigint NULL DEFAULT NULL COMMENT '跳转目标ID',
-  `sort_order` int NOT NULL DEFAULT 0 COMMENT '排序值',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:启用',
+  `link_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '跳转类型 0:无 1:商品 2:分类',
+  `link_id` bigint(20) NULL DEFAULT NULL COMMENT '跳转目标ID',
+  `sort_order` int(11) NOT NULL DEFAULT 0 COMMENT '排序值',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:启用',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Banner轮播图表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'Banner轮播图表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_banner
 -- ----------------------------
-INSERT INTO `biz_banner` VALUES (1, 0, '/show/other/1781233818775.png', '百色八角 · 自家果园直供', 1, 1, 1, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
-INSERT INTO `biz_banner` VALUES (2, 0, '/show/other/1781233804156.png', '新鲜采摘 · 足干无硫', 0, 1, 2, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
-INSERT INTO `biz_banner` VALUES (3, 0, '/show/other/1781233848612.png', 'www', 1, 2, 3, 1, '2026-06-12 11:11:09', '2026-06-12 11:11:09', 0);
+INSERT INTO `biz_banner` VALUES (1, 0, '/show/other/1781327708530.png', '百色八角 · 自家果园直供', 1, 1, 1, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
+INSERT INTO `biz_banner` VALUES (2, 0, '/show/other/1781327696120.png', '新鲜采摘 · 足干无硫', 0, 1, 2, 1, '2026-06-11 21:10:33', '2026-06-11 21:10:33', 0);
+INSERT INTO `biz_banner` VALUES (3, 0, '/show/other/1781327681625.png', 'www', 1, 1, 3, 1, '2026-06-12 11:11:09', '2026-06-12 11:11:09', 0);
 
 -- ----------------------------
 -- Table structure for biz_cart
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_cart`;
 CREATE TABLE `biz_cart`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
-  `product_id` bigint NOT NULL COMMENT '商品ID',
-  `sku_id` bigint NOT NULL COMMENT 'SKU规格ID',
-  `quantity` int NOT NULL DEFAULT 1 COMMENT '购买数量',
-  `selected` tinyint NOT NULL DEFAULT 1 COMMENT '是否选中 0:否 1:是',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID（购物车按商家分组展示）',
+  `product_id` bigint(20) NOT NULL COMMENT '商品ID',
+  `sku_id` bigint(20) NOT NULL COMMENT 'SKU ID',
+  `quantity` int(11) NOT NULL DEFAULT 1 COMMENT '数量',
+  `selected` tinyint(4) NOT NULL DEFAULT 1 COMMENT '是否选中 0:否 1:是',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_user_sku`(`user_id`, `sku_id`) USING BTREE,
-  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '购物车表' ROW_FORMAT = DYNAMIC;
+  INDEX `idx_user_merchant`(`user_id`, `merchant_id`) USING BTREE,
+  INDEX `idx_selected`(`user_id`, `selected`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 100 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '购物车表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_cart
@@ -48098,59 +48119,61 @@ CREATE TABLE `biz_cart`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_category`;
 CREATE TABLE `biz_category`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台通用',
-  `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '父分类ID 0=一级',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '商家ID 0=平台通用',
+  `parent_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '父分类ID 0=一级',
   `category_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '分类名称',
   `category_icon` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分类图标',
-  `sort_order` int NOT NULL DEFAULT 0 COMMENT '排序值',
+  `sort_order` int(11) NOT NULL DEFAULT 0 COMMENT '排序值',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品分类表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品分类表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_category
 -- ----------------------------
-INSERT INTO `biz_category` VALUES (1, 0, 0, '八角干货', '/show/other/1781235177962.png', 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
-INSERT INTO `biz_category` VALUES (2, 0, 0, '时令水果', '/show/other/1781235136376.png', 2, NULL, '2026-06-11 19:58:28', '2026-06-11 19:58:28', 0);
+INSERT INTO `biz_category` VALUES (1, 0, 0, '八角干货', '/show/other/1781341514249.png', 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_category` VALUES (2, 0, 0, '时令水果', '/show/other/1781341502771.png', 2, NULL, '2026-06-11 19:58:28', '2026-06-11 19:58:28', 0);
 
 -- ----------------------------
 -- Table structure for biz_finance_log
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_finance_log`;
 CREATE TABLE `biz_finance_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `log_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '流水编号',
-  `user_id` bigint NULL DEFAULT NULL COMMENT '用户ID',
-  `merchant_id` bigint NULL DEFAULT NULL COMMENT '商家ID',
-  `type` tinyint NOT NULL COMMENT '流水类型 1:收入 2:退款 3:提现 4:佣金',
+  `user_id` bigint(20) NULL DEFAULT NULL COMMENT '用户ID',
+  `merchant_id` bigint(20) NULL DEFAULT NULL COMMENT '商家ID',
+  `order_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '订单编号',
+  `sub_id` bigint(20) NULL DEFAULT 0 COMMENT '子订单ID',
+  `type` tinyint(4) NOT NULL COMMENT '流水类型 1:收入 2:退款 3:提现 4:佣金',
   `amount` decimal(10, 2) NOT NULL COMMENT '变动金额',
   `balance` decimal(10, 2) NOT NULL COMMENT '变动后余额',
-  `related_id` bigint NULL DEFAULT NULL COMMENT '关联业务ID',
+  `related_id` bigint(20) NULL DEFAULT NULL COMMENT '关联业务ID',
   `remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_log_no`(`log_no`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '财务流水表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '财务流水表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_finance_log
 -- ----------------------------
-INSERT INTO `biz_finance_log` VALUES (1, 'FN202604140001', 2, 1, 1, 45.00, 45.00, 1, '订单BX202604140001收入', '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_finance_log` VALUES (1, 'FN202604140001', 2, 1, NULL, 0, 1, 45.00, 45.00, 1, '订单BX202604140001收入', '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 
 -- ----------------------------
 -- Table structure for biz_merchant
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_merchant`;
 CREATE TABLE `biz_merchant`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `user_id` bigint NOT NULL COMMENT '关联管理员用户ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '关联管理员用户ID',
   `merchant_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '果园/商家名称',
   `logo_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '店铺Logo',
   `description` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '店铺简介',
@@ -48159,31 +48182,32 @@ CREATE TABLE `biz_merchant`  (
   `origin_place` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '产地地址',
   `license_image` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '营业执照URL',
   `food_license_image` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '食品经营许可证URL',
-  `audit_status` tinyint NOT NULL DEFAULT 0 COMMENT '审核状态 0:待审核 1:通过 2:拒绝',
+  `audit_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '审核状态 0:待审核 1:通过 2:拒绝',
   `audit_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '审核备注',
   `commission_rate` decimal(5, 2) NOT NULL DEFAULT 3.00 COMMENT '平台抽成比例(%)',
-  `settlement_type` tinyint NOT NULL DEFAULT 1 COMMENT '结算方式 1:T+1 7:T+7 30:T+30',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
+  `settlement_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '结算方式 1:T+1 7:T+7 30:T+30',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家/农户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家/农户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_merchant
 -- ----------------------------
-INSERT INTO `biz_merchant` VALUES (1, 1, '百色田阳自家八角种植园', NULL, NULL, '李先生', '13800138000', '广西百色市田阳区', '/upload/license/demo.jpg', '/upload/food_license/demo.jpg', 1, NULL, 0.00, 1, 1, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_merchant` VALUES (1, 1, '百色农产品供应链', NULL, NULL, '李先生', '13800138000', '广西百色市右江区', '/upload/license/demo.jpg', '/upload/food_license/demo.jpg', 1, NULL, 0.00, 1, 1, NULL, '2026-04-14 10:44:47', '2026-06-13 19:57:35', 0);
+INSERT INTO `biz_merchant` VALUES (2, 1, '百色田阳芒果农场', NULL, NULL, '陆先生', '18818868688', '广西百色市田阳区', NULL, NULL, 0, NULL, 3.00, 1, 1, NULL, '2026-06-13 19:57:15', '2026-06-13 19:57:31', 0);
 
 -- ----------------------------
 -- Table structure for biz_merchant_account
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_merchant_account`;
 CREATE TABLE `biz_merchant_account`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL COMMENT '商家ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
   `total_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '累计收入',
   `freeze_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '冻结金额',
   `available_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '可提现金额',
@@ -48193,7 +48217,7 @@ CREATE TABLE `biz_merchant_account`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家结算账户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家结算账户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_merchant_account
@@ -48201,22 +48225,60 @@ CREATE TABLE `biz_merchant_account`  (
 INSERT INTO `biz_merchant_account` VALUES (1, 1, 0.00, 0.00, 0.00, 0.00, 0.00, '2026-06-12 18:07:53', '2026-06-12 18:07:53');
 
 -- ----------------------------
+-- Table structure for biz_merchant_settlement
+-- ----------------------------
+DROP TABLE IF EXISTS `biz_merchant_settlement`;
+CREATE TABLE `biz_merchant_settlement`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `settle_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '结算单号',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `period_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '结算周期类型 1:T+1 7:T+7 30:T+30',
+  `period_start` date NOT NULL COMMENT '结算周期开始',
+  `period_end` date NOT NULL COMMENT '结算周期结束',
+  `total_orders` int(11) NOT NULL DEFAULT 0 COMMENT '订单数量',
+  `total_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '收款总额',
+  `total_commission` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '平台抽成',
+  `total_refund` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '退款总额',
+  `settle_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '结算金额',
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '状态 0:待确认 1:已确认 2:已打款 3:已到账',
+  `confirm_time` datetime NULL DEFAULT NULL COMMENT '确认时间',
+  `transfer_time` datetime NULL DEFAULT NULL COMMENT '打款时间',
+  `arrive_time` datetime NULL DEFAULT NULL COMMENT '到账时间',
+  `bank_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行名称',
+  `bank_account` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行账号',
+  `bank_username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '户名',
+  `remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_settle_no`(`settle_no`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE,
+  INDEX `idx_period`(`merchant_id`, `period_start`, `period_end`) USING BTREE,
+  INDEX `idx_status`(`status`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 100 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家结算表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of biz_merchant_settlement
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for biz_merchant_user
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_merchant_user`;
 CREATE TABLE `biz_merchant_user`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL COMMENT '商家ID',
-  `user_id` bigint NOT NULL COMMENT '用户ID(app_user.id)',
-  `is_owner` tinyint NOT NULL DEFAULT 0 COMMENT '是否创始人 0:否 1:是',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID(app_user.id)',
+  `is_owner` tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否创始人 0:否 1:是',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:正常',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_merchant_user`(`merchant_id`, `user_id`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家用户关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家用户关联表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_merchant_user
@@ -48228,8 +48290,8 @@ INSERT INTO `biz_merchant_user` VALUES (1, 1, 1, 1, 1, '2026-06-12 18:07:52', '2
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_merchant_withdraw`;
 CREATE TABLE `biz_merchant_withdraw`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL COMMENT '商家ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
   `apply_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '申请单号',
   `amount` decimal(10, 2) NOT NULL COMMENT '提现金额',
   `fee_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '手续费',
@@ -48237,7 +48299,7 @@ CREATE TABLE `biz_merchant_withdraw`  (
   `bank_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行名称',
   `bank_account` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '银行账号',
   `bank_username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '开户姓名',
-  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态 0:待审核 1:已打款 2:已拒绝',
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '状态 0:待审核 1:已打款 2:已拒绝',
   `handle_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '处理备注',
   `handle_time` datetime NULL DEFAULT NULL COMMENT '处理时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
@@ -48245,7 +48307,7 @@ CREATE TABLE `biz_merchant_withdraw`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_apply_no`(`apply_no`) USING BTREE,
   INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家提现申请表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家提现申请表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_merchant_withdraw
@@ -48256,178 +48318,221 @@ CREATE TABLE `biz_merchant_withdraw`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_order`;
 CREATE TABLE `biz_order`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `order_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单编号',
-  `user_id` bigint NOT NULL COMMENT '用户ID',
-  `merchant_id` bigint NOT NULL COMMENT '商家ID',
-  `order_type` tinyint NOT NULL DEFAULT 1 COMMENT '订单类型 1:零售 2:批发',
-  `total_amount` decimal(10, 2) NOT NULL COMMENT '订单总金额',
-  `pay_amount` decimal(10, 2) NOT NULL COMMENT '实付金额',
-  `freight_amount` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '运费',
-  `discount_amount` decimal(10, 2) NULL DEFAULT 0.00 COMMENT '优惠金额',
-  `pay_type` tinyint NULL DEFAULT NULL COMMENT '支付方式 1:微信支付 2:线下转账',
-  `pay_status` tinyint NOT NULL DEFAULT 0 COMMENT '支付状态 0:待支付 1:已支付 2:已退款',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `total_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '商品总金额',
+  `freight_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '运费总金额',
+  `discount_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '优惠总金额',
+  `pay_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '实付总金额',
+  `address_id` bigint(20) NOT NULL COMMENT '收货地址ID',
+  `address_snapshot` json NOT NULL COMMENT '收货地址快照',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '订单状态 0:已取消 1:待支付 2:待发货 3:已发货 4:已收货 5:已完成 6:退款中 7:已退款',
+  `pay_type` tinyint(4) NULL DEFAULT NULL COMMENT '支付方式 1:微信支付 2:余额支付 3:线下转账',
   `pay_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
-  `delivery_status` tinyint NOT NULL DEFAULT 0 COMMENT '发货状态 0:待发货 1:已发货 2:已收货',
-  `delivery_time` datetime NULL DEFAULT NULL COMMENT '发货时间',
-  `receive_time` datetime NULL DEFAULT NULL COMMENT '收货时间',
-  `address_id` bigint NOT NULL COMMENT '收货地址ID',
-  `address_snapshot` json NOT NULL COMMENT '地址快照',
-  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '订单备注',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '订单状态 0:取消 1:待支付 2:待发货 3:已发货 4:完成 5:售后中',
+  `pay_transaction_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '支付流水号',
+  `delivery_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '配送方式 1:快递 2:自提 3:送货上门',
+  `express_company` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '快递公司',
+  `express_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '快递单号（最后一笔发货的快递号）',
+  `ship_time` datetime NULL DEFAULT NULL COMMENT '发货时间（最后一笔发货时间）',
+  `receive_time` datetime NULL DEFAULT NULL COMMENT '收货时间（最后一笔收货时间）',
+  `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户备注',
+  `cancel_reason` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '取消原因',
+  `cancel_time` datetime NULL DEFAULT NULL COMMENT '取消时间',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `idx_order_no`(`order_no`) USING BTREE,
   INDEX `idx_user_id`(`user_id`) USING BTREE,
-  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单表' ROW_FORMAT = Dynamic;
+  INDEX `idx_user_status`(`user_id`, `status`) USING BTREE,
+  INDEX `idx_create_time`(`create_time`) USING BTREE,
+  INDEX `idx_pay_time`(`pay_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单主表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_order
 -- ----------------------------
-INSERT INTO `biz_order` VALUES (1, 'BX202604140001', 1, 1, 1, 45.00, 45.00, 0.00, 0.00, 1, 1, '2026-04-14 10:44:47', 0, NULL, NULL, 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"real_name\": \"张三\", \"detail_address\": \"科技园XX大厦1001\"}', '尽快发货', 2, NULL, '2026-04-14 10:44:47', '2026-06-11 18:54:38', 0);
-INSERT INTO `biz_order` VALUES (10, 'BX202606110010', 1, 1, 1, 45.00, 45.00, 0.00, 0.00, 1, 1, '2026-06-11 18:56:27', 0, NULL, NULL, 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"realName\": \"张三\", \"detailAddress\": \"科技园XX大厦1001\"}', '请发快递', 2, NULL, '2026-06-11 10:30:00', '2026-06-11 18:56:27', 0);
-INSERT INTO `biz_order` VALUES (11, 'BX202606100011', 1, 1, 1, 54.90, 54.90, 0.00, 0.00, 1, 1, '2026-06-10 14:20:00', 0, NULL, NULL, 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"realName\": \"张三\", \"detailAddress\": \"科技园XX大厦1001\"}', '', 2, NULL, '2026-06-10 14:18:00', '2026-06-11 18:55:06', 0);
-INSERT INTO `biz_order` VALUES (12, 'BX202606080012', 1, 1, 1, 789.90, 789.90, 0.00, 0.00, 1, 1, '2026-06-08 10:30:00', 2, '2026-06-09 09:00:00', '2026-06-11 19:54:39', 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"realName\": \"张三\", \"detailAddress\": \"科技园XX大厦1001\"}', '请用顺丰', 2, NULL, '2026-06-08 10:25:00', '2026-06-12 15:12:37', 0);
-INSERT INTO `biz_order` VALUES (13, 'BX202606010013', 1, 1, 1, 19.80, 19.80, 0.00, 0.00, 1, 1, '2026-06-01 16:00:00', 2, '2026-06-02 08:30:00', '2026-06-04 12:00:00', 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"realName\": \"张三\", \"detailAddress\": \"科技园XX大厦1001\"}', '', 2, NULL, '2026-06-01 15:55:00', '2026-06-12 15:12:38', 0);
-INSERT INTO `biz_order` VALUES (14, 'BX202606050014', 1, 1, 1, 59.90, 59.90, 0.00, 0.00, 1, 1, '2026-06-05 09:00:00', 1, '2026-06-05 15:00:00', NULL, 1, '{\"city\": \"深圳市\", \"phone\": \"13900139000\", \"district\": \"南山区\", \"province\": \"广东省\", \"realName\": \"张三\", \"detailAddress\": \"科技园XX大厦1001\"}', '尽快发货谢谢', 5, NULL, '2026-06-05 08:55:00', '2026-06-11 18:55:08', 0);
-INSERT INTO `biz_order` VALUES (15, 'BX202606112018556ab25a', 1, 1, 1, 249.50, 249.50, 0.00, 0.00, 1, 1, '2026-06-11 20:18:56', 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-11 20:18:56', '2026-06-11 20:18:56', 0);
-INSERT INTO `biz_order` VALUES (16, 'BX20260611203055302912', 1, 1, 1, 80.00, 80.00, 0.00, 0.00, 1, 1, '2026-06-11 20:30:56', 0, NULL, NULL, 4, '{\"id\": 4, \"city\": \"市辖区\", \"tags\": \"家\", \"phone\": \"111111\", \"userId\": 1, \"district\": \"河东区\", \"province\": \"天津市\", \"realName\": \"发发发\", \"isDefault\": 0, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:27:20\", \"updateTime\": \"2026-06-11 19:51:36\", \"detailAddress\": \"11\"}', '', 2, NULL, '2026-06-11 20:30:56', '2026-06-11 20:30:56', 0);
-INSERT INTO `biz_order` VALUES (17, 'BX20260611203151a62d71', 1, 1, 1, 25.00, 25.00, 0.00, 0.00, 1, 1, '2026-06-11 20:31:52', 0, NULL, NULL, 4, '{\"id\": 4, \"city\": \"市辖区\", \"tags\": \"家\", \"phone\": \"111111\", \"userId\": 1, \"district\": \"河东区\", \"province\": \"天津市\", \"realName\": \"发发发\", \"isDefault\": 0, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:27:20\", \"updateTime\": \"2026-06-11 19:51:36\", \"detailAddress\": \"11\"}', '', 2, NULL, '2026-06-11 20:31:52', '2026-06-11 20:31:52', 0);
-INSERT INTO `biz_order` VALUES (18, 'BX2026061120345174f925', 1, 1, 1, 79.90, 79.90, 0.00, 0.00, NULL, 0, NULL, 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '啊啊啊啊', 2, NULL, '2026-06-11 20:34:52', '2026-06-12 15:12:54', 0);
-INSERT INTO `biz_order` VALUES (19, 'BX202606112035312f72e8', 1, 1, 1, 54.80, 54.80, 0.00, 0.00, 1, 1, '2026-06-11 20:52:43', 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-11 20:35:32', '2026-06-11 20:52:43', 0);
-INSERT INTO `biz_order` VALUES (20, 'BX20260611204547f61d03', 1, 1, 1, 44.90, 44.90, 0.00, 0.00, 1, 1, '2026-06-11 20:52:37', 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-11 20:45:47', '2026-06-11 20:52:37', 0);
-INSERT INTO `biz_order` VALUES (21, 'BX2026061214421623c9d2', 1, 1, 1, 167.80, 167.80, 0.00, 0.00, NULL, 0, NULL, 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', '', 2, NULL, '2026-06-12 14:42:16', '2026-06-12 15:12:44', 0);
-INSERT INTO `biz_order` VALUES (22, '2026061218495981380000', 1, 1, 1, 54.80, 54.80, 0.00, 0.00, NULL, 0, NULL, 0, NULL, NULL, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 'aaaaa', 1, NULL, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
+INSERT INTO `biz_order` VALUES (1000, '2026061312320461480000', 1, 54.80, 0.00, 0.00, 54.80, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 2, 1, '2026-06-13 12:32:33', NULL, 1, NULL, NULL, NULL, NULL, 'abc', NULL, NULL, NULL, '2026-06-13 12:32:05', '2026-06-13 12:32:33', 0);
+INSERT INTO `biz_order` VALUES (1001, '2026061318591963880000', 3, 74.80, 0.00, 0.00, 74.80, 9, '{\"id\": 9, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818868688\", \"userId\": 3, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆先生\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-13 18:59:09\", \"updateTime\": \"2026-06-13 18:59:09\", \"detailAddress\": \"站前大道108号\"}', 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '啊啊啊啊', NULL, NULL, NULL, '2026-06-13 18:59:20', '2026-06-13 18:59:20', 0);
+INSERT INTO `biz_order` VALUES (1002, '2026061320005889480000', 1, 147.90, 0.00, 0.00, 147.90, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, '2026-06-13 20:00:59', '2026-06-13 20:00:59', 0);
+INSERT INTO `biz_order` VALUES (1003, '2026061321145633580000', 1, 34.90, 0.00, 0.00, 34.90, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '22222', NULL, NULL, NULL, '2026-06-13 21:14:57', '2026-06-13 21:14:57', 0);
+INSERT INTO `biz_order` VALUES (1004, '2026061321442492880000', 1, 19.90, 0.00, 0.00, 19.90, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 1, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, '2026-06-13 21:44:25', '2026-06-13 21:44:25', 0);
+INSERT INTO `biz_order` VALUES (1005, '2026061321444457880000', 1, 64.00, 0.00, 0.00, 64.00, 3, '{\"id\": 3, \"city\": \"百色市\", \"tags\": \"家\", \"phone\": \"18818864644\", \"userId\": 1, \"district\": \"右江区\", \"province\": \"广西壮族自治区\", \"realName\": \"陆线上\", \"isDefault\": 1, \"isDeleted\": 0, \"createTime\": \"2026-06-11 19:21:13\", \"updateTime\": \"2026-06-11 19:51:50\", \"detailAddress\": \"aasdf\"}', 2, 1, '2026-06-13 21:45:26', NULL, 1, NULL, NULL, NULL, NULL, '', NULL, NULL, NULL, '2026-06-13 21:44:45', '2026-06-13 21:45:26', 0);
 
 -- ----------------------------
 -- Table structure for biz_order_item
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_order_item`;
 CREATE TABLE `biz_order_item`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `order_id` bigint NOT NULL COMMENT '订单ID',
-  `merchant_id` bigint NOT NULL DEFAULT 0 COMMENT '商家ID',
-  `product_id` bigint NOT NULL COMMENT '商品ID',
-  `sku_id` bigint NOT NULL COMMENT '规格ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `order_id` bigint(20) NOT NULL COMMENT '订单ID',
+  `order_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单编号（冗余）',
+  `sub_id` bigint(20) NOT NULL COMMENT '子订单ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `product_id` bigint(20) NOT NULL COMMENT '商品ID',
   `product_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品名称快照',
-  `spec_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '规格名称快照',
-  `main_image` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品主图快照',
+  `product_image` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品主图快照',
+  `sku_id` bigint(20) NOT NULL COMMENT 'SKU ID',
+  `sku_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '规格名称快照',
+  `sku_specs` json NULL COMMENT '规格明细快照',
   `price` decimal(10, 2) NOT NULL COMMENT '单价',
-  `quantity` int NOT NULL COMMENT '购买数量',
-  `total_amount` decimal(10, 2) NOT NULL COMMENT '小计金额',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `quantity` int(11) NOT NULL COMMENT '购买数量',
+  `item_amount` decimal(12, 2) NOT NULL COMMENT '商品小计',
+  `discount_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '优惠分摊',
+  `pay_amount` decimal(12, 2) NOT NULL COMMENT '实付金额',
+  `refund_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '退款状态 0:无退款 1:部分退款 2:全部退款',
+  `refund_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '已退款金额',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_order_id`(`order_id`) USING BTREE,
-  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单明细表' ROW_FORMAT = Dynamic;
+  INDEX `idx_sub_id`(`sub_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE,
+  INDEX `idx_product_id`(`product_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '订单商品明细表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of biz_order_item
 -- ----------------------------
-INSERT INTO `biz_order_item` VALUES (1, 1, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-04-14 10:44:47', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (2, 10, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 10:30:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (3, 11, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-10 14:18:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (4, 11, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-10 14:18:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (5, 12, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-08 10:25:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (6, 12, 1, 1, 3, '百色无硫大红八角', '10kg/箱', '/show/product/1777280058519.jpg', 780.00, 1, 780.00, '2026-06-08 10:25:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (7, 13, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 2, 19.80, '2026-06-01 15:55:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (8, 14, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-05 08:55:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (9, 14, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-05 08:55:00', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (10, 15, 1, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 5, 99.50, '2026-06-11 20:18:56', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (11, 15, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 6, 150.00, '2026-06-11 20:18:56', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (12, 16, 1, 3, 12, '广西武鸣沃柑', '10斤装/箱', '/upload/product/orange_main.jpg', 55.00, 1, 55.00, '2026-06-11 20:30:56', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (13, 16, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:30:56', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (14, 17, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:31:52', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (15, 18, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (16, 18, 1, 1, 2, '百色无硫大红八角', '500g/袋', '/show/product/1777280058519.jpg', 45.00, 1, 45.00, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (17, 18, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:34:52', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (18, 19, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1777280058519.jpg', 9.90, 1, 9.90, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (19, 19, 1, 3, 10, '广西武鸣沃柑', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (20, 19, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:35:32', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (21, 20, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果', '3斤装/箱', '/upload/product/orange_main.jpg', 19.90, 1, 19.90, '2026-06-11 20:45:47', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (22, 20, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/upload/product/mango_main.jpg', 25.00, 1, 25.00, '2026-06-11 20:45:47', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (23, 21, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '3斤装/箱', '/show/product/1781233113129.png', 19.90, 2, 39.80, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (24, 21, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/show/product/1781233070001.png', 25.00, 2, 50.00, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (25, 21, 1, 4, 14, '百色台农芒果', '5斤装/箱', '/show/product/1781233070001.png', 39.00, 2, 78.00, '2026-06-12 14:42:16', '2026-06-12 18:07:53', 0);
-INSERT INTO `biz_order_item` VALUES (26, 22, 1, 1, 1, '百色无硫大红八角', '50g/袋', '/show/product/1781233153561.png', 9.90, 1, 9.90, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
-INSERT INTO `biz_order_item` VALUES (27, 22, 1, 3, 10, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '3斤装/箱', '/show/product/1781233113129.png', 19.90, 1, 19.90, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
-INSERT INTO `biz_order_item` VALUES (28, 22, 1, 4, 13, '百色台农芒果', '3斤装/箱', '/show/product/1781233070001.png', 25.00, 1, 25.00, '2026-06-12 18:50:00', '2026-06-12 18:50:00', 0);
+INSERT INTO `biz_order_item` VALUES (1000, 1000, '2026061312320461480000', 1000, 1, 1, '百色无硫大红八角', '/show/product/1781324955459.png', 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 1, 9.90, 0.00, 9.90, 0, 0.00, '2026-06-13 12:32:05', '2026-06-13 12:32:05', 0);
+INSERT INTO `biz_order_item` VALUES (1001, 1000, '2026061312320461480000', 1000, 1, 3, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '/show/product/1781324906076.png', 10, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 1, 19.90, 0.00, 19.90, 0, 0.00, '2026-06-13 12:32:05', '2026-06-13 12:32:05', 0);
+INSERT INTO `biz_order_item` VALUES (1002, 1000, '2026061312320461480000', 1000, 1, 4, '百色台农芒果', '/show/product/1781324790300.png', 13, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 1, 25.00, 0.00, 25.00, 0, 0.00, '2026-06-13 12:32:05', '2026-06-13 12:32:05', 0);
+INSERT INTO `biz_order_item` VALUES (1003, 1001, '2026061318591963880000', 1001, 1, 3, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '/show/product/1781324906076.png', 10, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 1, 19.90, 0.00, 19.90, 0, 0.00, '2026-06-13 18:59:20', '2026-06-13 18:59:20', 0);
+INSERT INTO `biz_order_item` VALUES (1004, 1001, '2026061318591963880000', 1001, 1, 3, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '/show/product/1781324906076.png', 11, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 29.90, 1, 29.90, 0.00, 29.90, 0, 0.00, '2026-06-13 18:59:20', '2026-06-13 18:59:20', 0);
+INSERT INTO `biz_order_item` VALUES (1005, 1001, '2026061318591963880000', 1001, 1, 4, '百色台农芒果', '/show/product/1781324790300.png', 13, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 1, 25.00, 0.00, 25.00, 0, 0.00, '2026-06-13 18:59:20', '2026-06-13 18:59:20', 0);
+INSERT INTO `biz_order_item` VALUES (1006, 1002, '2026061320005889480000', 1002, 1, 3, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '/show/product/1781324906076.png', 10, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 1, 19.90, 0.00, 19.90, 0, 0.00, '2026-06-13 20:01:00', '2026-06-13 20:01:00', 0);
+INSERT INTO `biz_order_item` VALUES (1007, 1002, '2026061320005889480000', 1003, 2, 4, '百色台农芒果', '/show/product/1781324790300.png', 13, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 2, 50.00, 0.00, 50.00, 0, 0.00, '2026-06-13 20:01:00', '2026-06-13 20:01:00', 0);
+INSERT INTO `biz_order_item` VALUES (1008, 1002, '2026061320005889480000', 1003, 2, 4, '百色台农芒果', '/show/product/1781324790300.png', 14, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 39.00, 2, 78.00, 0.00, 78.00, 0, 0.00, '2026-06-13 20:01:00', '2026-06-13 20:01:00', 0);
+INSERT INTO `biz_order_item` VALUES (1009, 1003, '2026061321145633580000', 1004, 1, 1, '百色无硫大红八角', '/show/product/1781324955459.png', 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 1, 9.90, 0.00, 9.90, 0, 0.00, '2026-06-13 21:14:57', '2026-06-13 21:14:57', 0);
+INSERT INTO `biz_order_item` VALUES (1010, 1003, '2026061321145633580000', 1005, 2, 4, '百色台农芒果', '/show/product/1781324790300.png', 13, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 1, 25.00, 0.00, 25.00, 0, 0.00, '2026-06-13 21:14:57', '2026-06-13 21:14:57', 0);
+INSERT INTO `biz_order_item` VALUES (1011, 1004, '2026061321442492880000', 1006, 1, 3, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '/show/product/1781324906076.png', 10, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 1, 19.90, 0.00, 19.90, 0, 0.00, '2026-06-13 21:44:25', '2026-06-13 21:44:25', 0);
+INSERT INTO `biz_order_item` VALUES (1012, 1005, '2026061321444457880000', 1007, 2, 4, '百色台农芒果', '/show/product/1781324790300.png', 13, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 1, 25.00, 0.00, 25.00, 0, 0.00, '2026-06-13 21:44:45', '2026-06-13 21:44:45', 0);
+INSERT INTO `biz_order_item` VALUES (1013, 1005, '2026061321444457880000', 1007, 2, 4, '百色台农芒果', '/show/product/1781324790300.png', 14, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 39.00, 1, 39.00, 0.00, 39.00, 0, 0.00, '2026-06-13 21:44:45', '2026-06-13 21:44:45', 0);
+
+-- ----------------------------
+-- Table structure for biz_order_sub
+-- ----------------------------
+DROP TABLE IF EXISTS `biz_order_sub`;
+CREATE TABLE `biz_order_sub`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `sub_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '子订单编号',
+  `order_id` bigint(20) NOT NULL COMMENT '所属订单ID',
+  `order_no` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '订单编号（冗余便于查询）',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `merchant_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商家名称快照',
+  `item_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '商品金额',
+  `freight_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '运费',
+  `discount_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '优惠分摊',
+  `merchant_discount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '商家让利',
+  `pay_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '实付金额（商家应收）',
+  `commission_rate` decimal(5, 2) NOT NULL DEFAULT 0.00 COMMENT '抽成比例%',
+  `commission_amount` decimal(10, 2) NOT NULL DEFAULT 0.00 COMMENT '平台抽成',
+  `settle_amount` decimal(12, 2) NOT NULL DEFAULT 0.00 COMMENT '结算金额（商家实收）',
+  `settle_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '结算状态 0:未结算 1:已结算 2:结算中',
+  `settle_time` datetime NULL DEFAULT NULL COMMENT '结算时间',
+  `settle_period` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '结算周期快照',
+  `delivery_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '发货状态 0:待发货 1:已发货 2:已收货',
+  `delivery_time` datetime NULL DEFAULT NULL COMMENT '发货时间',
+  `receive_time` datetime NULL DEFAULT NULL COMMENT '收货时间',
+  `express_company` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '快递公司',
+  `express_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '快递单号',
+  `merchant_remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商家备注',
+  `extra_json` json NULL COMMENT '扩展字段',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_sub_no`(`sub_no`) USING BTREE,
+  INDEX `idx_order_id`(`order_id`) USING BTREE,
+  INDEX `idx_merchant_id`(`merchant_id`) USING BTREE,
+  INDEX `idx_merchant_status`(`merchant_id`, `delivery_status`) USING BTREE,
+  INDEX `idx_settle_status`(`settle_status`, `settle_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商家订单子表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of biz_order_sub
+-- ----------------------------
+INSERT INTO `biz_order_sub` VALUES (1000, '2026061312320468680000', 1000, '2026061312320461480000', 1, '百色田阳自家八角种植园', 54.80, 0.00, 0.00, 0.00, 54.80, 0.00, 0.00, 54.80, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 12:32:05', '2026-06-13 12:32:05', 0);
+INSERT INTO `biz_order_sub` VALUES (1001, '2026061318591976480000', 1001, '2026061318591963880000', 1, '百色田阳自家八角种植园', 74.80, 0.00, 0.00, 0.00, 74.80, 0.00, 0.00, 74.80, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 18:59:20', '2026-06-13 18:59:20', 0);
+INSERT INTO `biz_order_sub` VALUES (1002, '2026061320005951780000', 1002, '2026061320005889480000', 1, '百色农产品供应链', 19.90, 0.00, 0.00, 0.00, 19.90, 0.00, 0.00, 19.90, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 20:01:00', '2026-06-13 20:01:00', 0);
+INSERT INTO `biz_order_sub` VALUES (1003, '2026061320005962680000', 1002, '2026061320005889480000', 2, '百色田阳芒果农场', 128.00, 0.00, 0.00, 0.00, 128.00, 3.00, 0.00, 128.00, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 20:01:00', '2026-06-13 20:01:00', 0);
+INSERT INTO `biz_order_sub` VALUES (1004, '2026061321145682080000', 1003, '2026061321145633580000', 1, '百色农产品供应链', 9.90, 0.00, 0.00, 0.00, 9.90, 0.00, 0.00, 9.90, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 21:14:57', '2026-06-13 21:14:57', 0);
+INSERT INTO `biz_order_sub` VALUES (1005, '2026061321145693480000', 1003, '2026061321145633580000', 2, '百色田阳芒果农场', 25.00, 0.00, 0.00, 0.00, 25.00, 3.00, 0.00, 25.00, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 21:14:57', '2026-06-13 21:14:57', 0);
+INSERT INTO `biz_order_sub` VALUES (1006, '2026061321442502480000', 1004, '2026061321442492880000', 1, '百色农产品供应链', 19.90, 0.00, 0.00, 0.00, 19.90, 0.00, 0.00, 19.90, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 21:44:25', '2026-06-13 21:44:25', 0);
+INSERT INTO `biz_order_sub` VALUES (1007, '2026061321444462480000', 1005, '2026061321444457880000', 2, '百色田阳芒果农场', 64.00, 0.00, 0.00, 0.00, 64.00, 3.00, 0.00, 64.00, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-13 21:44:45', '2026-06-13 21:44:45', 0);
 
 -- ----------------------------
 -- Table structure for biz_product
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_product`;
 CREATE TABLE `biz_product`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `merchant_id` bigint NOT NULL COMMENT '商家ID',
-  `category_id` bigint NOT NULL COMMENT '分类ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
+  `category_id` bigint(20) NOT NULL COMMENT '分类ID',
   `product_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品名称',
   `product_title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品卖点',
   `main_image` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品主图',
   `image_list` json NOT NULL COMMENT '轮播图列表',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '商品详情',
   `origin_place` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '产地',
-  `is_sulfur_free` tinyint NOT NULL DEFAULT 1 COMMENT '是否无硫 0:否 1:是',
+  `is_sulfur_free` tinyint(4) NOT NULL DEFAULT 1 COMMENT '是否无硫 0:否 1:是',
   `drying_level` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '干度',
   `planting_process` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '种植工艺',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:下架 1:上架',
-  `sort_order` int NOT NULL DEFAULT 0 COMMENT '排序值',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:下架 1:上架',
+  `sort_order` int(11) NOT NULL DEFAULT 0 COMMENT '排序值',
   `extra_json` json NULL COMMENT '扩展字段',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_merchant_id`(`merchant_id`) USING BTREE,
   INDEX `idx_category_id`(`category_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_product
 -- ----------------------------
-INSERT INTO `biz_product` VALUES (1, 1, 1, '百色无硫大红八角', '自家果园足干无硫 香味浓郁', '/show/product/1781233153561.png', '[\"/show/product/1781233160220.png\", \"/show/product/1781233165576.png\", \"/show/product/1781233168140.png\", \"/show/product/1781233172276.png\"]', '<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>', '广西百色市田阳区', 1, '足干9.5成', '传统种植 自然晾晒', 1, 0, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_product` VALUES (1, 1, 1, '百色无硫大红八角', '自家果园足干无硫 香味浓郁', '/show/product/1781324955459.png', '[\"/show/product/1781324964751.png\", \"/show/product/1781324969434.png\", \"/show/product/1781324973761.png\", \"/show/product/1781324978773.png\"]', '<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>', '广西百色市田阳区', 1, '足干9.5成', '传统种植 自然晾晒', 1, 0, NULL, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 INSERT INTO `biz_product` VALUES (2, 1, 1, '1', '1', '22', '[\"/show/product/1777281519831.png\", \"/show/product/1777281531049.png\"]', '1', NULL, 1, 'q', 'q', 0, 0, NULL, '2026-04-27 17:19:37', '2026-04-27 17:19:37', 0);
-INSERT INTO `biz_product` VALUES (3, 1, 2, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '皮薄多汁 甜度高 新鲜现摘 果园直发', '/show/product/1781233113129.png', '[\"/show/product/1781233122480.png\", \"/show/product/1781233131091.png\", \"/show/product/1781233134022.png\", \"/show/product/1781233138058.png\"]', '<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>', '广西南宁市武鸣区', 1, NULL, '山地种植 自然成熟 不催熟不打蜡', 1, 0, NULL, '2026-06-11 19:59:17', '2026-06-11 20:49:46', 0);
-INSERT INTO `biz_product` VALUES (4, 1, 2, '百色台农芒果', '香甜软糯 核薄肉厚 现摘现发 新鲜到家', '/show/product/1781233070001.png', '[\"/show/product/1781233088457.png\", \"/show/product/1781233093645.png\", \"/show/product/1781233096578.png\"]', '<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>', '广西百色市田阳区', 1, NULL, '山地种植 自然成熟 不催熟', 1, 0, NULL, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product` VALUES (3, 1, 2, '广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季', '皮薄多汁 甜度高 新鲜现摘 果园直发', '/show/product/1781324906076.png', '[\"/show/product/1781324918078.png\", \"/show/product/1781324922556.png\", \"/show/product/1781324930524.png\", \"/show/product/1781324937016.png\"]', '<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>', '广西南宁市武鸣区', 1, NULL, '山地种植 自然成熟 不催熟不打蜡', 1, 0, NULL, '2026-06-11 19:59:17', '2026-06-11 20:49:46', 0);
+INSERT INTO `biz_product` VALUES (4, 2, 2, '百色台农芒果', '香甜软糯 核薄肉厚 现摘现发 新鲜到家', '/show/product/1781324790300.png', '[\"/show/product/1781324811315.jpg\", \"/show/product/1781324823112.jpg\", \"/show/product/1781324828748.jpg\", \"/show/product/1781324834043.png\", \"/show/product/1781324882916.jpg\"]', '<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>', '广西百色市田阳区', 1, NULL, '山地种植 自然成熟 不催熟', 1, 0, NULL, '2026-06-11 19:59:17', '2026-06-13 19:57:54', 0);
 
 -- ----------------------------
 -- Table structure for biz_product_sku
 -- ----------------------------
 DROP TABLE IF EXISTS `biz_product_sku`;
 CREATE TABLE `biz_product_sku`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `product_id` bigint NOT NULL COMMENT '商品ID',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `product_id` bigint(20) NOT NULL COMMENT '商品ID',
   `spec_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '规格名称',
   `spec_values` json NOT NULL COMMENT '规格属性',
   `price` decimal(10, 2) NOT NULL COMMENT '销售价',
   `original_price` decimal(10, 2) NULL DEFAULT NULL COMMENT '划线原价',
   `wholesale_price` decimal(10, 2) NULL DEFAULT NULL COMMENT '批发价',
-  `stock` int NOT NULL DEFAULT 0 COMMENT '库存',
-  `sales` int NOT NULL DEFAULT 0 COMMENT '销量',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:启用',
+  `stock` int(11) NOT NULL DEFAULT 0 COMMENT '库存',
+  `sales` int(11) NOT NULL DEFAULT 0 COMMENT '销量',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '状态 0:禁用 1:启用',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0:未删 1:已删',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_product_id`(`product_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品规格库存表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '商品规格库存表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of biz_product_sku
 -- ----------------------------
-INSERT INTO `biz_product_sku` VALUES (1, 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 15.00, NULL, 998, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
+INSERT INTO `biz_product_sku` VALUES (1, 1, '50g/袋', '{\"包装\": \"食品袋\", \"重量\": \"50g\"}', 9.90, 15.00, NULL, 996, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 INSERT INTO `biz_product_sku` VALUES (2, 1, '500g/袋', '{\"包装\": \"食品袋\", \"重量\": \"500g\"}', 45.00, 59.00, 39.00, 500, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
 INSERT INTO `biz_product_sku` VALUES (3, 1, '10kg/箱', '{\"包装\": \"纸箱\", \"大小\": \"大果\", \"重量\": \"10kg\"}', 780.00, 880.00, 720.00, 100, 0, 1, '2026-04-14 10:44:47', '2026-04-14 10:44:47', 0);
-INSERT INTO `biz_product_sku` VALUES (10, 3, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 29.90, NULL, 790, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
-INSERT INTO `biz_product_sku` VALUES (11, 3, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 29.90, 45.00, NULL, 600, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (10, 3, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 19.90, 29.90, NULL, 786, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (11, 3, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 29.90, 45.00, NULL, 599, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (12, 3, '10斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"10斤装\"}', 55.00, 79.00, NULL, 299, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
-INSERT INTO `biz_product_sku` VALUES (13, 4, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 38.00, NULL, 487, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
-INSERT INTO `biz_product_sku` VALUES (14, 4, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 39.00, 58.00, NULL, 398, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (13, 4, '3斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"3斤装\"}', 25.00, 38.00, NULL, 481, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
+INSERT INTO `biz_product_sku` VALUES (14, 4, '5斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"5斤装\"}', 39.00, 58.00, NULL, 395, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 INSERT INTO `biz_product_sku` VALUES (15, 4, '10斤装/箱', '{\"包装\": \"纸箱\", \"规格\": \"10斤装\"}', 72.00, 98.00, NULL, 200, 0, 1, '2026-06-11 19:59:17', '2026-06-11 19:59:17', 0);
 
 -- ----------------------------
@@ -48435,11 +48540,11 @@ INSERT INTO `biz_product_sku` VALUES (15, 4, '10斤装/箱', '{\"包装\": \"纸
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_btn`;
 CREATE TABLE `sys_btn`  (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `btn_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '按钮名称',
   `btn_key` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '菜单下的按钮权限通用key',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '备注',
-  `create_by` bigint NULL DEFAULT NULL COMMENT '创建人',
+  `create_by` bigint(20) NULL DEFAULT NULL COMMENT '创建人',
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
@@ -48457,7 +48562,7 @@ INSERT INTO `sys_btn` VALUES (4, '查看', 'view', '查看', 1, '2023-12-04 22:2
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_login_info`;
 CREATE TABLE `sys_login_info`  (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `login_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '登录账号',
   `ipaddr` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '登录IP地址',
   `location` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '登录地点',
@@ -48467,7 +48572,7 @@ CREATE TABLE `sys_login_info`  (
   `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '提示消息',
   `create_time` datetime NULL DEFAULT NULL COMMENT '访问时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 65 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 66 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_login_info
@@ -48535,21 +48640,26 @@ INSERT INTO `sys_login_info` VALUES (62, 'admin', '127.0.0.1', '内网IP', 'MSEd
 INSERT INTO `sys_login_info` VALUES (63, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-11 21:23:28');
 INSERT INTO `sys_login_info` VALUES (64, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-12 09:29:51');
 INSERT INTO `sys_login_info` VALUES (65, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-12 17:36:19');
+INSERT INTO `sys_login_info` VALUES (66, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-13 12:25:25');
+INSERT INTO `sys_login_info` VALUES (67, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-13 12:25:27');
+INSERT INTO `sys_login_info` VALUES (68, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '1', '验证码错误 | 密码错误，还剩5次尝试机会', '2026-06-13 17:04:34');
+INSERT INTO `sys_login_info` VALUES (69, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-13 17:04:40');
+INSERT INTO `sys_login_info` VALUES (70, 'admin', '127.0.0.1', '内网IP', 'MSEdge', 'Windows 10 or Windows Server 2016', '0', '登录成功', '2026-06-13 19:08:20');
 
 -- ----------------------------
 -- Table structure for sys_menu
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu`  (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `parent_id` bigint NULL DEFAULT 0 COMMENT '父级ID',
-  `menu_type` int NULL DEFAULT 1 COMMENT '0=目录，1=菜单，2-按钮',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) NULL DEFAULT 0 COMMENT '父级ID',
+  `menu_type` int(11) NULL DEFAULT 1 COMMENT '0=目录，1=菜单，2-按钮',
   `menu_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '菜单名称',
   `menu_url` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '菜单地址',
   `permit` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '菜单许可Key',
-  `sort_num` int NULL DEFAULT 1 COMMENT '排序',
+  `sort_num` int(11) NULL DEFAULT 1 COMMENT '排序',
   `icon` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '菜单icon',
-  `create_by` bigint NULL DEFAULT NULL COMMENT '创建人ID',
+  `create_by` bigint(20) NULL DEFAULT NULL COMMENT '创建人ID',
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `parent_id`(`parent_id`) USING BTREE
@@ -48654,12 +48764,12 @@ INSERT INTO `sys_menu` VALUES (94, 90, 2, '查看', NULL, 'business:bizAfterSale
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_oper_log`;
 CREATE TABLE `sys_oper_log`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志主键',
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志主键',
   `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '模块标题',
-  `business_type` int NULL DEFAULT 0 COMMENT '业务类型（0其它 1新增 2修改 3删除）',
+  `business_type` int(11) NULL DEFAULT 0 COMMENT '业务类型（0其它 1新增 2修改 3删除）',
   `method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '方法名称',
   `request_method` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '请求方式',
-  `operator_type` int NULL DEFAULT 0 COMMENT '操作类别（0其它 1后台用户 2手机端用户）',
+  `operator_type` int(11) NULL DEFAULT 0 COMMENT '操作类别（0其它 1后台用户 2手机端用户）',
   `oper_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '操作人员',
   `dept_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '部门名称',
   `oper_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '请求URL',
@@ -48667,15 +48777,15 @@ CREATE TABLE `sys_oper_log`  (
   `oper_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '操作地点',
   `oper_param` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '请求参数',
   `json_result` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '返回参数',
-  `status` int NULL DEFAULT 0 COMMENT '操作状态（0正常 1异常）',
+  `status` int(11) NULL DEFAULT 0 COMMENT '操作状态（0正常 1异常）',
   `error_msg` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '错误消息',
   `oper_time` datetime NULL DEFAULT NULL COMMENT '操作时间',
-  `cost_time` bigint NULL DEFAULT 0 COMMENT '消耗时间',
+  `cost_time` bigint(20) NULL DEFAULT 0 COMMENT '消耗时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_sys_oper_log_bt`(`business_type`) USING BTREE,
   INDEX `idx_sys_oper_log_s`(`status`) USING BTREE,
   INDEX `idx_sys_oper_log_ot`(`oper_time`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 335 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 348 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '操作日志记录' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -49027,19 +49137,164 @@ INSERT INTO `sys_oper_log` VALUES (344, '小程序-加入购物车', 0, 'com.lrs
 INSERT INTO `sys_oper_log` VALUES (345, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '10.1.160.196', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781233160220.png\",\"/show/product/1781233165576.png\",\"/show/product/1781233168140.png\",\"/show/product/1781233172276.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781233153561.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":999},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:36', 21);
 INSERT INTO `sys_oper_log` VALUES (346, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '10.1.160.196', '内网IP', '{\"quantity\":1,\"skuId\":1}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:49:37', 31);
 INSERT INTO `sys_oper_log` VALUES (347, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '10.1.160.196', '内网IP', '{\"addressId\":3,\"cartIds\":[20,19,18],\"merchantId\":1,\"remark\":\"aaaaa\"}', '{\"code\":200,\"data\":{\"orderId\":22,\"orderNo\":\"2026061218495981380000\",\"payAmount\":54.80},\"msg\":\"操作成功\"}', 0, '', '2026-06-12 18:50:00', 106);
+INSERT INTO `sys_oper_log` VALUES (348, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '192.168.223.1', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/8f60106afc684a4395a98fb5482881b1.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"77d3d434373149009a58c058715ee7da\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:15', 1111);
+INSERT INTO `sys_oper_log` VALUES (349, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:17', 1006);
+INSERT INTO `sys_oper_log` VALUES (350, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:19', 230);
+INSERT INTO `sys_oper_log` VALUES (351, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":487},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:30', 353);
+INSERT INTO `sys_oper_log` VALUES (352, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:38', 312);
+INSERT INTO `sys_oper_log` VALUES (353, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":790},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":600},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:42', 444);
+INSERT INTO `sys_oper_log` VALUES (354, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":10}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:42', 100);
+INSERT INTO `sys_oper_log` VALUES (355, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":998},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:45', 606);
+INSERT INTO `sys_oper_log` VALUES (356, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":1}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:31:46', 159);
+INSERT INTO `sys_oper_log` VALUES (357, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":3,\"cartIds\":[102,101,100],\"merchantId\":1,\"remark\":\"abc\"}', '{\"code\":200,\"data\":{\"orderId\":1000,\"orderNo\":\"2026061312320461480000\",\"payAmount\":54.80,\"merchantCount\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:32:05', 343);
+INSERT INTO `sys_oper_log` VALUES (358, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '匿名', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 12:57:24', 302);
+INSERT INTO `sys_oper_log` VALUES (359, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '匿名', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:01:14', 3187);
+INSERT INTO `sys_oper_log` VALUES (360, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '192.168.223.1', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/c12745dad7754d46ab9bce30f32b506c.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"5337ff682aaa48e299fd7cfd6da6bbba\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:01:36', 123);
+INSERT INTO `sys_oper_log` VALUES (361, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:01:37', 352);
+INSERT INTO `sys_oper_log` VALUES (362, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '192.168.223.1', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/abe2bb583b6d41ada2ecbe8f1c89cbaf.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"7c067b95b1c24f099c45384185e8f319\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:08:32', 1666);
+INSERT INTO `sys_oper_log` VALUES (363, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:15:49', 9959);
+INSERT INTO `sys_oper_log` VALUES (364, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:17:06', 833);
+INSERT INTO `sys_oper_log` VALUES (365, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:19:56', 690);
+INSERT INTO `sys_oper_log` VALUES (366, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:20:44', 1263);
+INSERT INTO `sys_oper_log` VALUES (367, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:21:21', 290);
+INSERT INTO `sys_oper_log` VALUES (368, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3vZWGa1PPURL0V1rGa1aU7dL1vZWGO\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"token\":\"c3b46f7fa1444542ae8a9543bb3f052c\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:31:57', 4050);
+INSERT INTO `sys_oper_log` VALUES (369, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:32:18', 619);
+INSERT INTO `sys_oper_log` VALUES (370, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3hGz1w3MLwc73SDO0w3CghRu0hGz1W\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"token\":\"6bce576c7fd34a1594e2d7b0f6c501bd\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 13:33:24', 776);
+INSERT INTO `sys_oper_log` VALUES (371, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3TObll27ZqTh4yE4ml2v6WpX3TOblr\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"token\":\"7ac7e6fa2356436ea5d46a0a3b3efe6c\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:00:12', 1031);
+INSERT INTO `sys_oper_log` VALUES (372, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:00:13', 673);
+INSERT INTO `sys_oper_log` VALUES (373, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{\"categoryId\":1}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:00:33', 166);
+INSERT INTO `sys_oper_log` VALUES (374, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{\"categoryId\":2}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0}],\"size\":10,\"total\":2},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:00:34', 152);
+INSERT INTO `sys_oper_log` VALUES (375, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:00:36', 95);
+INSERT INTO `sys_oper_log` VALUES (376, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3ahk000VLvyW1pey1002NV983ahk01\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"token\":\"70d19063c9e04e8180fdf2cc42c79407\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:34:41', 1460);
+INSERT INTO `sys_oper_log` VALUES (377, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:34:42', 638);
+INSERT INTO `sys_oper_log` VALUES (378, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:34:46', 168);
+INSERT INTO `sys_oper_log` VALUES (379, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:38:47', 678);
+INSERT INTO `sys_oper_log` VALUES (380, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:40:05', 1570);
+INSERT INTO `sys_oper_log` VALUES (381, '更新用户信息', 0, 'com.lrs.core.app.controller.UserController.updateUserInfo()', 'POST', 1, '陆先生', '', '/app/user/updateUserInfo', '192.168.223.1', '内网IP', '{\"nickname\":\"陆先生\"}', '{\"code\":200,\"data\":true,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:40:47', 393);
+INSERT INTO `sys_oper_log` VALUES (382, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:41:12', 268);
+INSERT INTO `sys_oper_log` VALUES (383, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '陆先生', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":486},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:06', 4491);
+INSERT INTO `sys_oper_log` VALUES (384, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:07', 2850);
+INSERT INTO `sys_oper_log` VALUES (385, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:14', 495);
+INSERT INTO `sys_oper_log` VALUES (386, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":14}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:20', 428);
+INSERT INTO `sys_oper_log` VALUES (387, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '陆先生', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":997},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:24', 333);
+INSERT INTO `sys_oper_log` VALUES (388, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":1}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:44:25', 272);
+INSERT INTO `sys_oper_log` VALUES (389, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:46:30', 562);
+INSERT INTO `sys_oper_log` VALUES (390, '小程序-新增地址', 0, 'com.lrs.core.app.controller.AppAddressController.add()', 'POST', 1, '陆先生', '', '/app/address/add', '192.168.223.1', '内网IP', '{\"city\":\"市辖区\",\"detailAddress\":\"ssssss\",\"district\":\"东城区\",\"id\":6,\"isDefault\":0,\"phone\":\"18818864644\",\"province\":\"北京市\",\"realName\":\"aa\",\"tags\":\"家\",\"userId\":3}', '{\"code\":200,\"data\":{\"city\":\"市辖区\",\"detailAddress\":\"ssssss\",\"district\":\"东城区\",\"id\":6,\"isDefault\":0,\"phone\":\"18818864644\",\"province\":\"北京市\",\"realName\":\"aa\",\"tags\":\"家\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:47:54', 517);
+INSERT INTO `sys_oper_log` VALUES (391, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 14:50:03', 389);
+INSERT INTO `sys_oper_log` VALUES (392, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '陆先生', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0d3Iwo1w3sUjc73BW71w3MMYWj1Iwo1P\",\"nickname\":\"微信用户\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/450696759cd245708362dea114d17b9a.png\",\"nickname\":\"陆先生\",\"token\":\"da5617f05f414f8fa5b7e061e6e6190b\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:10:07', 2693);
+INSERT INTO `sys_oper_log` VALUES (393, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:10:09', 889);
+INSERT INTO `sys_oper_log` VALUES (394, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '192.168.223.1', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/abe2bb583b6d41ada2ecbe8f1c89cbaf.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"d8063bf94f414a70a181e39b8ecbcaa0\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:15:36', 750);
+INSERT INTO `sys_oper_log` VALUES (395, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:15:37', 1033);
+INSERT INTO `sys_oper_log` VALUES (396, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":486},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:15:56', 559);
+INSERT INTO `sys_oper_log` VALUES (397, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:15:57', 139);
+INSERT INTO `sys_oper_log` VALUES (398, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":14}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:15:59', 78);
+INSERT INTO `sys_oper_log` VALUES (399, '小程序-新增地址', 0, 'com.lrs.core.app.controller.AppAddressController.add()', 'POST', 1, '陆先生', '', '/app/address/add', '192.168.223.1', '内网IP', '{\"city\":\"百色市\",\"detailAddress\":\"111\",\"district\":\"右江区\",\"id\":7,\"isDefault\":0,\"phone\":\"111\",\"province\":\"广西壮族自治区\",\"realName\":\"11\",\"tags\":\"\",\"userId\":3}', '{\"code\":200,\"data\":{\"city\":\"百色市\",\"detailAddress\":\"111\",\"district\":\"右江区\",\"id\":7,\"isDefault\":0,\"phone\":\"111\",\"province\":\"广西壮族自治区\",\"realName\":\"11\",\"tags\":\"\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:17:37', 126);
+INSERT INTO `sys_oper_log` VALUES (400, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:40:21', 5705);
+INSERT INTO `sys_oper_log` VALUES (401, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:40:25', 485);
+INSERT INTO `sys_oper_log` VALUES (402, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 15:40:27', 1008);
+INSERT INTO `sys_oper_log` VALUES (403, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 16:57:40', 9030);
+INSERT INTO `sys_oper_log` VALUES (404, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":486},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 16:58:30', 894);
+INSERT INTO `sys_oper_log` VALUES (405, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:07:04', 709);
+INSERT INTO `sys_oper_log` VALUES (406, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:07:07', 161);
+INSERT INTO `sys_oper_log` VALUES (407, '小程序-删除购物车', 0, 'com.lrs.core.app.controller.AppCartController.delete()', 'POST', 1, '八角果园管理员', '', '/app/cart/delete', '192.168.223.1', '内网IP', '{\"cartId\":107}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:07:23', 170);
+INSERT INTO `sys_oper_log` VALUES (408, '小程序-删除购物车', 0, 'com.lrs.core.app.controller.AppCartController.delete()', 'POST', 1, '八角果园管理员', '', '/app/cart/delete', '192.168.223.1', '内网IP', '{\"cartId\":106}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:07:26', 68);
+INSERT INTO `sys_oper_log` VALUES (409, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '陆先生', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3hsj100QzrxW1NgP200HJkFk3hsj1r\",\"nickname\":\"微信用户\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/450696759cd245708362dea114d17b9a.png\",\"nickname\":\"陆先生\",\"token\":\"42364279eb1a4141be1b0abc4495517e\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:16', 3092);
+INSERT INTO `sys_oper_log` VALUES (410, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:16', 351);
+INSERT INTO `sys_oper_log` VALUES (411, '小程序-删除购物车', 0, 'com.lrs.core.app.controller.AppCartController.delete()', 'POST', 1, '陆先生', '', '/app/cart/delete', '192.168.223.1', '内网IP', '{\"cartId\":105}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:32', 53);
+INSERT INTO `sys_oper_log` VALUES (412, '小程序-删除购物车', 0, 'com.lrs.core.app.controller.AppCartController.delete()', 'POST', 1, '陆先生', '', '/app/cart/delete', '192.168.223.1', '内网IP', '{\"cartId\":104}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:35', 54);
+INSERT INTO `sys_oper_log` VALUES (413, '小程序-删除购物车', 0, 'com.lrs.core.app.controller.AppCartController.delete()', 'POST', 1, '陆先生', '', '/app/cart/delete', '192.168.223.1', '内网IP', '{\"cartId\":103}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:37', 84);
+INSERT INTO `sys_oper_log` VALUES (414, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:41', 83);
+INSERT INTO `sys_oper_log` VALUES (415, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '陆先生', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":789},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":600},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:43', 204);
+INSERT INTO `sys_oper_log` VALUES (416, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{\"categoryId\":1}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:50', 93);
+INSERT INTO `sys_oper_log` VALUES (417, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{\"categoryId\":2}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0}],\"size\":10,\"total\":2},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:51', 85);
+INSERT INTO `sys_oper_log` VALUES (418, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{\"categoryId\":1}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:52', 75);
+INSERT INTO `sys_oper_log` VALUES (419, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:54', 85);
+INSERT INTO `sys_oper_log` VALUES (420, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:19:55', 62);
+INSERT INTO `sys_oper_log` VALUES (421, '小程序-新增地址', 0, 'com.lrs.core.app.controller.AppAddressController.add()', 'POST', 1, '陆先生', '', '/app/address/add', '192.168.223.1', '内网IP', '{\"city\":\"市辖区\",\"detailAddress\":\"aaaa\",\"district\":\"东城区\",\"id\":8,\"isDefault\":0,\"phone\":\"18818864644\",\"province\":\"北京市\",\"realName\":\"abc\",\"tags\":\"家\",\"userId\":3}', '{\"code\":200,\"data\":{\"city\":\"市辖区\",\"detailAddress\":\"aaaa\",\"district\":\"东城区\",\"id\":8,\"isDefault\":0,\"phone\":\"18818864644\",\"province\":\"北京市\",\"realName\":\"abc\",\"tags\":\"家\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:20:34', 67);
+INSERT INTO `sys_oper_log` VALUES (422, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '陆先生', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0a3E2UGa1NvRRL000JGa1MWztF1E2UGc\",\"nickname\":\"微信用户\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/450696759cd245708362dea114d17b9a.png\",\"nickname\":\"陆先生\",\"token\":\"ce3ab4d463fb43d59307376f231b582d\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:23:09', 1299);
+INSERT INTO `sys_oper_log` VALUES (423, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:23:10', 440);
+INSERT INTO `sys_oper_log` VALUES (424, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:28:04', 1182);
+INSERT INTO `sys_oper_log` VALUES (425, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '陆先生', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0b3T8B100XkbxW19Zg1009ZYPR1T8B1N\",\"nickname\":\"微信用户\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/450696759cd245708362dea114d17b9a.png\",\"nickname\":\"陆先生\",\"token\":\"dc5784c6f0f8401ea514fe2a1e2d5b83\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:29:41', 995);
+INSERT INTO `sys_oper_log` VALUES (426, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:29:42', 310);
+INSERT INTO `sys_oper_log` VALUES (427, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '陆先生', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":486},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:19', 75);
+INSERT INTO `sys_oper_log` VALUES (428, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:21', 124);
+INSERT INTO `sys_oper_log` VALUES (429, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:29', 176);
+INSERT INTO `sys_oper_log` VALUES (430, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '陆先生', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":789},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":600},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:31', 391);
+INSERT INTO `sys_oper_log` VALUES (431, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":10}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:32', 53);
+INSERT INTO `sys_oper_log` VALUES (432, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '陆先生', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":11}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:30:34', 44);
+INSERT INTO `sys_oper_log` VALUES (433, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:31:37', 115);
+INSERT INTO `sys_oper_log` VALUES (434, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":486},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:31:38', 40);
+INSERT INTO `sys_oper_log` VALUES (435, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":14}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:31:40', 67);
+INSERT INTO `sys_oper_log` VALUES (436, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:31:41', 45);
+INSERT INTO `sys_oper_log` VALUES (437, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 17:37:47', 7669);
+INSERT INTO `sys_oper_log` VALUES (438, '小程序登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '陆先生', '', '/app/user/appletLogin', '192.168.223.1', '内网IP', '{\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132\",\"city\":\"\",\"code\":\"0b3yrgHa1qUcSL0KqmJa1X75MJ3yrgHQ\",\"nickname\":\"微信用户\",\"province\":\"\",\"sex\":0}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/450696759cd245708362dea114d17b9a.png\",\"nickname\":\"陆先生\",\"token\":\"f41b71ea3f9d4f19b6b31908f9824a1c\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 18:50:58', 2294);
+INSERT INTO `sys_oper_log` VALUES (439, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 18:50:59', 465);
+INSERT INTO `sys_oper_log` VALUES (440, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '陆先生', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 18:54:38', 3971);
+INSERT INTO `sys_oper_log` VALUES (441, '小程序-新增地址', 0, 'com.lrs.core.app.controller.AppAddressController.add()', 'POST', 1, '陆先生', '', '/app/address/add', '192.168.223.1', '内网IP', '{\"city\":\"百色市\",\"detailAddress\":\"站前大道108号\",\"district\":\"右江区\",\"id\":9,\"isDefault\":1,\"phone\":\"18818868688\",\"province\":\"广西壮族自治区\",\"realName\":\"陆先生\",\"tags\":\"家\",\"userId\":3}', '{\"code\":200,\"data\":{\"city\":\"百色市\",\"detailAddress\":\"站前大道108号\",\"district\":\"右江区\",\"id\":9,\"isDefault\":1,\"phone\":\"18818868688\",\"province\":\"广西壮族自治区\",\"realName\":\"陆先生\",\"tags\":\"家\",\"userId\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 18:59:09', 2082);
+INSERT INTO `sys_oper_log` VALUES (442, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '陆先生', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":9,\"merchantId\":1,\"remark\":\"啊啊啊啊\"}', '{\"code\":200,\"data\":{\"orderId\":1001,\"orderNo\":\"2026061318591963880000\",\"payAmount\":74.80,\"merchantCount\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 18:59:21', 1714);
+INSERT INTO `sys_oper_log` VALUES (443, 'H5登录', 0, 'com.lrs.core.app.controller.UserController.login()', 'POST', 1, '八角果园管理员', '', '/app/user/login', '192.168.223.1', '内网IP', '{\"account\":\"18818868688\",\"actionType\":\"login\",\"code\":\"111111\"}', '{\"code\":200,\"data\":{\"avatarUrl\":\"/show/avatar/abe2bb583b6d41ada2ecbe8f1c89cbaf.png\",\"nickname\":\"八角果园管理员\",\"phone\":\"18818868688\",\"token\":\"ef9ce2f504714ee09a103909fbde2f4c\",\"userId\":1,\"username\":\"admin\"},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:00:43', 858);
+INSERT INTO `sys_oper_log` VALUES (444, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:00:44', 581);
+INSERT INTO `sys_oper_log` VALUES (445, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:04:50', 996);
+INSERT INTO `sys_oper_log` VALUES (446, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:05:10', 973);
+INSERT INTO `sys_oper_log` VALUES (447, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":485},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:05:14', 1009);
+INSERT INTO `sys_oper_log` VALUES (448, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":997},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:07:56', 232);
+INSERT INTO `sys_oper_log` VALUES (449, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:47:51', 604);
+INSERT INTO `sys_oper_log` VALUES (450, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:47:53', 166);
+INSERT INTO `sys_oper_log` VALUES (451, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":485},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":398},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:48:15', 304);
+INSERT INTO `sys_oper_log` VALUES (452, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:48:16', 100);
+INSERT INTO `sys_oper_log` VALUES (453, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":14}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:48:18', 55);
+INSERT INTO `sys_oper_log` VALUES (454, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色田阳自家八角种植园\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":788},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":599},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:48:20', 70);
+INSERT INTO `sys_oper_log` VALUES (455, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":10}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:48:22', 63);
+INSERT INTO `sys_oper_log` VALUES (456, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:58:09', 1210);
+INSERT INTO `sys_oper_log` VALUES (457, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:58:10', 198);
+INSERT INTO `sys_oper_log` VALUES (458, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 19:58:11', 339);
+INSERT INTO `sys_oper_log` VALUES (459, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":3,\"cartIds\":[113,112,111],\"merchantId\":1,\"remark\":\"\"}', '{\"code\":200,\"data\":{\"orderId\":1002,\"orderNo\":\"2026061320005889480000\",\"payAmount\":147.90,\"merchantCount\":2},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:01:00', 1829);
+INSERT INTO `sys_oper_log` VALUES (460, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:46:56', 2545);
+INSERT INTO `sys_oper_log` VALUES (461, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:46:58', 100);
+INSERT INTO `sys_oper_log` VALUES (462, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:47:06', 134);
+INSERT INTO `sys_oper_log` VALUES (463, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:47:07', 72);
+INSERT INTO `sys_oper_log` VALUES (464, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":483},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:47:12', 220);
+INSERT INTO `sys_oper_log` VALUES (465, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":997},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:47:47', 52);
+INSERT INTO `sys_oper_log` VALUES (466, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":1}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:47:48', 77);
+INSERT INTO `sys_oper_log` VALUES (467, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:48:03', 82);
+INSERT INTO `sys_oper_log` VALUES (468, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:51:02', 1224);
+INSERT INTO `sys_oper_log` VALUES (469, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:51:17', 81);
+INSERT INTO `sys_oper_log` VALUES (470, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":997},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 20:51:31', 163);
+INSERT INTO `sys_oper_log` VALUES (471, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":1}', '{\"code\":200,\"data\":{\"categoryId\":1,\"categoryName\":\"八角干货\",\"description\":\"<p>产地：广西百色田阳</p><p>工艺：自然晾晒，无硫烘干</p><p>等级：足干大红八角</p>\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"imageList\":[\"/show/product/1781324964751.png\",\"/show/product/1781324969434.png\",\"/show/product/1781324973761.png\",\"/show/product/1781324978773.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"传统种植 自然晾晒\",\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0,\"skuList\":[{\"id\":1,\"originalPrice\":15.00,\"price\":9.90,\"sales\":0,\"specName\":\"50g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"50g\\\"}\",\"stock\":997},{\"id\":2,\"originalPrice\":59.00,\"price\":45.00,\"sales\":0,\"specName\":\"500g/袋\",\"specValues\":\"{\\\"包装\\\": \\\"食品袋\\\", \\\"重量\\\": \\\"500g\\\"}\",\"stock\":500},{\"id\":3,\"originalPrice\":880.00,\"price\":780.00,\"sales\":0,\"specName\":\"10kg/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"大小\\\": \\\"大果\\\", \\\"重量\\\": \\\"10kg\\\"}\",\"stock\":100}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:00:51', 2439);
+INSERT INTO `sys_oper_log` VALUES (472, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:01:32', 1069);
+INSERT INTO `sys_oper_log` VALUES (473, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":483},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:01:33', 98);
+INSERT INTO `sys_oper_log` VALUES (474, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:01:45', 126);
+INSERT INTO `sys_oper_log` VALUES (475, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":483},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:02:08', 79);
+INSERT INTO `sys_oper_log` VALUES (476, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":483},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:03:35', 325);
+INSERT INTO `sys_oper_log` VALUES (477, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":483},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:03:35', 93);
+INSERT INTO `sys_oper_log` VALUES (478, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:12:48', 438);
+INSERT INTO `sys_oper_log` VALUES (479, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":787},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":599},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:12:53', 288);
+INSERT INTO `sys_oper_log` VALUES (480, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":787},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":599},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:13:05', 79);
+INSERT INTO `sys_oper_log` VALUES (481, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":3,\"merchantId\":1,\"remark\":\"22222\"}', '{\"code\":200,\"data\":{\"orderId\":1003,\"orderNo\":\"2026061321145633580000\",\"payAmount\":34.90,\"merchantCount\":2},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:14:57', 1516);
+INSERT INTO `sys_oper_log` VALUES (482, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":787},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":599},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:17', 2377);
+INSERT INTO `sys_oper_log` VALUES (483, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":3,\"merchantId\":1,\"quantity\":1,\"remark\":\"\",\"skuId\":10}', '{\"code\":200,\"data\":{\"orderId\":1004,\"orderNo\":\"2026061321442492880000\",\"payAmount\":19.90,\"merchantCount\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:25', 310);
+INSERT INTO `sys_oper_log` VALUES (484, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":1,\"pages\":0,\"records\":[{\"categoryName\":\"时令水果\",\"id\":4,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"maxPrice\":72.00,\"minPrice\":25.00,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":38.00,\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0},{\"categoryName\":\"时令水果\",\"id\":3,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"maxPrice\":55.00,\"minPrice\":19.90,\"originPlace\":\"广西南宁市武鸣区\",\"originalPrice\":29.90,\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0},{\"categoryName\":\"八角干货\",\"dryingLevel\":\"足干9.5成\",\"id\":1,\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324955459.png\",\"maxPrice\":780.00,\"minPrice\":9.90,\"originPlace\":\"广西百色市田阳区\",\"originalPrice\":15.00,\"productName\":\"百色无硫大红八角\",\"productTitle\":\"自家果园足干无硫 香味浓郁\",\"sales\":0}],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:34', 440);
+INSERT INTO `sys_oper_log` VALUES (485, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":482},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":396},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:35', 86);
+INSERT INTO `sys_oper_log` VALUES (486, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":13}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:36', 64);
+INSERT INTO `sys_oper_log` VALUES (487, '小程序-加入购物车', 0, 'com.lrs.core.app.controller.AppCartController.add()', 'POST', 1, '八角果园管理员', '', '/app/cart/add', '192.168.223.1', '内网IP', '{\"quantity\":1,\"skuId\":14}', '{\"code\":200,\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:39', 93);
+INSERT INTO `sys_oper_log` VALUES (488, '小程序-提交订单', 0, 'com.lrs.core.app.controller.AppOrderController.submit()', 'POST', 1, '八角果园管理员', '', '/app/order/submit', '192.168.223.1', '内网IP', '{\"addressId\":3,\"cartIds\":[117,116],\"merchantId\":2,\"remark\":\"\"}', '{\"code\":200,\"data\":{\"orderId\":1005,\"orderNo\":\"2026061321444457880000\",\"payAmount\":64.00,\"merchantCount\":1},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:45', 281);
+INSERT INTO `sys_oper_log` VALUES (489, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":3}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西南宁武鸣</p><p>品种：沃柑（以色列引进改良品种）</p><p>特点：皮薄易剥、果肉细嫩、汁多味甜、无渣</p><p>规格：3斤/5斤/10斤可选</p><p>售后：坏果包赔，收到有坏果拍照联系客服</p>\",\"id\":3,\"imageList\":[\"/show/product/1781324918078.png\",\"/show/product/1781324922556.png\",\"/show/product/1781324930524.png\",\"/show/product/1781324937016.png\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324906076.png\",\"merchantId\":1,\"merchantName\":\"百色农产品供应链\",\"merchantOriginPlace\":\"广西百色市右江区\",\"originPlace\":\"广西南宁市武鸣区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟不打蜡\",\"productName\":\"广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季广西百色正宗沃柑 新鲜当季蜜柑桔子现摘水果 新鲜当季\",\"productTitle\":\"皮薄多汁 甜度高 新鲜现摘 果园直发\",\"sales\":0,\"skuList\":[{\"id\":10,\"originalPrice\":29.90,\"price\":19.90,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":786},{\"id\":11,\"originalPrice\":45.00,\"price\":29.90,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":599},{\"id\":12,\"originalPrice\":79.00,\"price\":55.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":299}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:44:55', 120);
+INSERT INTO `sys_oper_log` VALUES (490, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":481},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":395},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:45:01', 52);
+INSERT INTO `sys_oper_log` VALUES (491, '小程序-查看商品详情', 0, 'com.lrs.core.app.controller.AppProductController.detail()', 'POST', 1, '八角果园管理员', '', '/app/product/detail', '192.168.223.1', '内网IP', '{\"productId\":4}', '{\"code\":200,\"data\":{\"categoryId\":2,\"categoryName\":\"时令水果\",\"description\":\"<p>产地：广西百色田阳</p><p>品种：台农一号芒</p><p>特点：果肉金黄、香甜软糯、核薄如纸、纤维极少</p><p>规格：3斤/5斤/10斤可选</p><p>提示：收到后如未全熟，放2-3天软了更甜</p><p>售后：坏果包赔，拍照联系客服秒退款</p>\",\"id\":4,\"imageList\":[\"/show/product/1781324811315.jpg\",\"/show/product/1781324823112.jpg\",\"/show/product/1781324828748.jpg\",\"/show/product/1781324834043.png\",\"/show/product/1781324882916.jpg\"],\"isSulfurFree\":true,\"mainImage\":\"/show/product/1781324790300.png\",\"merchantId\":2,\"merchantName\":\"百色田阳芒果农场\",\"merchantOriginPlace\":\"广西百色市田阳区\",\"originPlace\":\"广西百色市田阳区\",\"plantingProcess\":\"山地种植 自然成熟 不催熟\",\"productName\":\"百色台农芒果\",\"productTitle\":\"香甜软糯 核薄肉厚 现摘现发 新鲜到家\",\"sales\":0,\"skuList\":[{\"id\":13,\"originalPrice\":38.00,\"price\":25.00,\"sales\":0,\"specName\":\"3斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"3斤装\\\"}\",\"stock\":481},{\"id\":14,\"originalPrice\":58.00,\"price\":39.00,\"sales\":0,\"specName\":\"5斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"5斤装\\\"}\",\"stock\":395},{\"id\":15,\"originalPrice\":98.00,\"price\":72.00,\"sales\":0,\"specName\":\"10斤装/箱\",\"specValues\":\"{\\\"包装\\\": \\\"纸箱\\\", \\\"规格\\\": \\\"10斤装\\\"}\",\"stock\":200}]},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:45:03', 47);
+INSERT INTO `sys_oper_log` VALUES (492, '小程序-浏览商品列表', 0, 'com.lrs.core.app.controller.AppProductController.list()', 'POST', 1, '八角果园管理员', '', '/app/product/list', '192.168.223.1', '内网IP', '{}', '{\"code\":200,\"data\":{\"current\":2,\"pages\":1,\"records\":[],\"size\":10,\"total\":3},\"msg\":\"操作成功\"}', 0, '', '2026-06-13 21:45:16', 72);
 
 -- ----------------------------
 -- Table structure for sys_role
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `role_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '角色名称',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '角色备注',
-  `create_by` bigint NULL DEFAULT NULL,
+  `create_by` bigint(20) NULL DEFAULT NULL,
   `create_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role
@@ -49053,10 +49308,10 @@ INSERT INTO `sys_role` VALUES (3, 'test', 'test', 1, '2026-04-14 14:57:16');
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role_menu`;
 CREATE TABLE `sys_role_menu`  (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `menu_id` bigint NULL DEFAULT NULL,
-  `role_id` bigint NULL DEFAULT NULL,
-  `create_by` bigint NULL DEFAULT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `menu_id` bigint(20) NULL DEFAULT NULL,
+  `role_id` bigint(20) NULL DEFAULT NULL,
+  `create_by` bigint(20) NULL DEFAULT NULL,
   `create_time` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 100 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = DYNAMIC;
@@ -49169,18 +49424,18 @@ INSERT INTO `sys_role_menu` VALUES (99, 33, 4, 1, '2026-04-16 15:55:52');
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user`  (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `nick_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '昵称',
   `username` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '用户名',
   `password` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '密码',
   `salt` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '密码随机盐',
   `avatar` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '用户头像',
-  `status` int NULL DEFAULT 1 COMMENT '用户状态：1-正常，2-已锁定',
-  `update_by` bigint NULL DEFAULT NULL COMMENT '更新人',
+  `status` int(11) NULL DEFAULT 1 COMMENT '用户状态：1-正常，2-已锁定',
+  `update_by` bigint(20) NULL DEFAULT NULL COMMENT '更新人',
   `login_date` datetime NULL DEFAULT NULL COMMENT '最后登录时间',
   `login_ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '最后登录IP',
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
-  `create_by` bigint NULL DEFAULT NULL COMMENT '创建人',
+  `create_by` bigint(20) NULL DEFAULT NULL COMMENT '创建人',
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '系统用户' ROW_FORMAT = DYNAMIC;
@@ -49188,7 +49443,7 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, '超级管理员 ', 'admin', '4a5a3422434efd5f7f432cf844df07f5', '49d11245f5c8c8736b6ad62876075c78', '/show/20260423/1776932812430.jpg', 1, 1, '2026-06-12 17:36:19', '10.1.160.196', '2026-06-12 17:36:20', NULL, '2023-12-02 22:08:10');
+INSERT INTO `sys_user` VALUES (1, '超级管理员 ', 'admin', '4a5a3422434efd5f7f432cf844df07f5', '49d11245f5c8c8736b6ad62876075c78', '/show/20260423/1776932812430.jpg', 1, 1, '2026-06-13 19:08:20', '192.168.223.1', '2026-06-13 19:08:20', NULL, '2023-12-02 22:08:10');
 INSERT INTO `sys_user` VALUES (7, 'test', 'test', '49d11245f5c8c8736b6ad62876075c78', '653ccf53a4cd47029a308ac2a541ba00', '/show/20260414/1776148072877.png', 1, 7, '2026-04-23 14:08:24', '10.1.160.196', '2026-04-23 14:08:24', 1, '2023-12-02 22:20:07');
 INSERT INTO `sys_user` VALUES (9, 'abc', 'abc', 'a8fbcd5503bc21d347a8dc4956f15827', 'a0ce1b00ec224c9c8b384fdfaf865967', '/show/20231209/1702097065890.png', 1, 1, NULL, NULL, '2023-12-09 12:44:28', 1, '2023-12-09 12:33:43');
 INSERT INTO `sys_user` VALUES (11, 'aaaaa', 'aaaaa', 'e34d8eaf1604bbffdc88540ee1e43c53', '58d5ee7836654e38a868b536ecc7c28c', NULL, 1, 11, '2026-04-14 14:57:39', '10.1.160.196', '2026-04-14 14:57:39', 1, '2026-04-14 14:56:40');
@@ -49208,7 +49463,7 @@ CREATE TABLE `sys_user_online`  (
   `status` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT '' COMMENT '在线状态on_line在线off_line离线',
   `start_timestamp` datetime NULL DEFAULT NULL COMMENT 'session创建时间',
   `last_access_time` datetime NULL DEFAULT NULL COMMENT 'session最后访问时间',
-  `expire_time` int NULL DEFAULT 0 COMMENT '超时时间，单位为分钟',
+  `expire_time` int(11) NULL DEFAULT 0 COMMENT '超时时间，单位为分钟',
   PRIMARY KEY (`sessionId`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = '在线用户记录' ROW_FORMAT = DYNAMIC;
 
@@ -49221,9 +49476,9 @@ CREATE TABLE `sys_user_online`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_role`;
 CREATE TABLE `sys_user_role`  (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` bigint NULL DEFAULT NULL,
-  `role_id` int NULL DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NULL DEFAULT NULL,
+  `role_id` int(11) NULL DEFAULT NULL,
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;

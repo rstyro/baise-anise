@@ -178,11 +178,12 @@
 	</view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { userApi } from '@/api/userApi'
 import { useUserStore } from '@/stores/user'
 import { baseUrl } from '@/env'
+import { getImageUrl } from '@/utils/image'
 
 const userStore = useUserStore()
 
@@ -213,16 +214,8 @@ const sexMap = {
 	2: '女'
 }
 
-// 头像地址，拼接
-const displayAvatarUrl = computed(() => {
-	if (!userInfo.avatarUrl) {
-		return ''
-	}
-	if (/^https?:\/\//.test(userInfo.avatarUrl)) {
-		return userInfo.avatarUrl
-	}
-	return uni.$gconst.IMAGES.BASE_URL + userInfo.avatarUrl
-})
+// 头像地址，使用统一的 getImageUrl 方法
+const displayAvatarUrl = computed(() => getImageUrl(userInfo.avatarUrl))
 
 onMounted(async () => {
 	await loadUserInfo()

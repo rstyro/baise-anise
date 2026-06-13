@@ -11,6 +11,26 @@ import java.math.BigDecimal;
 public class OrderGoodsVo {
 
     /**
+     * 订单项ID
+     */
+    private Long id;
+
+    /**
+     * 订单ID
+     */
+    private Long orderId;
+
+    /**
+     * 商家ID
+     */
+    private Long merchantId;
+
+    /**
+     * 商家名称
+     */
+    private String merchantName;
+
+    /**
      * 商品图片
      */
     private String goodsUrl;

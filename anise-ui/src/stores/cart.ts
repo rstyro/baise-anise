@@ -9,9 +9,45 @@ interface CartItem {
   quantity: number
 }
 
+// 立即购买商品类型
+export interface DirectBuyGoods {
+  productId: number
+  productName: string
+  mainImage: string
+  merchantId: number
+  merchantName: string
+  skuId: number
+  specName: string
+  price: number
+  quantity: number
+}
+
 export const useCartStore = defineStore('cart', () => {
   // State: 购物车商品列表
   const items = ref<CartItem[]>([])
+
+  // State: 立即购买商品（临时）
+  const directBuyGoods = ref<DirectBuyGoods | null>(null)
+
+  // Getter: 是否有立即购买商品
+  const hasDirectBuyGoods = computed(() => directBuyGoods.value !== null)
+
+  // Action: 设置立即购买商品
+  function setDirectBuyGoods(goods: DirectBuyGoods) {
+    directBuyGoods.value = goods
+  }
+
+  // Action: 获取立即购买商品并清除
+  function getAndClearDirectBuyGoods(): DirectBuyGoods | null {
+    const goods = directBuyGoods.value
+    directBuyGoods.value = null
+    return goods
+  }
+
+  // Action: 清除立即购买商品
+  function clearDirectBuyGoods() {
+    directBuyGoods.value = null
+  }
 
   // Getter: 商品总数量
   const totalCount = computed(() => {
@@ -75,12 +111,17 @@ export const useCartStore = defineStore('cart', () => {
 
   return {
     items,
+    directBuyGoods,
+    hasDirectBuyGoods,
     totalCount,
     totalPrice,
     addItem,
     increase,
     decrease,
     removeItem,
-    clear
+    clear,
+    setDirectBuyGoods,
+    getAndClearDirectBuyGoods,
+    clearDirectBuyGoods
   }
 })

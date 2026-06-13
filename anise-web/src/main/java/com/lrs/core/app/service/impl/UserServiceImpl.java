@@ -79,7 +79,7 @@ public class UserServiceImpl implements IUserService {
             appUser = new AppUser();
             appUser.setOpenid(openId);
             appUser.setUnionid(accessToken.getUnionId());
-            appUser.setNickname(dto.getNickName());
+            appUser.setNickname(dto.getNickname());
             appUser.setAvatarUrl(dto.getAvatarUrl());
             miniUserService.save(appUser);
         }
@@ -181,8 +181,11 @@ public class UserServiceImpl implements IUserService {
             // 更新用户头像
             Long userId = SecurityContextHolder.getUserId();
             String newAvatarUrl = "/show" + folder + fileName;
-            miniUserService.updateById(new AppUser().setId(userId).setAvatarUrl(newAvatarUrl));
-            StpKit.APP.getSession().delete(Const.SessionKey.SESSION_USER);
+            AppUser updateUser = new AppUser().setId(userId).setAvatarUrl(newAvatarUrl);
+            miniUserService.updateById(updateUser);
+            // 刷新 session 中的用户信息，而不是直接删除
+            AppUser user = miniUserService.getById(userId);
+            reloadUserInfo(user);
             return newAvatarUrl;
         } catch (IOException e) {
             log.error("上传头像失败，err={}", e.getMessage(), e);

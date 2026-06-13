@@ -2,4 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lrs.core.business.mapper.BizCartMapper">
 
+    <resultMap id="CartItemVoResultMap" type="com.lrs.core.app.dto.cart.CartItemVo">
+        <id column="cart_id" property="id"/>
+        <result column="merchant_id" property="merchantId"/>
+        <result column="merchant_name" property="merchantName"/>
+        <result column="product_id" property="productId"/>
+        <result column="sku_id" property="skuId"/>
+        <result column="product_name" property="productName"/>
+        <result column="main_image" property="mainImage"/>
+        <result column="spec_name" property="specName"/>
+        <result column="price" property="price"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="quantity" property="quantity"/>
+        <result column="stock" property="stock"/>
+        <result column="selected" property="selected"/>
+    </resultMap>
+
+    <select id="selectCartListWithDetails" resultMap="CartItemVoResultMap">
+        SELECT
+            c.id AS cart_id,
+            COALESCE(p.merchant_id, c.merchant_id, 1) AS merchant_id,
+            COALESCE(m.merchant_name, '默认店铺') AS merchant_name,
+            c.product_id,
+            c.sku_id,
+            p.product_name,
+            p.main_image,
+            s.spec_name,
+            s.price,
+            s.original_price,
+            c.quantity,
+            s.stock,
+            c.selected
+        FROM biz_cart c
+        LEFT JOIN biz_product p ON c.product_id = p.id
+        LEFT JOIN biz_product_sku s ON c.sku_id = s.id
+        LEFT JOIN biz_merchant m ON COALESCE(p.merchant_id, c.merchant_id) = m.id
+        WHERE c.user_id = #{userId}
+        ORDER BY c.id DESC
+    </select>
+
 </mapper>

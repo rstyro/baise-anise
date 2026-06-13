@@ -1,5 +1,6 @@
 package com.lrs.core.app.vo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -64,10 +65,10 @@ public class AfterSaleListVo {
     /**
      * 规格名称
      */
-    private String specName;
+    private String productName;
 
     /**
-     * 商品主图
+     * 商品主图快照
      */
-    private String mainImage;
+    private String productImage;
 }

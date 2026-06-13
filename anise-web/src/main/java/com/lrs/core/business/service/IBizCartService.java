@@ -1,7 +1,10 @@
 package com.lrs.core.business.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lrs.core.app.dto.cart.CartItemVo;
 import com.lrs.core.business.entity.BizCart;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,5 +16,6 @@ import com.lrs.core.business.entity.BizCart;
  */
 public interface IBizCartService extends IService<BizCart> {
 
+    List<CartItemVo> listWithDetails(Long userId);
 }
 
