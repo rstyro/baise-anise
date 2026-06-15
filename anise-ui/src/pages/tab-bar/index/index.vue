@@ -1,9 +1,7 @@
 <template>
   <view class="page">
-    <!-- 顶部Banner轮播 -->
     <u-swiper v-if="bannerList.length" :list="bannerList" name="imageUrl" indicator indicatorActiveColor="#4caf50" radius="0" height="320" />
 
-    <!-- 分类导航 -->
     <view class="category-section">
       <scroll-view scroll-x class="cat-scroll" :show-scrollbar="false">
         <view class="cat-row">
@@ -35,7 +33,6 @@
       </scroll-view>
     </view>
 
-    <!-- 搜索栏 -->
     <view class="search-bar">
       <u-search
         v-model="keyword"
@@ -50,7 +47,6 @@
       />
     </view>
 
-    <!-- 商品瀑布流 -->
     <u-waterfall ref="waterfallRef" v-model="products" idKey="id" :addTime="100">
       <template #left="{ leftList }">
         <view class="wf-card" v-for="item in leftList" :key="item.id" @click="goDetail(item.id)">
@@ -58,9 +54,8 @@
           <view class="wf-body">
             <view class="wf-name">{{ item.productName }}</view>
             <view class="wf-tags">
-              <u-tag v-if="item.isSulfurFree" text="无硫" type="success" size="mini" />
-              <u-tag v-if="item.dryingLevel" :text="item.dryingLevel" type="info" size="mini" plain />
-              <u-tag v-if="item.originPlace" :text="item.originPlace" type="warning" size="mini" plain />
+              <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
+              <u-tag v-for="attr in getDisplayAttrs(item)" :key="attr.attrId" :text="attr.attrValue" type="info" size="mini" plain />
             </view>
             <view class="wf-price-row">
               <text class="wf-price">¥{{ item.minPrice }}</text>
@@ -76,9 +71,8 @@
           <view class="wf-body">
             <view class="wf-name">{{ item.productName }}</view>
             <view class="wf-tags">
-              <u-tag v-if="item.isSulfurFree" text="无硫" type="success" size="mini" />
-              <u-tag v-if="item.dryingLevel" :text="item.dryingLevel" type="info" size="mini" plain />
-              <u-tag v-if="item.originPlace" :text="item.originPlace" type="warning" size="mini" plain />
+              <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
+              <u-tag v-for="attr in getDisplayAttrs(item)" :key="attr.attrId" :text="attr.attrValue" type="info" size="mini" plain />
             </view>
             <view class="wf-price-row">
               <text class="wf-price">¥{{ item.minPrice }}</text>
@@ -104,10 +98,8 @@ import { onReachBottom, onPullDownRefresh, onShow } from '@dcloudio/uni-app'
 import { productApi } from '@/api/productApi'
 import { getImageUrl } from '@/utils/image'
 
-// Banner
 const bannerList = ref([])
 
-// 加载Banner
 const loadBanners = async () => {
   try {
     const list = await productApi.bannerList() || []
@@ -115,23 +107,19 @@ const loadBanners = async () => {
   } catch (e) { console.error('Banner加载失败', e) }
 }
 
-// 分类
 const categories = ref([])
 const activeCatId = ref(0)
 
-// 搜索
 const keyword = ref('')
 
-// 商品
 const products = ref([])
 const waterfallRef = ref()
 const currentPage = ref(1)
 const totalPages = ref(0)
 const loading = ref(false)
 const loadStatus = ref('loadmore')
-const PAGE_SIZE = 10  // 每页条数，与后端 DEFAULT_PAGE_SIZE 一致
+const PAGE_SIZE = 10
 
-// 分类列表（含"全部"）
 const categoryList = computed(() => {
   const iconMap = { '八角干货': 'star-fill', '花椒香料': 'fire', '时令水果': 'gift' }
   const list = categories.value.map((c) => ({
@@ -141,12 +129,10 @@ const categoryList = computed(() => {
   return [{ id: 0, categoryName: '全部', icon: 'home' }, ...list]
 })
 
-// 加载分类
 const loadCategories = async () => {
   try { categories.value = await productApi.categoryList() || [] } catch (e) { console.error(e) }
 }
 
-// 加载商品
 const loadProducts = async (isRefresh = false) => {
   if (loading.value) return
   if (!isRefresh && totalPages.value > 0 && currentPage.value >= totalPages.value ) return
@@ -176,6 +162,14 @@ const loadProducts = async (isRefresh = false) => {
   } finally {
     loading.value = false
   }
+}
+
+const getSulfurFreeAttr = (item) => {
+  return item.spuAttrs?.some(attr => attr.attrName === '无硫' && attr.attrValue === '是')
+}
+
+const getDisplayAttrs = (item) => {
+  return item.spuAttrs?.filter(attr => attr.attrName !== '无硫').slice(0, 2) || []
 }
 
 const switchCategory = (catId) => {
@@ -209,7 +203,6 @@ onPullDownRefresh(() => {
   loadProducts(true).finally(() => uni.stopPullDownRefresh())
 })
 
-// 初始化加载
 const init = () => {
   loadBanners()
   loadCategories()
@@ -219,11 +212,9 @@ const init = () => {
 onMounted(init)
 
 onShow(() => {
-  // 检查是否需要刷新（登录后返回场景）
   const app = getApp() as any
   if (app.globalData?.refreshPages?.index) {
     init()
-    // 重置刷新标记
     app.globalData.refreshPages.index = false
   }
 })

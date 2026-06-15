@@ -45,6 +45,10 @@ public class BizCart implements Serializable {
     @TableField("sku_id")
     private Long skuId;
 
+    /** SKU规格信息（JSON格式） */
+    @TableField("sku_specs")
+    private String skuSpecs;
+
     /** 购买数量 */
     @TableField("quantity")
     private Integer quantity;

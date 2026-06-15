@@ -18,7 +18,7 @@
         <image :src="getImageUrl(item.mainImage)" class="goods-img" mode="aspectFill" />
         <view class="goods-info">
           <view class="goods-name">{{ item.productName }}</view>
-          <view class="goods-spec">{{ item.specName }}</view>
+          <view class="goods-spec">{{ item.skuSpecs ? formatSkuSpecs(item.skuSpecs) : item.specName }}</view>
         </view>
         <view class="goods-right">
           <text class="goods-price">¥{{ item.price }}</text>
@@ -88,6 +88,18 @@ onShow(() => {
   }
 })
 const totalAmount = computed(() => goodsList.value.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(2))
+
+// 解析 skuSpecs JSON，提取 value 用逗号隔开
+const formatSkuSpecs = (skuSpecs: string): string => {
+  if (!skuSpecs || skuSpecs === '{}') return ''
+  try {
+    const obj = JSON.parse(skuSpecs)
+    const values = Object.values(obj).filter((v: any) => v !== null && v !== undefined && v !== '')
+    return values.join(', ')
+  } catch (e) {
+    return skuSpecs
+  }
+}
 
 onLoad(async (options: { cartIds?: string } | any) => {
   console.log("options:", options)

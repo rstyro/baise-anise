@@ -14,4 +14,8 @@ public class BaseDto {
     private String keyword;
 
     private List<Long> ids;
+
+    private Long attrId;
+
+    private Long productId;
 }

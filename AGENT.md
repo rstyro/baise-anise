@@ -86,6 +86,52 @@
 - 统一的响应格式（R<T>）
 - 必要的参数校验
 
+## 工具类使用规范
+
+### uview-pro 时间工具类
+
+1. **优先使用 uview-pro 的时间工具类**
+   - 时间格式化应优先使用 `$u.timeFormat()` 方法
+   - 文档参考：https://uviewpro.cn/zh/tools/time.html
+   - `$u` 已配置自动导入，无需手动引入
+   - 自动导入配置位置：`anise-ui/vite.config.ts` 的 AutoImport 插件
+
+2. **时间格式化示例**
+   ```javascript
+   // 在模板中使用
+   <view>{{ $u.timeFormat(timestamp, 'yyyy年mm月dd日') }}</view>
+   
+   // 在脚本中使用
+   import { $u } from 'uview-pro'
+   const time = $u.timeFormat(timestamp, 'yyyy-mm-dd hh:MM:ss')
+   ```
+
+3. **格式化模板说明**
+   | 格式 | 说明 | 示例 |
+   |------|------|------|
+   | yyyy | 四位年份 | 2024 |
+   | mm | 两位月份 | 01-12 |
+   | dd | 两位日期 | 01-31 |
+   | hh | 两位小时 | 00-23 |
+   | MM | 两位分钟 | 00-59 |
+   | ss | 两位秒数 | 00-59 |
+
+4. **优势**
+   - 自动处理日期对象、时间戳、ISO字符串等多种输入格式
+   - 内置补零处理，无需手动编写 pad 函数
+   - 统一的时间处理方式，减少代码重复
+
+5. **代码对比**
+   - 优化前（手动实现）：
+   ```javascript
+   const pad = (n) => (n < 10 ? '0' + n : n)
+   const startStr = `${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+   ```
+   - 优化后（使用 uview-pro）：
+   ```javascript
+   const startStr = $u.timeFormat(date, 'mm月dd日 hh:MM:ss')
+   ```
+
 ## 安全规范
 
 - 用户敏感操作需登录验证

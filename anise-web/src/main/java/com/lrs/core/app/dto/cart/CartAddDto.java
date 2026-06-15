@@ -19,4 +19,7 @@ public class CartAddDto {
     /** 数量，默认1 */
     private Integer quantity;
 
+    /** SKU规格信息（JSON格式） */
+    private String skuSpecs;
+
 }

@@ -22,7 +22,7 @@
             COALESCE(m.merchant_name, '默认店铺') AS merchant_name,
             oi.product_image AS goods_url,
             oi.product_name AS title,
-            oi.sku_name AS type,
+            oi.sku_specs AS type,
             oi.price,
             oi.quantity AS number
         FROM biz_order_item oi

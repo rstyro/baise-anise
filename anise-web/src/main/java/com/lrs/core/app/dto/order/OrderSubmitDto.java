@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 小程序 - 订单提交参数
@@ -22,10 +23,7 @@ public class OrderSubmitDto {
     private String remark;
 
     /** 购物车项ID列表（从购物车下单时使用） */
-    private java.util.List<Long> cartIds;
-
-    /** 商家ID */
-    private Long merchantId;
+    private List<Long> cartIds;
 
     /** SKU ID（立即购买时使用） */
     private Long skuId;

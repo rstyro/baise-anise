@@ -7,7 +7,7 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <title>菜单按钮</title>
+    <title>商品管理</title>
     <!-- element-ui 引入样式 -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
           th:href="@{/static/element-ui/index.css}">
@@ -26,6 +26,12 @@
 
         .container .content-header .content-header-right {
             text-align: right;
+        }
+
+        .spu-attr-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
         }
     </style>
 </head>
@@ -75,8 +81,8 @@
                 <el-table-column prop="id" label="产品ID" width="100"></el-table-column>
                 <el-table-column prop="merchantId" label="商家ID" width="100"></el-table-column>
                 <el-table-column prop="categoryId" label="分类ID" width="100"></el-table-column>
-                <el-table-column prop="productName" label="商品名称" width="100"></el-table-column>
-                <el-table-column prop="productTitle" label="商品卖点" width="100"></el-table-column>
+                <el-table-column prop="productName" label="商品名称" width="150"></el-table-column>
+                <el-table-column prop="productTitle" label="商品卖点" width="150"></el-table-column>
                 <el-table-column prop="mainImage" label="商品主图" width="100">
                     <template slot-scope="scope">
                         <el-image :src="scope.row.mainImage">
@@ -86,7 +92,7 @@
                         </el-image>
                     </template>
                 </el-table-column>
-                <el-table-column prop="imageList" label="轮播图列表" width="300">
+                <el-table-column prop="imageList" label="轮播图列表" width="200">
                     <template slot-scope="scope">
                         <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                             <template v-if="scope.row.imageList && scope.row.imageList.length">
@@ -105,20 +111,11 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="description" label="商品详情" width="100">
+                <el-table-column prop="description" label="商品详情" width="150">
                     <template slot-scope="scope">
                         <div v-html="scope.row.description"></div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="originPlace" label="产地" width="100"></el-table-column>
-                <el-table-column prop="isSulfurFree" label="是否无硫" width="100">
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.isSulfurFree==1">是</el-tag>
-                        <el-tag type="danger" v-if="scope.row.isSulfurFree==0">否</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="dryingLevel" label="干度" width="100"></el-table-column>
-                <el-table-column prop="plantingProcess" label="种植工艺" width="100"></el-table-column>
                 <el-table-column prop="status" label="状态" width="100">
                     <template slot-scope="scope">
                         <el-tag type="success" v-if="scope.row.status==1">上架</el-tag>
@@ -126,17 +123,28 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="sortOrder" label="排序值" width="100"></el-table-column>
+                <el-table-column prop="seasonTag" label="季节标签" width="100"></el-table-column>
                 <el-table-column prop="extraJson" label="扩展字段" width="100"></el-table-column>
                 <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
                 <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
                 <el-table-column
                         fixed="right"
                         label="操作"
-                        width="140">
+                        width="200">
                     <template slot-scope="scope">
                         <el-tooltip sa:hasPermissionOr="business:bizProduct:list:edit,admin" class="item" effect="dark"
                                     content="编辑" placement="top-start">
                             <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
+                                       circle></el-button>
+                        </el-tooltip>
+                        <el-tooltip class="item" effect="dark"
+                                    content="管理SKU" placement="top-start">
+                            <el-button @click="manageSku(scope.row)" type="info" icon="el-icon-s-grid" size="mini"
+                                       circle></el-button>
+                        </el-tooltip>
+                        <el-tooltip class="item" effect="dark"
+                                    content="管理SPU属性" placement="top-start">
+                            <el-button @click="manageSpuAttr(scope.row)" type="warning" icon="el-icon-collection" size="mini"
                                        circle></el-button>
                         </el-tooltip>
                         <el-tooltip sa:hasPermissionOr="business:bizProduct:list:del,admin" class="item" effect="dark"
@@ -168,7 +176,7 @@
     </el-card>
 
 
-    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="800px">
         <el-form :model="itemData" :rules="rules" ref="itemData">
 
             <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
@@ -240,23 +248,46 @@
                 <el-input type="textarea" v-model="itemData.description" autocomplete="off" placeholder="请输入商品详情"></el-input>
             </el-form-item>
 
-            <el-form-item label="产地" prop="originPlace" :label-width="formLabelWidth">
-                <el-input v-model="itemData.originPlace" autocomplete="off" placeholder="请输入产地"></el-input>
-            </el-form-item>
-
-            <el-form-item label="是否无硫" prop="isSulfurFree" :label-width="formLabelWidth">
-                <el-select v-model="itemData.isSulfurFree" placeholder="是否无硫">
-                    <el-option label="否" :value="0"></el-option>
-                    <el-option label="是" :value="1"></el-option>
+            <el-form-item label="季节标签" prop="seasonTag" :label-width="formLabelWidth">
+                <el-select v-model="itemData.seasonTag" placeholder="请选择季节标签">
+                    <el-option label="春季" value="春季"></el-option>
+                    <el-option label="夏季" value="夏季"></el-option>
+                    <el-option label="秋季" value="秋季"></el-option>
+                    <el-option label="冬季" value="冬季"></el-option>
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="干度" prop="dryingLevel" :label-width="formLabelWidth">
-                <el-input v-model="itemData.dryingLevel" autocomplete="off" placeholder="请输入干度"></el-input>
+            <el-form-item label="预售开始时间" prop="preSaleStart" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.preSaleStart"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择预售开始时间"
+                        :picker-options="futurePickerOptions">
+                </el-date-picker>
             </el-form-item>
 
-            <el-form-item label="种植工艺" prop="plantingProcess" :label-width="formLabelWidth">
-                <el-input v-model="itemData.plantingProcess" autocomplete="off" placeholder="请输入种植工艺"></el-input>
+            <el-form-item label="预售结束时间" prop="preSaleEnd" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.preSaleEnd"
+                        align="right"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm:ss"
+                        placeholder="选择预售结束时间"
+                        :picker-options="futurePickerOptions">
+                </el-date-picker>
+            </el-form-item>
+
+            <el-form-item label="预计发货日期" prop="estimatedShipDate" :label-width="formLabelWidth">
+                <el-date-picker
+                        v-model="itemData.estimatedShipDate"
+                        align="right"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="选择预计发货日期"
+                        :picker-options="futurePickerOptions">
+                </el-date-picker>
             </el-form-item>
 
             <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
@@ -273,31 +304,41 @@
             <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
                 <el-input type="textarea"  v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段"></el-input>
             </el-form-item>
-
-            <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.createTime"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择日期"
-                        :picker-options="pickerOptions">
-                </el-date-picker>
-            </el-form-item>
-
-            <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.updateTime"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择日期"
-                        :picker-options="pickerOptions">
-                </el-date-picker>
-            </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
             <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+        </div>
+    </el-dialog>
+
+    <el-dialog title="管理SPU属性" :visible.sync="spuAttrDialogVisible" width="700px">
+        <div>
+            <el-form :model="spuAttrForm">
+                <el-form-item label="选择属性">
+                    <el-select v-model="spuAttrForm.attrId" placeholder="请选择属性" @change="onAttrChange">
+                        <el-option v-for="attr in spuAttributeList" :key="attr.id" :label="attr.attrName" :value="attr.id"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="属性值">
+                    <el-select v-model="spuAttrForm.attrValueId" placeholder="请选择属性值">
+                        <el-option v-for="value in currentAttrValues" :key="value.id" :label="value.value" :value="value.id"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            
+            <el-button type="primary" size="small" @click="addSpuAttr">添加属性</el-button>
+            
+            <el-table :data="spuAttrList" style="margin-top: 20px;" border>
+                <el-table-column prop="attrName" label="属性名称"></el-table-column>
+                <el-table-column prop="attrValue" label="属性值"></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-button type="danger" size="mini" @click="removeSpuAttr(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="saveSpuAttrs">保存</el-button>
         </div>
     </el-dialog>
 
@@ -320,6 +361,11 @@
                     addUrl: ctx + 'business/bizProduct/add',
                     editUrl: ctx + 'business/bizProduct/edit',
                     uploadUrl: ctx + 'upload/image?type=product',
+                    attrListUrl: ctx + 'business/bizAttribute/list',
+                    attrValueListUrl: ctx + 'business/bizAttributeValue/list',
+                    spuAttrSaveUrl: ctx + 'business/bizProductSpuAttr/save',
+                    spuAttrListUrl: ctx + 'business/bizProductSpuAttr/listByProduct',
+                    spuAttrDelUrl: ctx + 'business/bizProductSpuAttr/del',
                     dialogUrl: '',
                     tableData: [],
                     multipleSelection: [],
@@ -332,15 +378,17 @@
                         currentPage: 1,
                         pageSize: 10,
                         total: 110,
-                        pageCount: 1, //总页数
-                        pagerCount: 9, //页码按钮的数量
+                        pageCount: 1,
+                        pagerCount: 9,
                     },
                     addDialogVisible: false,
+                    spuAttrDialogVisible: false,
+                    currentProductId: null,
                     itemData: {
                         menuIdList: [],
                     },
                     dialogTitle: '新增',
-                    formLabelWidth: '100px',
+                    formLabelWidth: '120px',
                     formTimeLabelWidth: '120px',
                     pickerOptions: {
                         disabledDate(time) {
@@ -367,6 +415,28 @@
                             }
                         }]
                     },
+                    futurePickerOptions: {
+                        shortcuts: [{
+                            text: '今天',
+                            onClick(picker) {
+                                picker.$emit('pick', new Date());
+                            }
+                        }, {
+                            text: '明天',
+                            onClick(picker) {
+                                const date = new Date();
+                                date.setTime(date.getTime() + 3600 * 1000 * 24);
+                                picker.$emit('pick', date);
+                            }
+                        }, {
+                            text: '一周后',
+                            onClick(picker) {
+                                const date = new Date();
+                                date.setTime(date.getTime() + 3600 * 1000 * 24 * 7);
+                                picker.$emit('pick', date);
+                            }
+                        }]
+                    },
                     rules: {
                         merchantId: [
                             {required: true, message: '请输入商家ID', trigger: 'blur'},
@@ -387,13 +457,19 @@
                             {required: true, message: '请输入状态 0:下架 1:上架', trigger: 'blur'},
                         ],
 
-                    }
+                    },
+                    spuAttributeList: [],
+                    currentAttrValues: [],
+                    spuAttrForm: {
+                        attrId: '',
+                        attrValueId: ''
+                    },
+                    spuAttrList: []
 
                 }
             },
             methods: {
                 searchList: function () {
-                    // 列表检索
                     let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
                     axios.post(url, this.formDto).then(r => {
                         if (r.data.code === 200) {
@@ -438,7 +514,6 @@
                     this.searchList();
                 },
                 handleSelectionChange(val) {
-                    //当选择项发生变化时会触发该事件
                     this.multipleSelection = val;
                 },
                 showSearchBox() {
@@ -453,7 +528,6 @@
                 edit(row) {
                     this.addDialogVisible = true;
                     this.dialogTitle = '编辑';
-                    // 确保轮播图列表是数组格式
                     const editData = {...row};
                     if (editData.imageList && typeof editData.imageList === 'string') {
                         try {
@@ -465,10 +539,96 @@
                     this.itemData = editData;
                     this.dialogUrl = this.editUrl;
                 },
+                manageSku(row) {
+                    window.open(ctx + 'business/bizProductSku/page?productId=' + row.id, '_blank');
+                },
+                manageSpuAttr(row) {
+                    this.currentProductId = row.id;
+                    this.spuAttrDialogVisible = true;
+                    this.loadSpuAttrList();
+                    this.loadSpuAttributes();
+                },
+                loadSpuAttributes() {
+                    axios.post(this.attrListUrl + '?pageNum=1&pageSize=100', {keyword: ''}).then(r => {
+                        if (r.data.code === 200) {
+                            this.spuAttributeList = r.data.data.records.filter(a => a.attrType === 1);
+                        }
+                    });
+                },
+                onAttrChange() {
+                    const attrId = this.spuAttrForm.attrId;
+                    if (attrId) {
+                        axios.post(this.attrValueListUrl + '?pageNum=1&pageSize=100', {keyword: '', attrId: attrId}).then(r => {
+                            if (r.data.code === 200) {
+                                this.currentAttrValues = r.data.data.records;
+                            }
+                        });
+                    } else {
+                        this.currentAttrValues = [];
+                    }
+                    this.spuAttrForm.attrValueId = '';
+                },
+                loadSpuAttrList() {
+                    axios.get(this.spuAttrListUrl + '?productId=' + this.currentProductId).then(r => {
+                        if (r.data.code === 200) {
+                            this.spuAttrList = r.data.data;
+                        }
+                    });
+                },
+                addSpuAttr() {
+                    if (!this.spuAttrForm.attrId || !this.spuAttrForm.attrValueId) {
+                        ELEMENT.Message.warning('请选择属性和属性值');
+                        return;
+                    }
+                    const attr = this.spuAttributeList.find(a => a.id === this.spuAttrForm.attrId);
+                    const attrValue = this.currentAttrValues.find(v => v.id === this.spuAttrForm.attrValueId);
+                    
+                    const exists = this.spuAttrList.some(item => item.attrId === this.spuAttrForm.attrId);
+                    if (exists) {
+                        ELEMENT.Message.warning('该属性已存在');
+                        return;
+                    }
+                    
+                    this.spuAttrList.push({
+                        id: null,
+                        productId: this.currentProductId,
+                        attrId: this.spuAttrForm.attrId,
+                        attrName: attr ? attr.attrName : '',
+                        attrValueId: this.spuAttrForm.attrValueId,
+                        attrValue: attrValue ? attrValue.value : ''
+                    });
+                    
+                    this.spuAttrForm.attrId = '';
+                    this.spuAttrForm.attrValueId = '';
+                    this.currentAttrValues = [];
+                },
+                removeSpuAttr(row) {
+                    const index = this.spuAttrList.indexOf(row);
+                    if (index > -1) {
+                        if (row.id) {
+                            axios.get(this.spuAttrDelUrl + '?id=' + row.id);
+                        }
+                        this.spuAttrList.splice(index, 1);
+                    }
+                },
+                saveSpuAttrs() {
+                    const data = {
+                        productId: this.currentProductId,
+                        attrs: this.spuAttrList.map(item => ({
+                            attrId: item.attrId,
+                            attrValueId: item.attrValueId
+                        }))
+                    };
+                    axios.post(this.spuAttrSaveUrl, data).then(r => {
+                        if (r.data.code === 200) {
+                            ELEMENT.Message.success('保存成功');
+                            this.spuAttrDialogVisible = false;
+                        }
+                    });
+                },
                 saveOrUpdate() {
                     this.$refs['itemData'].validate((valid) => {
                         if (valid) {
-                            // 处理轮播图列表数据格式
                             const submitData = {...this.itemData};
                             if (submitData.imageList && Array.isArray(submitData.imageList)) {
                                 submitData.imageList = JSON.stringify(submitData.imageList);
@@ -482,7 +642,6 @@
                 batchDel() {
                     let ids = this.multipleSelection.map(i => i.id);
                     if (!ids.length) {
-                        // 数组为空
                         ELEMENT.Message({
                             showClose: true,
                             message: "您未选中任何内容",

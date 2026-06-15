@@ -6,6 +6,7 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const $u: typeof import('uview-pro').$u
   const EffectScope: typeof import('vue').EffectScope
   const appBaseUrl: typeof import('@/env').appBaseUrl
   const baseUrl: typeof import('@/env').baseUrl

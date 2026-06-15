@@ -33,6 +33,9 @@ export default async () => {
           {
             "@/utils/router": ["navigateTo", "redirectTo", "switchTab", "reLaunch", "navigateBack"],
           },
+          {
+            "uview-pro": ["$u"],
+          },
         ],
         dts: "src/auto-imports.d.ts",
         eslintrc: {

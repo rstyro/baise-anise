@@ -1,4 +1,17 @@
-/** 商品列表项 */
+export interface SpuAttrItem {
+  attrId: number
+  attrName: string
+  attrValueId: number
+  attrValue: string
+}
+
+export interface SkuAttrItem {
+  attrId: number
+  attrName: string
+  attrValueId: number
+  attrValue: string
+}
+
 export interface ProductItem {
   id: number
   productName: string
@@ -8,13 +21,10 @@ export interface ProductItem {
   maxPrice: number
   originalPrice: number | null
   sales: number
-  originPlace: string
-  isSulfurFree: boolean
-  dryingLevel: string
   categoryName: string
+  spuAttrs?: SpuAttrItem[]
 }
 
-/** 购物车列表项 */
 export interface CartItem {
   id: number
   merchantId: number
@@ -24,23 +34,31 @@ export interface CartItem {
   productName: string
   mainImage: string
   specName: string
+  skuSpecs: string
   price: number
   originalPrice: number | null
   quantity: number
   stock: number
-  selected: number  // 0或1
-}
-export interface ProductSku {
-  id: number
-  specName: string
-  specValues: string  // JSON string
-  price: number
-  originalPrice: number | null
-  stock: number
-  sales: number
+  selected: number
 }
 
-/** 商品详情 */
+export interface ProductSku {
+  id: number
+  skuCode: string
+  saleUnit: string
+  unitWeight: number | null
+  isVariableWeight: boolean
+  minQuantity: number | null
+  maxQuantity: number | null
+  quantityStep: number | null
+  price: number
+  originalPrice: number | null
+  wholesalePrice: number | null
+  stock: number
+  sales: number
+  skuAttrs?: SkuAttrItem[]
+}
+
 export interface ProductDetail {
   id: number
   productName: string
@@ -48,10 +66,6 @@ export interface ProductDetail {
   mainImage: string
   imageList: string[]
   description: string
-  originPlace: string
-  isSulfurFree: boolean
-  dryingLevel: string
-  plantingProcess: string
   categoryId: number
   categoryName: string
   sales: number
@@ -59,19 +73,20 @@ export interface ProductDetail {
   merchantName: string
   merchantOriginPlace: string
   skuList: ProductSku[]
+  spuAttrs?: SpuAttrItem[]
+  preSaleStart?: string
+  preSaleEnd?: string
+  estimatedShipDate?: string
+  seasonTag?: string
 }
 
-/** 商品列表查询参数 */
 export interface ProductListParams {
   categoryId?: number
   keyword?: string
-  /** 页码，从1开始，默认1 */
   pageNum: number
-  /** 每页条数，默认10，最大1000 */
   pageSize: number
 }
 
-/** 分页响应 */
 export interface PageResult<T> {
   records: T[]
   total: number

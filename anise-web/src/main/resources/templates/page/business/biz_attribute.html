@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>属性管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
+    <style>
+        .container{
+            padding: 5px;
+            display: flex;
+            gap: 10px;
+            height: calc(100vh - 20px);
+        }
+
+        .left-panel {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            width: 55%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container .search-box{
+            margin-bottom: 10px;
+        }
+
+        .container .content-header{
+            margin-bottom: 10px;
+        }
+
+        .container .content-header .content-header-right {
+            text-align: right;
+        }
+
+        .el-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .el-card .el-card__body {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .page-box {
+            padding: 10px 0;
+        }
+
+        .no-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <div class="left-panel">
+        <el-card class="box-card search-box" v-show="showSearch">
+            <el-form :inline="true" :model="attrFormDto" class="demo-form-inline">
+                <el-form-item label="关键词检索">
+                    <el-input v-model="attrFormDto.keyword" placeholder="请输入关键词"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="searchAttrList">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </el-card>
+
+        <el-card class="box-card">
+            <section class="content-header">
+                <el-row :gutter="2">
+                    <el-col :span="11">
+                        <el-button sa:hasPermissionOr="business:bizAttribute:list:add,admin" @click="addAttr" type="success" size="mini" icon="el-icon-plus">新增属性</el-button>
+                        <el-button sa:hasPermissionOr="business:bizAttribute:list:del,admin" @click="batchDelAttr" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                    </el-col>
+                    <div class="content-header-right">
+                        <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+                    </div>
+                </el-row>
+            </section>
+
+            <section class="content">
+                <el-table
+                        :data="attrTableData"
+                        style="width: 100%;margin-bottom: 10px;"
+                        row-key="id"
+                        border
+                        @selection-change="handleAttrSelectionChange"
+                        @row-click="selectAttr"
+                        :highlight-current-row="true"
+                >
+                    <el-table-column type="selection" width="55"></el-table-column>
+                    <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                    <el-table-column prop="attrName" label="属性名称" width="120"></el-table-column>
+                    <el-table-column prop="attrType" label="类型" width="100">
+                        <template slot-scope="scope">
+                            <el-tag type="success" v-if="scope.row.attrType==1">SPU属性</el-tag>
+                            <el-tag type="warning" v-if="scope.row.attrType==2">SKU属性</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="inputType" label="输入类型" width="100">
+                        <template slot-scope="scope">
+                            <span v-if="scope.row.inputType==1">单选</span>
+                            <span v-if="scope.row.inputType==2">多选</span>
+                            <span v-if="scope.row.inputType==3">手填</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="isRequired" label="必填" width="60">
+                        <template slot-scope="scope">
+                            <el-tag type="success" v-if="scope.row.isRequired==1">是</el-tag>
+                            <el-tag v-else>否</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="isSearchable" label="可筛选" width="70">
+                        <template slot-scope="scope">
+                            <el-tag type="success" v-if="scope.row.isSearchable==1">是</el-tag>
+                            <el-tag v-else>否</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="状态" width="70">
+                        <template slot-scope="scope">
+                            <el-tag type="success" v-if="scope.row.status==1">启用</el-tag>
+                            <el-tag type="danger" v-if="scope.row.status==0">禁用</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed="right" label="操作" width="100">
+                        <template slot-scope="scope">
+                            <el-tooltip class="item" effect="dark" content="编辑" placement="top-start">
+                                <el-button @click.stop="editAttr(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                            </el-tooltip>
+                            <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
+                                <el-button @click.stop="delAttr(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+                <div class="page-box" v-show="attrPageDto.pageCount>1">
+                    <el-pagination
+                            @size-change="handleAttrSizeChange"
+                            @current-change="handleAttrCurrentChange"
+                            @prev-click="preAttrPage"
+                            @next-click="nextAttrPage"
+                            :current-page="attrPageDto.currentPage"
+                            :page-size="attrPageDto.pagerCount"
+                            :page-count="attrPageDto.pageCount"
+                            :pager-count="attrPageDto.pagerCount"
+                            layout="sizes,prev, pager, next"
+                            :page-sizes="[10, 20, 30, 40, 50, 100]"
+                            :total="attrPageDto.total">
+                    </el-pagination>
+                </div>
+            </section>
+        </el-card>
+    </div>
+
+    <div class="right-panel">
+        <el-card class="box-card">
+            <section class="content-header" v-if="selectedAttr">
+                <el-row :gutter="2">
+                    <el-col :span="11">
+                        <span style="font-weight: bold; margin-right: 10px;">当前属性：</span>
+                        <span>{{ selectedAttr.attrName }}</span>
+                        <el-button sa:hasPermissionOr="business:bizAttributeValue:list:add,admin" @click="addAttrValue" type="success" size="mini" icon="el-icon-plus" style="margin-left: 10px;">新增属性值</el-button>
+                        <el-button sa:hasPermissionOr="business:bizAttributeValue:list:del,admin" @click="batchDelAttrValue" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                    </el-col>
+                    <div class="content-header-right">
+                        <el-button type="primary" @click="searchValueList" size="mini" icon="el-icon-refresh" circle></el-button>
+                    </div>
+                </el-row>
+            </section>
+
+            <section class="content">
+                <div v-if="!selectedAttr" class="no-selection">
+                    <i class="el-icon-info" style="font-size: 32px; margin-right: 10px;"></i>
+                    <span>请选择左侧的属性查看其属性值</span>
+                </div>
+
+                <template v-else>
+                    <el-table
+                            :data="valueTableData"
+                            style="width: 100%;margin-bottom: 10px;"
+                            row-key="id"
+                            border
+                            @selection-change="handleValueSelectionChange"
+                    >
+                        <el-table-column type="selection" width="55"></el-table-column>
+                        <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                        <el-table-column prop="value" label="属性值名称" width="150"></el-table-column>
+                        <el-table-column prop="sortOrder" label="排序" width="80"></el-table-column>
+                        <el-table-column prop="extraJson" label="扩展信息" width="200"></el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+                        <el-table-column fixed="right" label="操作" width="100">
+                            <template slot-scope="scope">
+                                <el-tooltip class="item" effect="dark" content="编辑" placement="top-start">
+                                    <el-button @click="editAttrValue(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                                </el-tooltip>
+                                <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
+                                    <el-button @click="delAttrValue(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                                </el-tooltip>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                    <div class="page-box" v-show="valuePageDto.pageCount>1">
+                        <el-pagination
+                                @size-change="handleValueSizeChange"
+                                @current-change="handleValueCurrentChange"
+                                @prev-click="preValuePage"
+                                @next-click="nextValuePage"
+                                :current-page="valuePageDto.currentPage"
+                                :page-size="valuePageDto.pagerCount"
+                                :page-count="valuePageDto.pageCount"
+                                :pager-count="valuePageDto.pagerCount"
+                                layout="sizes,prev, pager, next"
+                                :page-sizes="[10, 20, 30, 40, 50, 100]"
+                                :total="valuePageDto.total">
+                        </el-pagination>
+                    </div>
+                </template>
+            </section>
+        </el-card>
+    </div>
+
+    <el-dialog :title="attrDialogTitle" :visible.sync="attrDialogVisible" width="500px">
+        <el-form :model="attrItemData" :rules="attrRules" ref="attrItemData">
+            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
+                <el-input v-model="attrItemData.id" autocomplete="off"></el-input>
+            </el-form-item>
+
+            <el-form-item label="属性名称" prop="attrName" :label-width="formLabelWidth">
+                <el-input v-model="attrItemData.attrName" autocomplete="off" placeholder="请输入属性名称，如：颜色、大小"></el-input>
+            </el-form-item>
+
+            <el-form-item label="属性类型" prop="attrType" :label-width="formLabelWidth">
+                <el-select v-model="attrItemData.attrType" placeholder="请选择属性类型">
+                    <el-option label="SPU属性（关键属性）" :value="1"></el-option>
+                    <el-option label="SKU属性（销售属性）" :value="2"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="输入类型" prop="inputType" :label-width="formLabelWidth">
+                <el-select v-model="attrItemData.inputType" placeholder="请选择输入类型">
+                    <el-option label="单选" :value="1"></el-option>
+                    <el-option label="多选" :value="2"></el-option>
+                    <el-option label="手填文本" :value="3"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="是否必填" prop="isRequired" :label-width="formLabelWidth">
+                <el-select v-model="attrItemData.isRequired" placeholder="请选择">
+                    <el-option label="否" :value="0"></el-option>
+                    <el-option label="是" :value="1"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="是否可筛选" prop="isSearchable" :label-width="formLabelWidth">
+                <el-select v-model="attrItemData.isSearchable" placeholder="请选择">
+                    <el-option label="否" :value="0"></el-option>
+                    <el-option label="是" :value="1"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="排序" prop="sortOrder" :label-width="formLabelWidth">
+                <el-input v-model="attrItemData.sortOrder" type="number" autocomplete="off" placeholder="越小越靠前"></el-input>
+            </el-form-item>
+
+            <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
+                <el-select v-model="attrItemData.status" placeholder="请选择状态">
+                    <el-option label="禁用" :value="0"></el-option>
+                    <el-option label="启用" :value="1"></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="saveOrUpdateAttr">{{attrDialogTitle}}</el-button>
+        </div>
+    </el-dialog>
+
+    <el-dialog :title="valueDialogTitle" :visible.sync="valueDialogVisible" width="500px">
+        <el-form :model="valueItemData" :rules="valueRules" ref="valueItemData">
+            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
+                <el-input v-model="valueItemData.id" autocomplete="off"></el-input>
+            </el-form-item>
+
+            <el-form-item label="属性值名称" prop="value" :label-width="formLabelWidth">
+                <el-input v-model="valueItemData.value" autocomplete="off" placeholder="请输入属性值名称，如：红色、大果"></el-input>
+            </el-form-item>
+
+            <el-form-item label="排序" prop="sortOrder" :label-width="formLabelWidth">
+                <el-input v-model="valueItemData.sortOrder" type="number" autocomplete="off" placeholder="越小越靠前"></el-input>
+            </el-form-item>
+
+            <el-form-item label="扩展信息" prop="extraJson" :label-width="formLabelWidth">
+                <el-input type="textarea" v-model="valueItemData.extraJson" autocomplete="off" placeholder="可选，如：{&quot;weight_range&quot;:&quot;70-80mm&quot;}"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="saveOrUpdateValue">{{valueDialogTitle}}</el-button>
+        </div>
+    </el-dialog>
+
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
+<script th:src="@{/static/vue/api.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    let ctx = [[@{/}]];
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                attrListUrl: ctx + 'business/bizAttribute/list',
+                attrDelUrl: ctx + 'business/bizAttribute/del?id=',
+                attrBatchDelUrl: ctx + 'business/bizAttribute/batchDel',
+                attrAddUrl: ctx + 'business/bizAttribute/add',
+                attrEditUrl: ctx + 'business/bizAttribute/edit',
+                
+                valueListUrl: ctx + 'business/bizAttributeValue/list',
+                valueDelUrl: ctx + 'business/bizAttributeValue/del?id=',
+                valueBatchDelUrl: ctx + 'business/bizAttributeValue/batchDel',
+                valueAddUrl: ctx + 'business/bizAttributeValue/add',
+                valueEditUrl: ctx + 'business/bizAttributeValue/edit',
+                
+                attrTableData: [],
+                valueTableData: [],
+                attrMultipleSelection: [],
+                valueMultipleSelection: [],
+                attrFormDto: { keyword: '' },
+                selectedAttr: null,
+                showSearch: false,
+                
+                attrPageDto: { currentPage: 1, pageSize: 10, total: 0, pageCount: 1, pagerCount: 9 },
+                valuePageDto: { currentPage: 1, pageSize: 10, total: 0, pageCount: 1, pagerCount: 9 },
+                
+                attrDialogVisible: false,
+                valueDialogVisible: false,
+                attrDialogTitle: '新增属性',
+                valueDialogTitle: '新增属性值',
+                attrItemData: {},
+                valueItemData: {},
+                formLabelWidth: '100px',
+                
+                attrRules: {
+                    attrName: [{ required: true, message: '请输入属性名称', trigger: 'blur' }],
+                    attrType: [{ required: true, message: '请选择属性类型', trigger: 'blur' }],
+                    inputType: [{ required: true, message: '请选择输入类型', trigger: 'blur' }],
+                    isRequired: [{ required: true, message: '请选择是否必填', trigger: 'blur' }],
+                    isSearchable: [{ required: true, message: '请选择是否可筛选', trigger: 'blur' }],
+                    sortOrder: [{ required: true, message: '请输入排序', trigger: 'blur' }],
+                    status: [{ required: true, message: '请选择状态', trigger: 'blur' }],
+                },
+                
+                valueRules: {
+                    value: [{ required: true, message: '请输入属性值名称', trigger: 'blur' }],
+                    sortOrder: [{ required: true, message: '请输入排序', trigger: 'blur' }],
+                }
+            }
+        },
+        methods: {
+            searchAttrList: function () {
+                this.attrPageDto.currentPage = 1;
+                this.requestAttrData();
+            },
+            requestAttrData: function () {
+                let url = this.attrListUrl + '?pageNum=' + this.attrPageDto.currentPage + '&pageSize=' + this.attrPageDto.pageSize;
+                axios.post(url, this.attrFormDto).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data;
+                        this.attrPageDto.total = Number(data.total);
+                        this.attrPageDto.pageCount = Number(data.pages);
+                        this.attrTableData = data.records;
+                    }
+                }).catch(error => {
+                    console.error("请求失败：", error);
+                    ELEMENT.Message({ showClose: true, message: "请求失败，请稍后重试", type: 'error' });
+                })
+            },
+            searchValueList: function () {
+                if (!this.selectedAttr) return;
+                this.valuePageDto.currentPage = 1;
+                this.requestValueData();
+            },
+            requestValueData: function () {
+                if (!this.selectedAttr) return;
+                let url = this.valueListUrl + '?pageNum=' + this.valuePageDto.currentPage + '&pageSize=' + this.valuePageDto.pageSize;
+                axios.post(url, { keyword: '', attrId: this.selectedAttr.id }).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data;
+                        this.valuePageDto.total = Number(data.total);
+                        this.valuePageDto.pageCount = Number(data.pages);
+                        this.valueTableData = data.records;
+                    }
+                }).catch(error => {
+                    console.error("请求失败：", error);
+                    ELEMENT.Message({ showClose: true, message: "请求失败，请稍后重试", type: 'error' });
+                })
+            },
+            selectAttr: function (row) {
+                this.selectedAttr = row;
+                this.searchValueList();
+            },
+            showSearchBox: function () {
+                this.showSearch = !this.showSearch;
+            },
+            addAttr: function () {
+                this.attrDialogVisible = true;
+                this.attrDialogTitle = '新增属性';
+                this.attrItemData = { isRequired: 0, isSearchable: 0, sortOrder: 10, status: 1 };
+            },
+            editAttr: function (row) {
+                this.attrDialogVisible = true;
+                this.attrDialogTitle = '编辑属性';
+                this.attrItemData = {...row};
+            },
+            saveOrUpdateAttr: function () {
+                this.$refs['attrItemData'].validate((valid) => {
+                    if (valid) {
+                        const url = this.attrItemData.id ? this.attrEditUrl : this.attrAddUrl;
+                        requestPost(url, this.attrItemData);
+                        this.attrDialogVisible = false;
+                        this.searchAttrList();
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            delAttr: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该属性吗?', '提示', {
+                    confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+                }).then(() => {
+                    requestGet(this.attrDelUrl + id);
+                    this.searchAttrList();
+                    if (this.selectedAttr && this.selectedAttr.id === id) {
+                        this.selectedAttr = null;
+                        this.valueTableData = [];
+                    }
+                }).catch(() => {
+                    ELEMENT.Message({ type: 'info', message: '已取消删除' });
+                });
+            },
+            batchDelAttr: function () {
+                let ids = this.attrMultipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message({ showClose: true, message: "您未选中任何内容", type: 'warning' });
+                    return false;
+                }
+                ELEMENT.MessageBox.confirm('确定删除选中的属性吗?', '提示', {
+                    confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+                }).then(() => {
+                    requestPost(this.attrBatchDelUrl, ids);
+                    this.searchAttrList();
+                    this.attrMultipleSelection = [];
+                }).catch(() => {
+                    ELEMENT.Message({ type: 'info', message: '已取消删除' });
+                });
+            },
+            addAttrValue: function () {
+                this.valueDialogVisible = true;
+                this.valueDialogTitle = '新增属性值';
+                this.valueItemData = { attrId: this.selectedAttr.id, sortOrder: 10 };
+            },
+            editAttrValue: function (row) {
+                this.valueDialogVisible = true;
+                this.valueDialogTitle = '编辑属性值';
+                this.valueItemData = {...row};
+            },
+            saveOrUpdateValue: function () {
+                this.$refs['valueItemData'].validate((valid) => {
+                    if (valid) {
+                        const url = this.valueItemData.id ? this.valueEditUrl : this.valueAddUrl;
+                        requestPost(url, this.valueItemData);
+                        this.valueDialogVisible = false;
+                        this.searchValueList();
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            delAttrValue: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该属性值吗?', '提示', {
+                    confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+                }).then(() => {
+                    requestGet(this.valueDelUrl + id);
+                    this.searchValueList();
+                }).catch(() => {
+                    ELEMENT.Message({ type: 'info', message: '已取消删除' });
+                });
+            },
+            batchDelAttrValue: function () {
+                let ids = this.valueMultipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message({ showClose: true, message: "您未选中任何内容", type: 'warning' });
+                    return false;
+                }
+                ELEMENT.MessageBox.confirm('确定删除选中的属性值吗?', '提示', {
+                    confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+                }).then(() => {
+                    requestPost(this.valueBatchDelUrl, ids);
+                    this.searchValueList();
+                    this.valueMultipleSelection = [];
+                }).catch(() => {
+                    ELEMENT.Message({ type: 'info', message: '已取消删除' });
+                });
+            },
+            handleAttrSelectionChange: function (val) { this.attrMultipleSelection = val; },
+            handleValueSelectionChange: function (val) { this.valueMultipleSelection = val; },
+            preAttrPage: function () { this.attrPageDto.currentPage -= 1; this.requestAttrData(); },
+            nextAttrPage: function () { this.attrPageDto.currentPage += 1; this.requestAttrData(); },
+            handleAttrSizeChange: function (val) { this.attrPageDto.pageSize = val; this.requestAttrData(); },
+            handleAttrCurrentChange: function (val) { this.attrPageDto.currentPage = val; this.requestAttrData(); },
+            preValuePage: function () { this.valuePageDto.currentPage -= 1; this.requestValueData(); },
+            nextValuePage: function () { this.valuePageDto.currentPage += 1; this.requestValueData(); },
+            handleValueSizeChange: function (val) { this.valuePageDto.pageSize = val; this.requestValueData(); },
+            handleValueCurrentChange: function (val) { this.valuePageDto.currentPage = val; this.requestValueData(); },
+        },
+        created() {
+            this.searchAttrList();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,8 +1,11 @@
 package com.lrs.core.app.vo;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 
 /**
  * 订单商品项 VO
@@ -41,7 +44,7 @@ public class OrderGoodsVo {
     private String title;
 
     /**
-     * 规格类型
+     * 规格类型（存储原始JSON或解析后的值）
      */
     private String type;
 
@@ -54,4 +57,24 @@ public class OrderGoodsVo {
      * 数量
      */
     private Integer number;
+
+    /**
+     * 解析 sku_specs JSON，格式化为 key value; 格式
+     */
+    public void parseSkuSpecs() {
+        if (type == null || type.isEmpty() || "{}".equals(type)) {
+            this.type = "";
+            return;
+        }
+        try {
+            JSONObject json = JSON.parseObject(type);
+            this.type = json.entrySet().stream()
+                    .filter(entry -> entry.getValue() != null && !entry.getValue().toString().isEmpty())
+                    .map(entry -> String.valueOf(entry.getValue()))
+                    .reduce((a, b) -> a + "，" + b)
+                    .orElse("");
+        } catch (Exception e) {
+            this.type = "";
+        }
+    }
 }

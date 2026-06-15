@@ -4,8 +4,8 @@ import type { CartItem } from './types/product'
 
 export const cartApi = {
   /** 加入购物车 */
-  add(skuId: number, quantity: number = 1): Promise<void> {
-    return http.post(`${baseUrl}/app/cart/add`, { skuId, quantity })
+  add(skuId: number, quantity: number = 1, skuSpecs?: string): Promise<void> {
+    return http.post(`${baseUrl}/app/cart/add`, { skuId, quantity, skuSpecs })
   },
   /** 购物车列表 */
   list(): Promise<CartItem[]> {

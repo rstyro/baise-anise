@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class AppCartController extends BaseController {
         Integer quantity = dto.getQuantity() != null ? dto.getQuantity() : 1;
 
         BizProductSku sku = bizProductSkuService.getById(skuId);
-        if (sku == null || sku.getStock() <= 0) {
+        if (sku == null || sku.getStock() == null || sku.getStock().compareTo(BigDecimal.ZERO) <= 0) {
             return R.error("商品库存不足");
         }
 
@@ -90,6 +91,7 @@ public class AppCartController extends BaseController {
                     .setMerchantId(merchantId)
                     .setProductId(sku.getProductId())
                     .setSkuId(skuId)
+                    .setSkuSpecs(dto.getSkuSpecs())
                     .setQuantity(quantity)
                     .setSelected(1)
                     .setCreateTime(LocalDateTime.now())
@@ -128,7 +130,7 @@ public class AppCartController extends BaseController {
         }
 
         BizProductSku sku = bizProductSkuService.getById(cart.getSkuId());
-        if (quantity > (sku != null ? sku.getStock() : 0)) {
+        if (sku != null && sku.getStock() != null && BigDecimal.valueOf(quantity).compareTo(sku.getStock()) > 0) {
             return R.error("库存不足");
         }
 

@@ -28,7 +28,7 @@
               <image :src="getImageUrl(item.mainImage)" class="item-img" mode="aspectFill" @click="goProduct(item.productId)" />
               <view class="item-body" @click="goProduct(item.productId)">
                 <view class="item-name">{{ item.productName }}</view>
-                <view class="item-spec">{{ item.specName }}</view>
+                <view class="item-spec">{{ item.skuSpecs ? formatSkuSpecs(item.skuSpecs) : item.specName }}</view>
                 <view class="item-price-row">
                   <text class="item-price">¥{{ item.price }}</text>
                   <u-number-box
@@ -170,6 +170,18 @@ const goShop = () => uni.$grouter.switchTab('index')
 const goProduct = (productId: number) => {
   if (!productId) return
   uni.$grouter.navigateTo('productDetail', { query: { id: productId } })
+}
+
+// 解析 skuSpecs JSON，提取 value 用逗号隔开
+const formatSkuSpecs = (skuSpecs: string): string => {
+  if (!skuSpecs || skuSpecs === '{}') return ''
+  try {
+    const obj = JSON.parse(skuSpecs)
+    const values = Object.values(obj).filter((v: any) => v !== null && v !== undefined && v !== '')
+    return values.join(', ')
+  } catch (e) {
+    return skuSpecs
+  }
 }
 
 onPullDownRefresh(async () => {

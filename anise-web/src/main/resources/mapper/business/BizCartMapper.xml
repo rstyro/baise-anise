@@ -11,6 +11,7 @@
         <result column="product_name" property="productName"/>
         <result column="main_image" property="mainImage"/>
         <result column="spec_name" property="specName"/>
+        <result column="sku_specs" property="skuSpecs"/>
         <result column="price" property="price"/>
         <result column="original_price" property="originalPrice"/>
         <result column="quantity" property="quantity"/>
@@ -27,7 +28,8 @@
             c.sku_id,
             p.product_name,
             p.main_image,
-            s.spec_name,
+            s.sku_code AS spec_name,
+            c.sku_specs,
             s.price,
             s.original_price,
             c.quantity,

@@ -192,15 +192,23 @@ public class MerchantProductController extends BaseController {
                 .sum();
         vo.setSales(totalSales);
 
-        List<ProductDetailVo.SkuVo> skuVos = skuList.stream().map(sku -> new ProductDetailVo.SkuVo()
-                .setId(sku.getId())
-                .setSpecName(sku.getSpecName())
-                .setSpecValues(sku.getSpecValues())
-                .setPrice(sku.getPrice())
-                .setOriginalPrice(sku.getOriginalPrice())
-                .setStock(sku.getStock())
-                .setSales(sku.getSales())
-        ).collect(Collectors.toList());
+        List<ProductDetailVo.SkuVo> skuVos = skuList.stream().map(sku -> {
+            ProductDetailVo.SkuVo skuVo = new ProductDetailVo.SkuVo();
+            skuVo.setId(sku.getId());
+            skuVo.setSkuCode(sku.getSkuCode());
+            skuVo.setSaleUnit(sku.getSaleUnit());
+            skuVo.setUnitWeight(sku.getUnitWeight());
+            skuVo.setIsVariableWeight(sku.getIsVariableWeight() != null && sku.getIsVariableWeight() == 1);
+            skuVo.setMinQuantity(sku.getMinQuantity());
+            skuVo.setMaxQuantity(sku.getMaxQuantity());
+            skuVo.setQuantityStep(sku.getQuantityStep());
+            skuVo.setPrice(sku.getPrice());
+            skuVo.setOriginalPrice(sku.getOriginalPrice());
+            skuVo.setWholesalePrice(sku.getWholesalePrice());
+            skuVo.setStock(sku.getStock());
+            skuVo.setSales(sku.getSales());
+            return skuVo;
+        }).collect(Collectors.toList());
         vo.setSkuList(skuVos);
 
         return R.ok(vo);

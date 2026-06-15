@@ -1,5 +1,6 @@
 {
   "globals": {
+    "$u": true,
     "Component": true,
     "ComponentPublicInstance": true,
     "ComputedRef": true,

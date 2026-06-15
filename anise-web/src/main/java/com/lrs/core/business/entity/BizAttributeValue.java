@@ -11,76 +11,69 @@ import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * <p>
+ * 属性值表
+ * </p>
+ *
+ * @author rstyro
+ * @since 2026-06-15
+ */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("biz_product_sku")
-public class BizProductSku implements Serializable {
+@TableName("biz_attribute_value")
+public class BizAttributeValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 属性值ID，示例：10
+     */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("product_id")
-    private Long productId;
+    /**
+     * 所属属性ID（关联biz_attribute.id），示例：4（颜色属性）
+     */
+    @TableField("attr_id")
+    private Long attrId;
 
-    @TableField("sku_code")
-    private String skuCode;
+    /**
+     * 属性值名称，示例：红色、大果、一级
+     */
+    @TableField("value")
+    private String value;
 
-    @TableField("sale_unit")
-    private String saleUnit;
-
-    @TableField("unit_weight")
-    private BigDecimal unitWeight;
-
-    @TableField("is_variable_weight")
-    private Byte isVariableWeight;
-
-    @TableField("min_quantity")
-    private BigDecimal minQuantity;
-
-    @TableField("max_quantity")
-    private BigDecimal maxQuantity;
-
-    @TableField("quantity_step")
-    private BigDecimal quantityStep;
-
-    @TableField("price")
-    private BigDecimal price;
-
-    @TableField("original_price")
-    private BigDecimal originalPrice;
-
-    @TableField("wholesale_price")
-    private BigDecimal wholesalePrice;
-
-    @TableField("stock")
-    private BigDecimal stock;
-
-    @TableField("sales")
-    private Integer sales;
-
-    @TableField("status")
-    private Byte status;
-
+    /**
+     * 排序，示例：1
+     */
     @TableField("sort_order")
     private Integer sortOrder;
 
+    /**
+     * 扩展信息，例如关联图片或重量范围，示例：{"weight_range":"70-80mm", "image":"https://example.com/red.jpg"}
+     */
+    @TableField("extra_json")
+    private String extraJson;
+
+    /**
+     * 创建时间
+     */
     @TableField("create_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
+    /**
+     * 更新时间
+     */
     @TableField("update_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
-    @TableField("is_deleted")
-    private Byte isDeleted;
 
 }

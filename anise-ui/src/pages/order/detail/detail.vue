@@ -73,7 +73,7 @@
         />
         <view class="goods-info">
           <view class="goods-name u-line-2">{{ item.productName }}</view>
-          <view class="goods-spec" v-if="item.skuName">{{ item.skuName }}</view>
+          <view class="goods-spec" v-if="item.skuSpecs">{{ formatSkuSpecs(item.skuSpecs) }}</view>
         </view>
         <view class="goods-right">
           <text class="goods-price">¥{{ item.price }}</text>
@@ -198,6 +198,19 @@ onLoad(async (options) => {
     uni.showToast({ title: '加载失败', icon: 'none' })
   }
 })
+
+// ========== 工具方法 ==========
+// 解析 skuSpecs JSON，提取 value 用逗号隔开
+const formatSkuSpecs = (skuSpecs: string): string => {
+  if (!skuSpecs || skuSpecs === '{}') return ''
+  try {
+    const obj = JSON.parse(skuSpecs)
+    const values = Object.values(obj).filter((v: any) => v !== null && v !== undefined && v !== '')
+    return values.join(', ')
+  } catch (e) {
+    return skuSpecs
+  }
+}
 
 // ========== 计算属性 ==========
 const totalAmount = computed(() => {

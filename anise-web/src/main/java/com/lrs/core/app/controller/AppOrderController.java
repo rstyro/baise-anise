@@ -23,15 +23,21 @@ import com.lrs.core.business.entity.BizMerchant;
 import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.entity.BizOrderItem;
 import com.lrs.core.business.entity.BizOrderSub;
+import com.lrs.core.business.entity.BizAttribute;
+import com.lrs.core.business.entity.BizAttributeValue;
 import com.lrs.core.business.entity.BizProduct;
 import com.lrs.core.business.entity.BizProductSku;
+import com.lrs.core.business.entity.BizProductSkuAttr;
 import com.lrs.core.business.service.IBizAddressService;
 import com.lrs.core.business.service.IBizCartService;
 import com.lrs.core.business.service.IBizMerchantService;
 import com.lrs.core.business.service.IBizOrderItemService;
 import com.lrs.core.business.service.IBizOrderService;
 import com.lrs.core.business.service.IBizOrderSubService;
+import com.lrs.core.business.service.IBizAttributeService;
+import com.lrs.core.business.service.IBizAttributeValueService;
 import com.lrs.core.business.service.IBizProductService;
+import com.lrs.core.business.service.IBizProductSkuAttrService;
 import com.lrs.core.business.service.IBizProductSkuService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +87,15 @@ public class AppOrderController extends BaseController {
 
     @Resource
     private IBizMerchantService bizMerchantService;
+
+    @Resource
+    private IBizProductSkuAttrService bizProductSkuAttrService;
+
+    @Resource
+    private IBizAttributeService bizAttributeService;
+
+    @Resource
+    private IBizAttributeValueService bizAttributeValueService;
 
     private Long getUserId() {
         UserVo user = getLoginSysUser();
@@ -141,6 +156,9 @@ public class AppOrderController extends BaseController {
                 productMap.values().stream().map(BizProduct::getMerchantId).collect(Collectors.toSet())
         ).stream().collect(Collectors.toMap(BizMerchant::getId, m -> m));
 
+        // 批量查询SKU属性
+        Map<Long, String> skuSpecsMap = buildSkuSpecsMap(skuIds);
+
         // 3. 获取收货地址
         BizAddress address = bizAddressService.getById(dto.getAddressId());
         if (address == null || !address.getUserId().equals(userId)) return R.error("收货地址不存在");
@@ -156,7 +174,7 @@ public class AppOrderController extends BaseController {
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (BizCart item : cartItems) {
             BizProductSku sku = skuMap.get(item.getSkuId());
-            if (sku == null || sku.getStock() < item.getQuantity()) {
+            if (sku == null || sku.getStock() == null || sku.getStock().compareTo(BigDecimal.valueOf(item.getQuantity())) < 0) {
                 BizProduct p = productMap.get(item.getProductId());
                 return R.error((p != null ? p.getProductName() : "商品") + " 库存不足");
             }
@@ -236,8 +254,8 @@ public class AppOrderController extends BaseController {
                         .setProductName(product != null ? product.getProductName() : "")
                         .setProductImage(product != null ? product.getMainImage() : "")
                         .setSkuId(item.getSkuId())
-                        .setSkuName(sku.getSpecName())
-                        .setSkuSpecs(sku.getSpecValues())
+                        .setSkuName(sku.getSkuCode())
+                        .setSkuSpecs(skuSpecsMap.getOrDefault(item.getSkuId(), buildSkuSpecsJson(sku)))
                         .setPrice(sku.getPrice())
                         .setQuantity(item.getQuantity())
                         .setItemAmount(sku.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -250,7 +268,7 @@ public class AppOrderController extends BaseController {
                 bizOrderItemService.save(orderItem);
 
                 // 扣减库存
-                sku.setStock(sku.getStock() - item.getQuantity());
+                sku.setStock(sku.getStock().subtract(BigDecimal.valueOf(item.getQuantity())));
                 bizProductSkuService.updateById(sku);
             }
         }
@@ -305,6 +323,8 @@ public class AppOrderController extends BaseController {
 
             // 批量查询订单商品（已包含商家信息）
             List<OrderGoodsVo> allGoods = bizOrderService.getGoodsList(orderIds);
+            // 解析 sku_specs JSON
+            allGoods.forEach(OrderGoodsVo::parseSkuSpecs);
             Map<Long, List<OrderGoodsVo>> goodsMap = allGoods.stream()
                     .collect(Collectors.groupingBy(OrderGoodsVo::getOrderId));
 
@@ -404,7 +424,7 @@ public class AppOrderController extends BaseController {
         for (BizOrderItem item : items) {
             BizProductSku sku = bizProductSkuService.getById(item.getSkuId());
             if (sku != null) {
-                sku.setStock(sku.getStock() + item.getQuantity());
+                sku.setStock(sku.getStock().add(BigDecimal.valueOf(item.getQuantity())));
                 bizProductSkuService.updateById(sku);
             }
         }
@@ -500,6 +520,87 @@ public class AppOrderController extends BaseController {
         }
 
         return R.ok();
+    }
+
+    /**
+     * 批量构建SKU规格JSON字符串（从数据库属性表获取）
+     */
+    private Map<Long, String> buildSkuSpecsMap(Set<Long> skuIds) {
+        Map<Long, String> result = new HashMap<>();
+        if (skuIds == null || skuIds.isEmpty()) {
+            return result;
+        }
+
+        LambdaQueryWrapper<BizProductSkuAttr> skuAttrQuery = new LambdaQueryWrapper<>();
+        skuAttrQuery.in(BizProductSkuAttr::getSkuId, skuIds);
+        List<BizProductSkuAttr> skuAttrs = bizProductSkuAttrService.list(skuAttrQuery);
+
+        if (skuAttrs.isEmpty()) {
+            return result;
+        }
+
+        Set<Long> attrIds = skuAttrs.stream().map(BizProductSkuAttr::getAttrId).collect(Collectors.toSet());
+        Set<Long> attrValueIds = skuAttrs.stream().map(BizProductSkuAttr::getAttrValueId).collect(Collectors.toSet());
+
+        Map<Long, BizAttribute> attributeMap = new HashMap<>();
+        Map<Long, BizAttributeValue> attrValueMap = new HashMap<>();
+
+        if (!attrIds.isEmpty()) {
+            bizAttributeService.listByIds(attrIds).forEach(a -> attributeMap.put(a.getId(), a));
+        }
+        if (!attrValueIds.isEmpty()) {
+            bizAttributeValueService.listByIds(attrValueIds).forEach(v -> attrValueMap.put(v.getId(), v));
+        }
+
+        Map<Long, List<BizProductSkuAttr>> skuAttrGroupMap = skuAttrs.stream()
+                .collect(Collectors.groupingBy(BizProductSkuAttr::getSkuId));
+
+        for (Map.Entry<Long, List<BizProductSkuAttr>> entry : skuAttrGroupMap.entrySet()) {
+            Long skuId = entry.getKey();
+            List<BizProductSkuAttr> attrs = entry.getValue();
+            
+            Map<String, String> specs = new LinkedHashMap<>();
+            for (BizProductSkuAttr attr : attrs) {
+                BizAttribute attribute = attributeMap.get(attr.getAttrId());
+                BizAttributeValue attrValue = attrValueMap.get(attr.getAttrValueId());
+                if (attribute != null && attrValue != null) {
+                    specs.put(attribute.getAttrName(), attrValue.getValue());
+                }
+            }
+            
+            if (!specs.isEmpty()) {
+                result.put(skuId, JSON.toJSONString(specs));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 构建SKU规格JSON字符串（从SKU实体字段获取，作为fallback）
+     */
+    private String buildSkuSpecsJson(BizProductSku sku) {
+        if (sku == null) {
+            return null;
+        }
+        Map<String, String> specs = new LinkedHashMap<>();
+        specs.put("销售单位", sku.getSaleUnit());
+        if (sku.getUnitWeight() != null) {
+            specs.put("单位重量(kg)", sku.getUnitWeight().toString());
+        }
+        if (sku.getIsVariableWeight() != null) {
+            specs.put("是否浮动重量", sku.getIsVariableWeight() == 1 ? "是" : "否");
+        }
+        if (sku.getMinQuantity() != null) {
+            specs.put("最小购买量", sku.getMinQuantity().toString());
+        }
+        if (sku.getMaxQuantity() != null) {
+            specs.put("最大购买量", sku.getMaxQuantity().toString());
+        }
+        if (sku.getQuantityStep() != null) {
+            specs.put("购买步进", sku.getQuantityStep().toString());
+        }
+        return JSON.toJSONString(specs);
     }
 
     // ==================== DTO ====================
