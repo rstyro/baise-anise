@@ -101,12 +101,12 @@
 
     <view class="bottom-bar">
       <view class="bar-left" @click="toMerchant">
-        <u-icon custom-prefix="icon" name="shangquan" size="44" color="#666" />
+        <u-icon name="home" size="40" color="#666" />
         <text class="bar-label">店铺</text>
       </view>
 
       <view class="bar-left" @click="goCart">
-        <u-icon name="shopping-cart" size="44" color="#666" />
+        <u-icon name="shopping-cart" size="40" color="#666" />
         <text class="bar-label">购物车</text>
       </view>
       <button class="btn-cart" @click="addToCart">加入购物车</button>
@@ -289,7 +289,7 @@ const formatPresaleTime = (start, end) => {
     const endStr = $u.timeFormat(end, 'mm月dd日 hh:MM:ss')
     return `${startStr} - ${endStr}预售`
   }
-  return `${startStr}开始预售`
+  return `${startStr} 开始预售`
 }
 
 const addToCart = async () => {
@@ -358,7 +358,9 @@ const goCart = () => {
 }
 
 const toMerchant = () => {
-  uni.showToast({ title: '商家详情开发中', icon: 'none' })
+  if (detail.value.merchantId) {
+    uni.$grouter.navigateTo('merchantDetail', { query: { id: detail.value.merchantId } })
+  }
 }
 </script>
 

@@ -2,26 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lrs.core.business.mapper.BizCartMapper">
 
-    <resultMap id="CartItemVoResultMap" type="com.lrs.core.app.dto.cart.CartItemVo">
-        <id column="cart_id" property="id"/>
-        <result column="merchant_id" property="merchantId"/>
-        <result column="merchant_name" property="merchantName"/>
-        <result column="product_id" property="productId"/>
-        <result column="sku_id" property="skuId"/>
-        <result column="product_name" property="productName"/>
-        <result column="main_image" property="mainImage"/>
-        <result column="spec_name" property="specName"/>
-        <result column="sku_specs" property="skuSpecs"/>
-        <result column="price" property="price"/>
-        <result column="original_price" property="originalPrice"/>
-        <result column="quantity" property="quantity"/>
-        <result column="stock" property="stock"/>
-        <result column="selected" property="selected"/>
-    </resultMap>
-
-    <select id="selectCartListWithDetails" resultMap="CartItemVoResultMap">
+    <!-- 
+        查询购物车列表（含商品详情）
+        通过 LEFT JOIN 一次性获取购物车、商品、SKU、商家信息
+        使用 resultType 直接映射，依赖下划线转驼峰自动映射
+    -->
+    <select id="selectCartListWithDetails" resultType="com.lrs.core.app.dto.cart.CartItemVo">
         SELECT
-            c.id AS cart_id,
+            c.id,
             COALESCE(p.merchant_id, c.merchant_id, 1) AS merchant_id,
             COALESCE(m.merchant_name, '默认店铺') AS merchant_name,
             c.product_id,

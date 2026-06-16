@@ -4,6 +4,7 @@ package com.lrs.core.business.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lrs.core.app.dto.merchant.MerchantDetailDto;
 import com.lrs.core.business.entity.BizMerchant;
 import com.lrs.core.business.mapper.BizMerchantMapper;
 import com.lrs.core.business.service.IBizMerchantService;
@@ -55,5 +56,13 @@ public class BizMerchantServiceImpl extends ServiceImpl<BizMerchantMapper, BizMe
         public boolean batchDel(List<Long> ids) {
             return removeBatchByIds(ids);
          }
+
+        @Override
+        public BizMerchant getAppMerchantDetail(MerchantDetailDto dto) {
+            LambdaQueryWrapper<BizMerchant> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BizMerchant::getId, dto.getMerchantId());
+            queryWrapper.eq(BizMerchant::getIsDeleted, 0);
+            return getOne(queryWrapper);
+        }
 
 }

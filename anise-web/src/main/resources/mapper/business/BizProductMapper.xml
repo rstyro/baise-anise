@@ -2,4 +2,152 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lrs.core.business.mapper.BizProductMapper">
 
-</mapper>
+    <!-- 
+        查询小程序商品列表，关联分类和SKU表
+        通过 LEFT JOIN + GROUP BY 一次性获取：
+        1. 商品基础信息
+        2. 分类名称
+        3. SKU价格区间（MIN/MAX）
+        4. 总销量（SUM）
+        使用 resultType 直接映射到 VO，依赖 MyBatis 下划线转驼峰配置
+    -->
+    <select id="selectAppProductList" resultType="com.lrs.core.app.dto.product.ProductVo">
+        SELECT
+            p.id,
+            p.product_name,
+            p.product_title,
+            p.main_image,
+            p.season_tag,
+            COALESCE(MIN(s.price), 0) AS min_price,
+            COALESCE(MAX(s.price), 0) AS max_price,
+            COALESCE(MIN(s.original_price), NULL) AS original_price,
+            COALESCE(SUM(s.sales), 0) AS sales,
+            c.category_name
+        FROM biz_product p
+        LEFT JOIN biz_category c ON p.category_id = c.id
+        LEFT JOIN biz_product_sku s ON p.id = s.product_id AND s.status = 1
+        WHERE p.status = 1
+        <if test="dto.categoryId != null and dto.categoryId > 0">
+            AND p.category_id = #{dto.categoryId}
+        </if>
+        <if test="dto.keyword != null and dto.keyword != ''">
+            AND (p.product_name LIKE CONCAT('%', #{dto.keyword}, '%') OR p.product_title LIKE CONCAT('%', #{dto.keyword}, '%'))
+        </if>
+        <if test="dto.merchantId != null and dto.merchantId > 0">
+            AND p.merchant_id = #{dto.merchantId}
+        </if>
+        GROUP BY p.id, p.product_name, p.product_title, p.main_image, c.category_name
+        ORDER BY p.sort_order DESC, p.id DESC
+    </select>
+
+    <!-- 
+        查询商品SPU属性列表
+        使用 resultType 直接映射到内部类 ProductVo.SpuAttrVo
+    -->
+    <select id="selectProductSpuAttrs" resultType="com.lrs.core.app.dto.product.ProductVo$SpuAttrVo">
+        SELECT
+            spa.product_id,
+            spa.attr_id,
+            a.attr_name,
+            spa.attr_value_id,
+            av.value AS attr_value
+        FROM biz_product_spu_attr spa
+        LEFT JOIN biz_attribute a ON spa.attr_id = a.id
+        LEFT JOIN biz_attribute_value av ON spa.attr_value_id = av.id
+        WHERE spa.product_id IN
+        <foreach collection="productIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY spa.attr_id, av.sort_order
+    </select>
+
+    <!-- 
+        查询商品详情，关联分类和商家表
+        使用 resultType 直接映射，依赖下划线转驼峰自动映射
+    -->
+    <select id="selectAppProductDetail" resultType="com.lrs.core.app.dto.product.ProductDetailVo">
+        SELECT
+            p.id,
+            p.product_name,
+            p.product_title,
+            p.main_image,
+            p.image_list AS image_list_str,
+            p.description,
+            p.category_id,
+            c.category_name,
+            p.merchant_id,
+            m.merchant_name,
+            m.origin_place AS merchant_origin_place,
+            p.pre_sale_start,
+            p.pre_sale_end,
+            p.estimated_ship_date,
+            p.season_tag
+        FROM biz_product p
+        LEFT JOIN biz_category c ON p.category_id = c.id
+        LEFT JOIN biz_merchant m ON p.merchant_id = m.id
+        WHERE p.id = #{dto.productId} AND p.status = 1
+    </select>
+
+    <!-- 
+        查询商品SKU列表
+        使用 resultType 直接映射，依赖下划线转驼峰自动映射
+    -->
+    <select id="selectProductSkuList" resultType="com.lrs.core.app.dto.product.ProductDetailVo$SkuVo">
+        SELECT
+            id,
+            sku_code,
+            sale_unit,
+            unit_weight,
+            is_variable_weight,
+            min_quantity,
+            max_quantity,
+            quantity_step,
+            price,
+            original_price,
+            wholesale_price,
+            stock,
+            sales
+        FROM biz_product_sku
+        WHERE product_id = #{productId} AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 
+        查询商品详情SPU属性
+        使用 resultType 直接映射到内部类 ProductDetailVo.SpuAttrVo
+    -->
+    <select id="selectProductDetailSpuAttrs" resultType="com.lrs.core.app.dto.product.ProductDetailVo$SpuAttrVo">
+        SELECT
+            spa.attr_id,
+            a.attr_name,
+            spa.attr_value_id,
+            av.value AS attr_value
+        FROM biz_product_spu_attr spa
+        LEFT JOIN biz_attribute a ON spa.attr_id = a.id
+        LEFT JOIN biz_attribute_value av ON spa.attr_value_id = av.id
+        WHERE spa.product_id = #{productId}
+        ORDER BY a.sort_order, av.sort_order
+    </select>
+
+    <!-- 
+        查询商品SKU属性列表
+        使用 resultType 直接映射到内部类 ProductDetailVo.SkuAttrVo
+    -->
+    <select id="selectProductSkuAttrs" resultType="com.lrs.core.app.dto.product.ProductDetailVo$SkuAttrVo">
+        SELECT
+            sku_attr.sku_id,
+            sku_attr.attr_id,
+            a.attr_name,
+            sku_attr.attr_value_id,
+            av.value AS attr_value
+        FROM biz_product_sku_attr sku_attr
+        LEFT JOIN biz_attribute a ON sku_attr.attr_id = a.id
+        LEFT JOIN biz_attribute_value av ON sku_attr.attr_value_id = av.id
+        WHERE sku_attr.sku_id IN
+        <foreach collection="skuIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY sku_attr.sku_id, a.sort_order, av.sort_order
+    </select>
+
+    </mapper>

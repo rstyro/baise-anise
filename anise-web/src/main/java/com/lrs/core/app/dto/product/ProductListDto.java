@@ -19,4 +19,7 @@ public class ProductListDto {
     /** 搜索关键词（可选） */
     private String keyword;
 
+    /** 商家ID（可选，null=全部商家） */
+    private Long merchantId;
+
 }

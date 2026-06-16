@@ -1,11 +1,9 @@
 package com.lrs.core.app.dto.product;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -28,6 +26,10 @@ public class ProductVo {
 
     private Integer sales;
 
+    /**
+     * 季节标签，如春季、秋季
+     */
+    private String seasonTag;
     private String categoryName;
 
     private List<SpuAttrVo> spuAttrs;
@@ -35,6 +37,7 @@ public class ProductVo {
     @Data
     @Accessors(chain = true)
     public static class SpuAttrVo {
+        private Long productId;
         private Long attrId;
         private String attrName;
         private Long attrValueId;

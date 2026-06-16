@@ -3,8 +3,10 @@ package com.lrs.core.app.dto.product;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +21,8 @@ public class ProductDetailVo {
     private String productTitle;
 
     private String mainImage;
+
+    private String imageListStr;
 
     private List<String> imageList;
 
@@ -40,11 +44,17 @@ public class ProductDetailVo {
 
     private List<SpuAttrVo> spuAttrs;
 
-    private String preSaleStart;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime preSaleStart;
 
-    private String preSaleEnd;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime preSaleEnd;
 
-    private String estimatedShipDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate estimatedShipDate;
 
     private String seasonTag;
 
@@ -79,6 +89,7 @@ public class ProductDetailVo {
     @Data
     @Accessors(chain = true)
     public static class SkuAttrVo {
+        private Long skuId;
         private Long attrId;
         private String attrName;
         private Long attrValueId;

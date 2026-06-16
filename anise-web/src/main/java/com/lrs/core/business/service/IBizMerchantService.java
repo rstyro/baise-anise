@@ -2,6 +2,7 @@ package com.lrs.core.business.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lrs.core.app.dto.merchant.MerchantDetailDto;
 import com.lrs.core.business.entity.BizMerchant;
 import com.lrs.core.system.dto.BaseDto;
 
@@ -23,4 +24,6 @@ public interface IBizMerchantService extends IService<BizMerchant> {
     boolean edit(BizMerchant item);
     boolean del(Long id);
     boolean batchDel(List<Long> ids);
+
+    BizMerchant getAppMerchantDetail(MerchantDetailDto dto);
 }

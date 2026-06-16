@@ -89,6 +89,7 @@ mybatis-plus:
   # 配置slq打印日志
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
   type-aliases-package: com.lrs.core.*.entity
   #配置逻辑删除
   global-config:

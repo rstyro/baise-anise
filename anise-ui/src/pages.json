@@ -65,6 +65,16 @@
 			"path": "pages/setting/setting",
 			"name": "setting",
 			"style": { "navigationBarTitleText": "设置" }
+		},
+		{
+			"path": "pages/merchant/detail/detail",
+			"name": "merchantDetail",
+			"style": { "navigationBarTitleText": "商家详情" }
+		},
+		{
+			"path": "pages/merchant/product/list",
+			"name": "merchantProductList",
+			"style": { "navigationBarTitleText": "店铺商品" }
 		}
 	],
 	"globalStyle": {
