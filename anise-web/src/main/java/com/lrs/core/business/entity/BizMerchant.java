@@ -49,6 +49,18 @@ public class BizMerchant implements Serializable {
     private String merchantName;
 
     /**
+     * 店铺Logo
+     */
+    @TableField("logo_url")
+    private String logoUrl;
+
+    /**
+     * 店铺简介
+     */
+    @TableField("description")
+    private String description;
+
+    /**
      * 联系人
      */
     @TableField("contact_name")
@@ -95,6 +107,12 @@ public class BizMerchant implements Serializable {
      */
     @TableField("commission_rate")
     private BigDecimal commissionRate;
+
+    /**
+     * 结算方式 1:T+1 7:T+7 30:T+30
+     */
+    @TableField("settlement_type")
+    private Byte settlementType;
 
     /**
      * 状态 0:禁用 1:正常
