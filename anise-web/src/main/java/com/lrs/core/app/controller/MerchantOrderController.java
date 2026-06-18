@@ -11,12 +11,16 @@ import com.lrs.core.app.utils.MerchantContextHolder;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.entity.BizOrderItem;
+import com.lrs.core.business.entity.BizOrderLogistics;
 import com.lrs.core.business.entity.BizOrderSub;
 import com.lrs.core.business.service.IBizOrderItemService;
+import com.lrs.core.business.service.IBizOrderLogisticsService;
 import com.lrs.core.business.service.IBizOrderService;
 import com.lrs.core.business.service.IBizOrderSubService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +52,9 @@ public class MerchantOrderController extends BaseController {
 
     @Resource
     private IBizOrderItemService bizOrderItemService;
+
+    @Resource
+    private IBizOrderLogisticsService bizOrderLogisticsService;
 
     /**
      * 获取当前商家ID
@@ -154,6 +161,7 @@ public class MerchantOrderController extends BaseController {
         result.put("sub", sub);
         result.put("order", order);
         result.put("items", items);
+        result.put("logisticsList", bizOrderLogisticsService.getBySubOrderIds(List.of(subId)));
 
         return R.ok(result);
     }
@@ -164,7 +172,11 @@ public class MerchantOrderController extends BaseController {
     @OperateLog(title = "商家后台-发货")
     @PostMapping("/delivery")
     @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
     public R delivery(@RequestBody OrderSubDeliveryDto dto) {
+        if (dto == null || dto.getSubId() == null) {
+            return R.error("子订单ID不能为空");
+        }
         Long merchantId = getMerchantId();
         Long subId = dto.getSubId();
 
@@ -175,13 +187,28 @@ public class MerchantOrderController extends BaseController {
         if (sub.getDeliveryStatus() != BizOrderSub.DELIVERY_STATUS_PENDING) {
             return R.error("当前子订单状态不可发货");
         }
+        if (!StringUtils.hasText(dto.getExpressCompany()) || !StringUtils.hasText(dto.getExpressNo())) {
+            return R.error("请填写快递公司和快递单号");
+        }
 
-        // 更新子订单发货状态
+        LocalDateTime now = LocalDateTime.now();
+
+        // 更新子订单履约状态，物流单号统一写入 biz_order_logistics。
         sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_SHIPPED);
-        sub.setDeliveryTime(LocalDateTime.now());
-        sub.setExpressCompany(dto.getExpressCompany());
-        sub.setExpressNo(dto.getExpressNo());
+        sub.setDeliveryTime(now);
+        sub.setUpdateTime(now);
         bizOrderSubService.updateById(sub);
+
+        BizOrderLogistics logistics = new BizOrderLogistics()
+                .setSubOrderId(sub.getId())
+                .setLogisticsCompany(dto.getExpressCompany().trim())
+                .setExpressCode(StringUtils.hasText(dto.getExpressCode()) ? dto.getExpressCode().trim() : null)
+                .setTrackingNo(dto.getExpressNo().trim())
+                .setStatus(BizOrderLogistics.STATUS_COLLECTED)
+                .setLastTrackDetail("商家已发货")
+                .setCreateTime(now)
+                .setUpdateTime(now);
+        bizOrderLogisticsService.save(logistics);
 
         // 检查是否所有子订单都已发货，更新主订单状态
         Long orderId = sub.getOrderId();
@@ -193,12 +220,9 @@ public class MerchantOrderController extends BaseController {
         if (allDelivered) {
             BizOrder order = bizOrderService.getById(orderId);
             if (order != null) {
-                // 取最后一个快递信息作为主订单快递信息
-                BizOrderSub lastSub = allSubs.get(allSubs.size() - 1);
                 order.setStatus(BizOrder.STATUS_DELIVERED);
-                order.setShipTime(LocalDateTime.now());
-                order.setExpressCompany(lastSub.getExpressCompany());
-                order.setExpressNo(lastSub.getExpressNo());
+                order.setShipTime(now);
+                order.setUpdateTime(now);
                 bizOrderService.updateById(order);
             }
         }
@@ -257,12 +281,15 @@ public class MerchantOrderController extends BaseController {
     public static class OrderSubDeliveryDto {
         private Long subId;
         private String expressCompany;
+        private String expressCode;
         private String expressNo;
 
         public Long getSubId() { return subId; }
         public void setSubId(Long subId) { this.subId = subId; }
         public String getExpressCompany() { return expressCompany; }
         public void setExpressCompany(String expressCompany) { this.expressCompany = expressCompany; }
+        public String getExpressCode() { return expressCode; }
+        public void setExpressCode(String expressCode) { this.expressCode = expressCode; }
         public String getExpressNo() { return expressNo; }
         public void setExpressNo(String expressNo) { this.expressNo = expressNo; }
     }

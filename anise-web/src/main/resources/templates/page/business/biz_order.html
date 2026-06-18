@@ -1,30 +1,53 @@
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <title>菜单按钮</title>
-    <!-- element-ui 引入样式 -->
+    <title>订单管理</title>
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
     <style>
-        .container{
+        .container {
             padding: 5px;
         }
 
-        .container .search-box{
+        .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header{
+        .toolbar {
             margin-bottom: 10px;
         }
 
-        .container .content-header .content-header-right {
+        .toolbar-right {
             text-align: right;
+        }
+
+        .page-box {
+            text-align: right;
+        }
+
+        .money {
+            color: #f56c6c;
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #909399;
+            font-size: 12px;
+        }
+
+        .dialog-form {
+            padding-right: 24px;
+        }
+
+        .dialog-form .el-select,
+        .dialog-form .el-date-editor,
+        .dialog-form .el-input-number {
+            width: 100%;
         }
     </style>
 </head>
@@ -32,487 +55,502 @@
 
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
-        <el-form :inline="true" :model="formDto" class="demo-form-inline">
-            <el-form-item label="关键词检索">
-                <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
+        <el-form :inline="true" :model="formDto">
+            <el-form-item label="订单编号">
+                <el-input v-model="formDto.keyword" placeholder="请输入订单编号" clearable @keyup.enter.native="searchList"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="searchList">查询</el-button>
+                <el-button type="primary" icon="el-icon-search" @click="searchList">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
             </el-form-item>
         </el-form>
     </el-card>
 
     <el-card class="box-card">
-        <section class="content-header">
-            <el-row :gutter="2">
-                <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizOrder:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
-                    <el-button sa:hasPermissionOr="business:bizOrder:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
-                </el-col>
-                <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
-                </div>
-            </el-row>
+        <el-row class="toolbar" :gutter="10">
+            <el-col :span="12">
+                <el-button sa:hasPermissionOr="business:bizOrder:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
+                <el-button sa:hasPermissionOr="business:bizOrder:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+            </el-col>
+            <el-col :span="12" class="toolbar-right">
+                <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+            </el-col>
+        </el-row>
 
-        </section>
+        <el-table
+                :data="tableData"
+                style="width: 100%;margin-bottom: 20px;"
+                row-key="id"
+                border
+                empty-text="暂无订单数据"
+                @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+            <el-table-column prop="orderNo" label="订单编号" width="210" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="userId" label="用户ID" width="90"></el-table-column>
+            <el-table-column prop="payAmount" label="实付金额" width="110">
+                <template slot-scope="scope">
+                    <span class="money">￥{{ formatMoney(scope.row.payAmount) }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="totalAmount" label="商品金额" width="110">
+                <template slot-scope="scope">￥{{ formatMoney(scope.row.totalAmount) }}</template>
+            </el-table-column>
+            <el-table-column prop="freightAmount" label="运费" width="90">
+                <template slot-scope="scope">￥{{ formatMoney(scope.row.freightAmount) }}</template>
+            </el-table-column>
+            <el-table-column prop="discountAmount" label="优惠" width="90">
+                <template slot-scope="scope">￥{{ formatMoney(scope.row.discountAmount) }}</template>
+            </el-table-column>
+            <el-table-column prop="status" label="订单状态" width="110">
+                <template slot-scope="scope">
+                    <el-tag :type="orderStatusType(scope.row.status)" size="mini">
+                        {{ orderStatusLabel(scope.row.status) }}
+                    </el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="payType" label="支付方式" width="110">
+                <template slot-scope="scope">{{ payTypeLabel(scope.row.payType) }}</template>
+            </el-table-column>
+            <el-table-column prop="deliveryType" label="配送方式" width="110">
+                <template slot-scope="scope">{{ deliveryTypeLabel(scope.row.deliveryType) }}</template>
+            </el-table-column>
+            <el-table-column prop="payTransactionId" label="支付流水号" width="180" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="payTime" label="支付时间" width="160"></el-table-column>
+            <el-table-column prop="shipTime" label="发货时间" width="160"></el-table-column>
+            <el-table-column prop="receiveTime" label="收货时间" width="160"></el-table-column>
+            <el-table-column prop="remark" label="用户备注" min-width="160" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="120">
+                <template slot-scope="scope">
+                    <el-tooltip sa:hasPermissionOr="business:bizOrder:list:edit,admin" effect="dark" content="编辑" placement="top">
+                        <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip sa:hasPermissionOr="business:bizOrder:list:del,admin" effect="dark" content="删除" placement="top">
+                        <el-button @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+        </el-table>
 
-        <!-- Main content -->
-        <section class="content">
-            <el-table
-                    :data="tableData"
-                    style="width: 100%;margin-bottom: 20px;"
-                    row-key="id"
-                    border
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="orderNo" label="订单编号" width="200" ></el-table-column>
-                    <el-table-column prop="userId" label="用户ID" width="100" ></el-table-column>
-                    <el-table-column prop="merchantId" label="商家ID" width="100" ></el-table-column>
-                    <el-table-column prop="orderType" label="订单类型" width="100" >
-                        <template slot-scope="scope">
-                            <span v-if="scope.row.orderType==1">零售</span>
-                            <span v-if="scope.row.orderType==2">批发</span>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="totalAmount" label="订单总金额" width="100" ></el-table-column>
-                    <el-table-column prop="payAmount" label="实付金额" width="100" ></el-table-column>
-                    <el-table-column prop="freightAmount" label="运费" width="100" ></el-table-column>
-                    <el-table-column prop="discountAmount" label="优惠金额" width="100" ></el-table-column>
-                    <el-table-column prop="payType" label="支付方式" width="100" >
-                        <template slot-scope="scope">
-                            <span v-if="scope.row.payType==1">微信支付</span>
-                            <span v-if="scope.row.payType==2">线下转账</span>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="payStatus" label="支付状态" width="100" >
-                        <template slot-scope="scope">
-                            <el-tag v-if="scope.row.payStatus==0">待支付</el-tag>
-                            <el-tag v-if="scope.row.payStatus==1">已支付</el-tag>
-                            <el-tag v-if="scope.row.payStatus==2">已退款</el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="payTime" label="支付时间" width="160" ></el-table-column>
-                    <el-table-column prop="deliveryStatus" label="发货状态" width="100" >
-                        <template slot-scope="scope">
-                            <el-tag v-if="scope.row.deliveryStatus==0">待发货</el-tag>
-                            <el-tag v-if="scope.row.deliveryStatus==1">已发货</el-tag>
-                            <el-tag v-if="scope.row.deliveryStatus==2">已收货</el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="deliveryTime" label="发货时间" width="160" ></el-table-column>
-                    <el-table-column prop="receiveTime" label="收货时间" width="160" ></el-table-column>
-                    <el-table-column prop="addressId" label="收货地址ID" width="100" ></el-table-column>
-                    <el-table-column prop="addressSnapshot" label="地址快照" width="200" ></el-table-column>
-                    <el-table-column prop="remark" label="订单备注" width="100" ></el-table-column>
-                    <el-table-column prop="status" label="订单状态" width="100" >
-                        <template slot-scope="scope">
-                            <el-tag v-if="scope.row.status==0">取消</el-tag>
-                            <el-tag v-if="scope.row.status==1">待支付</el-tag>
-                            <el-tag v-if="scope.row.status==2">待发货</el-tag>
-                            <el-tag v-if="scope.row.status==3">已发货</el-tag>
-                            <el-tag v-if="scope.row.status==4">完成</el-tag>
-                            <el-tag v-if="scope.row.status==5">售后中</el-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="extraJson" label="扩展字段" width="100" ></el-table-column>
-                    <el-table-column prop="createTime" label="创建时间" width="160" ></el-table-column>
-                    <el-table-column prop="updateTime" label="更新时间" width="160" ></el-table-column>
-                <el-table-column
-                        fixed="right"
-                        label="操作"
-                        width="140">
-                    <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizOrder:list:edit,admin" class="item" effect="dark" content="编辑" placement="top-start">
-                            <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizOrder:list:del,admin" class="item" effect="dark" content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-            </el-table>
-
-            <div class="page-box" v-show="pageDto.pageCount>1">
-                <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        @prev-click="prePage"
-                        @next-click="nextPage"
-                        :current-page="pageDto.currentPage"
-                        :page-size="pageDto.pagerCount"
-                        :page-count="pageDto.pageCount"
-                        :pager-count="pageDto.pagerCount"
-                        layout="sizes,prev, pager, next"
-                        :page-sizes="[10, 20, 30, 40, 50, 100]"
-                        :total="pageDto.total">
-                </el-pagination>
-            </div>
-        </section>
+        <div class="page-box">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="pageDto.currentPage"
+                    :page-size="pageDto.pageSize"
+                    :page-count="pageDto.pageCount"
+                    :pager-count="pageDto.pagerCount"
+                    layout="sizes,prev,pager,next"
+                    :page-sizes="[10, 20, 30, 50, 100]"
+                    :total="pageDto.total">
+            </el-pagination>
+        </div>
     </el-card>
 
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="860px">
+        <el-form class="dialog-form" :model="itemData" :rules="rules" ref="itemData" :label-width="formLabelWidth">
+            <el-form-item label="id" prop="id" style="display: none">
+                <el-input v-model="itemData.id"></el-input>
+            </el-form-item>
 
-    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
-        <el-form :model="itemData" :rules="rules" ref="itemData">
-
-                    <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                        <el-input v-model="itemData.id" autocomplete="off"></el-input>
+            <el-divider content-position="left">基础信息</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="订单编号" prop="orderNo">
+                        <el-input v-model="itemData.orderNo" maxlength="64" show-word-limit placeholder="请输入订单编号"></el-input>
                     </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="用户ID" prop="userId">
+                        <el-input-number v-model="itemData.userId" :min="1" :precision="0" controls-position="right" placeholder="请输入用户ID"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-                        <el-form-item label="订单编号" prop="orderNo" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.orderNo" autocomplete="off" placeholder="请输入订单编号" ></el-input>
-                        </el-form-item>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="订单状态" prop="status">
+                        <el-select v-model="itemData.status" placeholder="请选择订单状态">
+                            <el-option v-for="item in orderStatusOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="配送方式" prop="deliveryType">
+                        <el-select v-model="itemData.deliveryType" placeholder="请选择配送方式" clearable>
+                            <el-option v-for="item in deliveryTypeOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-                        <el-form-item label="用户ID" prop="userId" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.userId" autocomplete="off" placeholder="请输入用户ID" ></el-input>
-                        </el-form-item>
+            <el-divider content-position="left">金额信息</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="商品金额" prop="totalAmount">
+                        <el-input-number v-model="itemData.totalAmount" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="实付金额" prop="payAmount">
+                        <el-input-number v-model="itemData.payAmount" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="运费" prop="freightAmount">
+                        <el-input-number v-model="itemData.freightAmount" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="优惠金额" prop="discountAmount">
+                        <el-input-number v-model="itemData.discountAmount" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-                        <el-form-item label="商家ID" prop="merchantId" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.merchantId" autocomplete="off" placeholder="请输入商家ID" ></el-input>
-                        </el-form-item>
+            <el-divider content-position="left">支付与时间</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="支付方式" prop="payType">
+                        <el-select v-model="itemData.payType" placeholder="请选择支付方式" clearable>
+                            <el-option v-for="item in payTypeOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="支付流水号" prop="payTransactionId">
+                        <el-input v-model="itemData.payTransactionId" maxlength="100" placeholder="支付后填写"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="支付时间" prop="payTime">
+                        <el-date-picker v-model="itemData.payTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择支付时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发货时间" prop="shipTime">
+                        <el-date-picker v-model="itemData.shipTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择发货时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="收货时间" prop="receiveTime">
+                        <el-date-picker v-model="itemData.receiveTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择收货时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="取消时间" prop="cancelTime">
+                        <el-date-picker v-model="itemData.cancelTime" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择取消时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-                        <el-form-item label="订单类型" prop="orderType" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.orderType" autocomplete="off" placeholder="请输入订单类型 1:零售 2:批发" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="订单总金额" prop="totalAmount" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.totalAmount" autocomplete="off" placeholder="请输入订单总金额" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="实付金额" prop="payAmount" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.payAmount" autocomplete="off" placeholder="请输入实付金额" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="运费" prop="freightAmount" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.freightAmount" autocomplete="off" placeholder="请输入运费" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="优惠金额" prop="discountAmount" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.discountAmount" autocomplete="off" placeholder="请输入优惠金额" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="支付方式 " prop="payType" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.payType" autocomplete="off" placeholder="请输入支付方式 1:微信支付 2:线下转账" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="支付状态" prop="payStatus" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.payStatus" autocomplete="off" placeholder="请输入支付状态 0:待支付 1:已支付 2:已退款" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="支付时间" prop="payTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.payTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="发货状态" prop="deliveryStatus" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.deliveryStatus" autocomplete="off" placeholder="请输入发货状态 0:待发货 1:已发货 2:已收货" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="发货时间" prop="deliveryTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.deliveryTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="收货时间" prop="receiveTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.receiveTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="收货地址ID" prop="addressId" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.addressId" autocomplete="off" placeholder="请输入收货地址ID" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="地址快照" prop="addressSnapshot" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.addressSnapshot" autocomplete="off" placeholder="请输入地址快照" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="订单备注" prop="remark" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.remark" autocomplete="off" placeholder="请输入订单备注" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="订单状态" prop="status" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.status" autocomplete="off" placeholder="请输入订单状态 0:取消 1:待支付 2:待发货 3:已发货 4:完成 5:售后中" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                            <el-input v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段" ></el-input>
-                        </el-form-item>
-
-                        <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.createTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
-
-                        <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
-                            <el-date-picker
-                                    v-model="itemData.updateTime"
-                                    align="right"
-                                    type="datetime"
-                                    value-format="yyyy-MM-dd HH:mm:ss"
-                                    placeholder="选择日期"
-                                    :picker-options="pickerOptions">
-                            </el-date-picker>
-                        </el-form-item>
+            <el-divider content-position="left">收货与备注</el-divider>
+            <el-form-item label="地址ID" prop="addressId">
+                <el-input-number v-model="itemData.addressId" :min="1" :precision="0" controls-position="right" placeholder="请输入收货地址ID"></el-input-number>
+            </el-form-item>
+            <el-form-item label="地址快照" prop="addressSnapshot">
+                <el-input type="textarea" v-model="itemData.addressSnapshot" :autosize="{ minRows: 3, maxRows: 6 }" placeholder="请输入收货地址快照"></el-input>
+            </el-form-item>
+            <el-form-item label="用户备注" prop="remark">
+                <el-input type="textarea" v-model="itemData.remark" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="300" show-word-limit placeholder="用户下单备注"></el-input>
+            </el-form-item>
+            <el-form-item label="取消原因" prop="cancelReason">
+                <el-input type="textarea" v-model="itemData.cancelReason" :autosize="{ minRows: 2, maxRows: 4 }" maxlength="300" show-word-limit placeholder="订单取消后填写"></el-input>
+            </el-form-item>
+            <el-form-item label="扩展字段" prop="extraJson">
+                <el-input type="textarea" v-model="itemData.extraJson" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="JSON 扩展字段"></el-input>
+            </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+            <el-button @click="addDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveOrUpdate">{{ dialogTitle }}</el-button>
         </div>
     </el-dialog>
-
 </div>
-<!-- element-ui -->
+
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
 <script th:src="@{/static/vue/api.js}"></script>
 <script type="text/javascript" th:inline="javascript">
     let ctx = [[@{/}]];
-        new Vue({
-            el: '#app',
-            data: function () {
-                return {
-                    listUrl: ctx + 'business/bizOrder/list',
-                    delUrl: ctx + 'business/bizOrder/del?id=',
-                    batchDelUrl: ctx + 'business/bizOrder/batchDel',
-                    addUrl: ctx + 'business/bizOrder/add',
-                    editUrl: ctx + 'business/bizOrder/edit',
-                    dialogUrl:'',
-                    tableData: [],
-                    multipleSelection: [],
-                    formDto: {
-                        keyword: '',
-                        region: ''
-                    },
-                    showSearch: false,
-                    pageDto: {
-                        currentPage: 1,
-                        pageSize: 10,
-                        total: 110,
-                        pageCount: 1, //总页数
-                        pagerCount: 9, //页码按钮的数量
-                    },
-                    addDialogVisible: false,
-                    itemData: {
-                        menuIdList:[],
-                    },
-                    dialogTitle: '新增',
-                    formLabelWidth: '100px',
-                    formTimeLabelWidth: '120px',
-                    pickerOptions: {
-                        disabledDate(time) {
-                            return time.getTime() > Date.now();
-                        },
-                        shortcuts: [{
-                            text: '今天',
-                            onClick(picker) {
-                                picker.$emit('pick', new Date());
-                            }
-                        }, {
-                            text: '昨天',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24);
-                                picker.$emit('pick', date);
-                            }
-                        }, {
-                            text: '一周前',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                                picker.$emit('pick', date);
-                            }
-                        }]
-                    },
-                    rules: {
-                                    orderNo: [
-                                        { required: true, message: '请输入订单编号', trigger: 'blur' },
-                                    ],
-                                    userId: [
-                                        { required: true, message: '请输入用户ID', trigger: 'blur' },
-                                    ],
-                                    merchantId: [
-                                        { required: true, message: '请输入商家ID', trigger: 'blur' },
-                                    ],
-                                    orderType: [
-                                        { required: true, message: '请输入订单类型 1:零售 2:批发', trigger: 'blur' },
-                                    ],
-                                    totalAmount: [
-                                        { required: true, message: '请输入订单总金额', trigger: 'blur' },
-                                    ],
-                                    payAmount: [
-                                        { required: true, message: '请输入实付金额', trigger: 'blur' },
-                                    ],
-                                    freightAmount: [
-                                        { required: true, message: '请输入运费', trigger: 'blur' },
-                                    ],
-                                    discountAmount: [
-                                        { required: true, message: '请输入优惠金额', trigger: 'blur' },
-                                    ],
-                                    payType: [
-                                        { required: true, message: '请输入支付方式 1:微信支付 2:线下转账', trigger: 'blur' },
-                                    ],
-                                    payStatus: [
-                                        { required: true, message: '请输入支付状态 0:待支付 1:已支付 2:已退款', trigger: 'blur' },
-                                    ],
-
-                                    deliveryStatus: [
-                                        { required: true, message: '请输入发货状态 0:待发货 1:已发货 2:已收货', trigger: 'blur' },
-                                    ],
-
-
-                                    addressId: [
-                                        { required: true, message: '请输入收货地址ID', trigger: 'blur' },
-                                    ],
-                                    addressSnapshot: [
-                                        { required: true, message: '请输入地址快照', trigger: 'blur' },
-                                    ],
-                                    remark: [
-                                        { required: true, message: '请输入订单备注', trigger: 'blur' },
-                                    ],
-                                    status: [
-                                        { required: true, message: '请输入订单状态 0:取消 1:待支付 2:待发货 3:已发货 4:完成 5:售后中', trigger: 'blur' },
-                                    ],
-                                    extraJson: [
-                                        { required: true, message: '请输入扩展字段', trigger: 'blur' },
-                                    ],
-
-
-                    }
-
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                listUrl: ctx + 'business/bizOrder/list',
+                delUrl: ctx + 'business/bizOrder/del?id=',
+                batchDelUrl: ctx + 'business/bizOrder/batchDel',
+                addUrl: ctx + 'business/bizOrder/add',
+                editUrl: ctx + 'business/bizOrder/edit',
+                dialogUrl: '',
+                tableData: [],
+                multipleSelection: [],
+                formDto: {
+                    keyword: ''
+                },
+                showSearch: false,
+                pageDto: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    total: 0,
+                    pageCount: 1,
+                    pagerCount: 9
+                },
+                addDialogVisible: false,
+                itemData: this.defaultItemData(),
+                dialogTitle: '新增',
+                formLabelWidth: '110px',
+                orderStatusOptions: [
+                    { value: 0, label: '已取消', type: 'info' },
+                    { value: 1, label: '待支付', type: 'warning' },
+                    { value: 2, label: '待发货', type: 'warning' },
+                    { value: 3, label: '已发货', type: '' },
+                    { value: 4, label: '已收货', type: 'success' },
+                    { value: 5, label: '已完成', type: 'success' },
+                    { value: 6, label: '退款中', type: 'danger' },
+                    { value: 7, label: '已退款', type: 'info' }
+                ],
+                payTypeOptions: [
+                    { value: 1, label: '微信支付' },
+                    { value: 2, label: '余额支付' },
+                    { value: 3, label: '线下转账' }
+                ],
+                deliveryTypeOptions: [
+                    { value: 1, label: '快递' },
+                    { value: 2, label: '自提' },
+                    { value: 3, label: '送货上门' }
+                ],
+                rules: {
+                    orderNo: [
+                        { required: true, message: '请输入订单编号', trigger: 'blur' }
+                    ],
+                    userId: [
+                        { required: true, message: '请输入用户ID', trigger: 'change' }
+                    ],
+                    totalAmount: [
+                        { required: true, message: '请输入商品金额', trigger: 'change' }
+                    ],
+                    payAmount: [
+                        { required: true, message: '请输入实付金额', trigger: 'change' }
+                    ],
+                    freightAmount: [
+                        { required: true, message: '请输入运费', trigger: 'change' }
+                    ],
+                    discountAmount: [
+                        { required: true, message: '请输入优惠金额', trigger: 'change' }
+                    ],
+                    addressId: [
+                        { required: true, message: '请输入地址ID', trigger: 'change' }
+                    ],
+                    addressSnapshot: [
+                        { required: true, message: '请输入地址快照', trigger: 'blur' }
+                    ],
+                    status: [
+                        { required: true, message: '请选择订单状态', trigger: 'change' }
+                    ]
                 }
+            }
+        },
+        methods: {
+            defaultItemData: function () {
+                return {
+                    orderNo: '',
+                    userId: undefined,
+                    totalAmount: 0,
+                    freightAmount: 0,
+                    discountAmount: 0,
+                    payAmount: 0,
+                    addressId: undefined,
+                    addressSnapshot: '',
+                    status: 1,
+                    payType: null,
+                    payTime: null,
+                    payTransactionId: '',
+                    deliveryType: 1,
+                    shipTime: null,
+                    receiveTime: null,
+                    remark: '',
+                    cancelReason: '',
+                    cancelTime: null,
+                    extraJson: '',
+                    isDeleted: 0
+                };
             },
-            methods: {
-                searchList: function () {
-                    // 列表检索
-                    let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
-                    axios.post(url, this.formDto).then(r => {
-                        if (r.data.code === 200) {
-                            let data = r.data.data;
-                            this.pageDto.total = Number(data.total);
-                            this.pageDto.pageCount = Number(data.pages);
-                            this.tableData = data.records;
-                        }
-                    }).catch(error => {
-                        console.error("请求失败：", error);
+            optionLabel: function (options, value, defaultLabel) {
+                let numberValue = Number(value);
+                let option = options.find(item => item.value === numberValue);
+                return option ? option.label : defaultLabel;
+            },
+            orderStatusOption: function (status) {
+                let numberValue = Number(status);
+                return this.orderStatusOptions.find(item => item.value === numberValue) || { label: '未知', type: 'info' };
+            },
+            orderStatusLabel: function (status) {
+                return this.orderStatusOption(status).label;
+            },
+            orderStatusType: function (status) {
+                return this.orderStatusOption(status).type;
+            },
+            payTypeLabel: function (payType) {
+                if (payType === null || payType === undefined || payType === '') {
+                    return '-';
+                }
+                return this.optionLabel(this.payTypeOptions, payType, '未知');
+            },
+            deliveryTypeLabel: function (deliveryType) {
+                if (deliveryType === null || deliveryType === undefined || deliveryType === '') {
+                    return '-';
+                }
+                return this.optionLabel(this.deliveryTypeOptions, deliveryType, '未知');
+            },
+            formatMoney: function (value) {
+                let numberValue = Number(value || 0);
+                return numberValue.toFixed(2);
+            },
+            searchList: function () {
+                this.pageDto.currentPage = 1;
+                this.requestData();
+            },
+            resetSearch: function () {
+                this.formDto.keyword = '';
+                this.searchList();
+            },
+            requestData: function () {
+                let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                axios.post(url, this.formDto).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data || {};
+                        this.pageDto.total = Number(data.total || 0);
+                        this.pageDto.pageCount = Number(data.pages || 1);
+                        this.tableData = data.records || [];
+                    } else {
                         ELEMENT.Message({
                             showClose: true,
-                            message: "请求失败，请稍后重试",
+                            message: r.data.msg || '查询失败',
                             type: 'error'
                         });
-                    })
-                },
-                prePage() {
-                    this.pageDto.currentPage -= 1;
-                    this.searchList();
-                },
-                nextPage() {
-                    this.pageDto.currentPage += 1;
-                    this.searchList();
-                },
-                handleSizeChange(val) {
-                    this.pageDto.pageSize=val;
-                    this.searchList();
-                },
-                handleCurrentChange(val) {
-                    this.pageDto.currentPage=val;
-                    this.searchList();
-                },
-                handleSelectionChange(val) {
-                    //当选择项发生变化时会触发该事件
-                    this.multipleSelection = val;
-                },
-                showSearchBox() {
-                    this.showSearch = !this.showSearch;
-                },
-                add() {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '新增';
-                    this.dialogUrl=this.addUrl;
-                    this.itemData = {};
-                },
-                edit(row) {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '编辑';
-                    this.itemData = row;
-                    this.dialogUrl=this.editUrl;
-                },
-                saveOrUpdate(){
-                    this.$refs['itemData'].validate((valid) => {
-                        if (valid) {
-                            requestPost(this.dialogUrl, this.itemData);
-                        } else {
-                            return false;
-                        }
-                    });
-                },
-                batchDel() {
-                    let ids = this.multipleSelection.map(i => i.id);
-                    if (!ids.length) {
-                        // 数组为空
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "您未选中任何内容",
-                            type: 'warning'
-                        });
-                        return false;
                     }
-                    ELEMENT.MessageBox.confirm('确定删除选中的列表数据?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestPost(this.batchDelUrl, ids);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
+                }).catch(error => {
+                    console.error('请求失败：', error);
+                    ELEMENT.Message({
+                        showClose: true,
+                        message: '请求失败，请稍后重试',
+                        type: 'error'
                     });
-                },
-                del(id) {
-                    ELEMENT.MessageBox.confirm('确定删除该数据吗?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
+                })
+            },
+            handleSizeChange: function (val) {
+                this.pageDto.pageSize = val;
+                this.requestData();
+            },
+            handleCurrentChange: function (val) {
+                this.pageDto.currentPage = val;
+                this.requestData();
+            },
+            handleSelectionChange: function (val) {
+                this.multipleSelection = val;
+            },
+            showSearchBox: function () {
+                this.showSearch = !this.showSearch;
+            },
+            clearFormValidate: function () {
+                this.$nextTick(() => {
+                    if (this.$refs.itemData) {
+                        this.$refs.itemData.clearValidate();
+                    }
+                });
+            },
+            add: function () {
+                this.addDialogVisible = true;
+                this.dialogTitle = '新增';
+                this.dialogUrl = this.addUrl;
+                this.itemData = this.defaultItemData();
+                this.clearFormValidate();
+            },
+            edit: function (row) {
+                this.addDialogVisible = true;
+                this.dialogTitle = '编辑';
+                this.dialogUrl = this.editUrl;
+                this.itemData = Object.assign({}, row);
+                this.clearFormValidate();
+            },
+            buildSubmitData: function () {
+                let data = Object.assign({}, this.itemData);
+                [
+                    'payType',
+                    'payTime',
+                    'payTransactionId',
+                    'deliveryType',
+                    'shipTime',
+                    'receiveTime',
+                    'remark',
+                    'cancelReason',
+                    'cancelTime',
+                    'extraJson'
+                ].forEach(key => {
+                    if (data[key] === '') {
+                        data[key] = null;
+                    }
+                });
+                return data;
+            },
+            saveOrUpdate: function () {
+                this.$refs.itemData.validate((valid) => {
+                    if (valid) {
+                        requestPost(this.dialogUrl, this.buildSubmitData());
+                    }
+                });
+            },
+            batchDel: function () {
+                let ids = this.multipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message({
+                        showClose: true,
+                        message: '请选择要删除的订单',
                         type: 'warning'
-                    }).then(() => {
-                        requestGet(this.delUrl + id);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
                     });
+                    return false;
                 }
-            }, created() {
-                this.searchList();
+                ELEMENT.MessageBox.confirm('确定删除选中的订单吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    requestPost(this.batchDelUrl, ids);
+                }).catch(() => {
+                    ELEMENT.Message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            del: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该订单吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    requestGet(this.delUrl + id);
+                }).catch(() => {
+                    ELEMENT.Message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             }
-        });
+        },
+        created: function () {
+            this.searchList();
+        }
+    });
 </script>
 
 </body>

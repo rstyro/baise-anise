@@ -31,38 +31,43 @@ public class BizMerchantServiceImpl extends ServiceImpl<BizMerchantMapper, BizMe
     public Page<BizMerchant> getPage(Page page, BaseDto dto) {
         LambdaQueryWrapper<BizMerchant> queryWrapper = new LambdaQueryWrapper<>();
         if (!ObjectUtils.isEmpty(dto.getKeyword())) {
-            // queryWrapper.like(BizMerchant::getRemark, dto.getKeyword());
+            queryWrapper.and(wrapper -> wrapper
+                    .like(BizMerchant::getMerchantName, dto.getKeyword())
+                    .or()
+                    .like(BizMerchant::getContactName, dto.getKeyword())
+                    .or()
+                    .like(BizMerchant::getOriginPlace, dto.getKeyword()));
         }
         queryWrapper.orderByDesc(BizMerchant::getId);
-            return page(page, queryWrapper);
-        }
+        return page(page, queryWrapper);
+    }
 
-        @Override
-        public boolean add(BizMerchant item) {
-            return save(item);
-        }
+    @Override
+    public boolean add(BizMerchant item) {
+        return save(item);
+    }
 
-        @Override
-        public boolean edit(BizMerchant item) {
-            return updateById(item);
-        }
+    @Override
+    public boolean edit(BizMerchant item) {
+        return updateById(item);
+    }
 
-        @Override
-        public boolean del(Long id) {
-            return removeById(id);
-        }
+    @Override
+    public boolean del(Long id) {
+        return removeById(id);
+    }
 
-        @Override
-        public boolean batchDel(List<Long> ids) {
-            return removeBatchByIds(ids);
-         }
+    @Override
+    public boolean batchDel(List<Long> ids) {
+        return removeBatchByIds(ids);
+    }
 
-        @Override
-        public BizMerchant getAppMerchantDetail(MerchantDetailDto dto) {
-            LambdaQueryWrapper<BizMerchant> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(BizMerchant::getId, dto.getMerchantId());
-            queryWrapper.eq(BizMerchant::getIsDeleted, 0);
-            return getOne(queryWrapper);
-        }
+    @Override
+    public BizMerchant getAppMerchantDetail(MerchantDetailDto dto) {
+        LambdaQueryWrapper<BizMerchant> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BizMerchant::getId, dto.getMerchantId());
+        queryWrapper.eq(BizMerchant::getIsDeleted, 0);
+        return getOne(queryWrapper);
+    }
 
 }

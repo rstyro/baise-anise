@@ -61,6 +61,7 @@ const httpInterceptor: RequestInterceptor = {
   request: (config: RequestOptions) => {
     const meta: RequestMeta = config.meta || {}
     meta.loading && showLoading()
+    config.header = config.header || {}
 
     const userStore = useUserStore()
     if (userStore.userInfo.token) {

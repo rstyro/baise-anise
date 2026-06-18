@@ -125,18 +125,6 @@ public class BizOrder implements Serializable {
     private Byte deliveryType;
 
     /**
-     * 快递公司
-     */
-    @TableField("express_company")
-    private String expressCompany;
-
-    /**
-     * 快递单号（最后一笔发货的快递号）
-     */
-    @TableField("express_no")
-    private String expressNo;
-
-    /**
      * 发货时间（最后一笔发货时间）
      */
     @TableField("ship_time")

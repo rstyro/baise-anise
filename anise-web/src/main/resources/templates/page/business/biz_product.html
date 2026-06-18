@@ -8,30 +8,95 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>商品管理</title>
-    <!-- element-ui 引入样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
-          th:href="@{/static/element-ui/index.css}">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
     <style>
         .container {
             padding: 5px;
         }
 
-        .container .search-box {
+        .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header {
+        .toolbar {
             margin-bottom: 10px;
         }
 
-        .container .content-header .content-header-right {
+        .toolbar-right {
             text-align: right;
         }
 
-        .spu-attr-item {
-            margin-bottom: 10px;
+        .page-box {
+            text-align: right;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .product-title {
+            margin-top: 4px;
+            color: #909399;
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .image-list {
             display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
             align-items: center;
+        }
+
+        .image-empty {
+            color: #c0c4cc;
+            font-size: 12px;
+        }
+
+        .dialog-form {
+            padding-right: 24px;
+        }
+
+        .dialog-form .el-select,
+        .dialog-form .el-date-editor,
+        .dialog-form .el-input-number {
+            width: 100%;
+        }
+
+        .upload-preview {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 88px;
+            height: 88px;
+            border: 1px solid #ebeef5;
+            border-radius: 4px;
+            overflow: visible;
+            background: #fafafa;
+        }
+
+        .preview-item .el-image {
+            width: 88px;
+            height: 88px;
+            border-radius: 4px;
+        }
+
+        .preview-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        .upload-tip {
+            color: #909399;
+            font-size: 12px;
+            line-height: 20px;
         }
     </style>
 </head>
@@ -39,688 +104,671 @@
 
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
-        <el-form :inline="true" :model="formDto" class="demo-form-inline">
-            <el-form-item label="关键词检索">
-                <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
+        <el-form :inline="true" :model="formDto">
+            <el-form-item label="商品名称">
+                <el-input v-model="formDto.keyword" placeholder="请输入商品名称" clearable @keyup.enter.native="searchList"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="searchList">查询</el-button>
+                <el-button type="primary" icon="el-icon-search" @click="searchList">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
             </el-form-item>
         </el-form>
     </el-card>
 
     <el-card class="box-card">
-        <section class="content-header">
-            <el-row :gutter="2">
-                <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizProduct:list:add,admin" @click="add" type="success"
-                               size="mini" icon="el-icon-plus">新增
-                    </el-button>
-                    <el-button sa:hasPermissionOr="business:bizProduct:list:del,admin" @click="batchDel" type="danger"
-                               size="mini" icon="el-icon-delete">删除
-                    </el-button>
-                </el-col>
-                <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search"
-                               circle></el-button>
-                </div>
-            </el-row>
+        <el-row class="toolbar" :gutter="10">
+            <el-col :span="12">
+                <el-button sa:hasPermissionOr="business:bizProduct:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
+                <el-button sa:hasPermissionOr="business:bizProduct:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+            </el-col>
+            <el-col :span="12" class="toolbar-right">
+                <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+            </el-col>
+        </el-row>
 
-        </section>
-
-        <!-- Main content -->
-        <section class="content">
-            <el-table
-                    :data="tableData"
-                    style="width: 100%;margin-bottom: 20px;"
-                    row-key="id"
-                    border
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="id" label="产品ID" width="100"></el-table-column>
-                <el-table-column prop="merchantId" label="商家ID" width="100"></el-table-column>
-                <el-table-column prop="categoryId" label="分类ID" width="100"></el-table-column>
-                <el-table-column prop="productName" label="商品名称" width="150"></el-table-column>
-                <el-table-column prop="productTitle" label="商品卖点" width="150"></el-table-column>
-                <el-table-column prop="mainImage" label="商品主图" width="100">
-                    <template slot-scope="scope">
-                        <el-image :src="scope.row.mainImage">
-                            <div slot="error" class="image-slot">
+        <el-table
+                :data="tableData"
+                style="width: 100%;margin-bottom: 20px;"
+                row-key="id"
+                border
+                empty-text="暂无商品数据"
+                @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+            <el-table-column prop="mainImage" label="主图" width="90">
+                <template slot-scope="scope">
+                    <el-image :src="scope.row.mainImage" fit="cover" style="width:56px;height:56px;border-radius:4px;">
+                        <div slot="error" class="image-empty">
+                            <i class="el-icon-picture-outline"></i>
+                        </div>
+                    </el-image>
+                </template>
+            </el-table-column>
+            <el-table-column label="商品信息" min-width="220" show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <div class="product-name">{{ scope.row.productName }}</div>
+                    <div class="product-title">{{ scope.row.productTitle || '-' }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="merchantId" label="商家ID" width="90"></el-table-column>
+            <el-table-column prop="categoryId" label="分类ID" width="90"></el-table-column>
+            <el-table-column prop="status" label="状态" width="90">
+                <template slot-scope="scope">
+                    <el-tag :type="statusType(scope.row.status)" size="mini">{{ statusLabel(scope.row.status) }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="seasonTag" label="季节" width="90">
+                <template slot-scope="scope">
+                    <el-tag v-if="scope.row.seasonTag" type="info" size="mini">{{ scope.row.seasonTag }}</el-tag>
+                    <span v-else>-</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="imageList" label="轮播图" width="210">
+                <template slot-scope="scope">
+                    <div class="image-list" v-if="scope.row.imageListArray && scope.row.imageListArray.length">
+                        <el-image
+                                v-for="(img, index) in scope.row.imageListArray.slice(0, 3)"
+                                :key="index"
+                                :src="img"
+                                fit="cover"
+                                style="width:42px;height:42px;border-radius:4px;">
+                            <div slot="error" class="image-empty">
                                 <i class="el-icon-picture-outline"></i>
                             </div>
                         </el-image>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="imageList" label="轮播图列表" width="200">
-                    <template slot-scope="scope">
-                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                            <template v-if="scope.row.imageList && scope.row.imageList.length">
-                                <el-image
-                                        v-for="(itemImg, idx) in scope.row.imageList"
-                                        :key="idx"
-                                        :src="itemImg"
-                                        fit="cover"
-                                        style="width: 60px;border-radius: 4px;">
-                                    <div slot="error" class="image-slot">
-                                        <i class="el-icon-picture-outline"></i>
-                                    </div>
-                                </el-image>
-                            </template>
-                            <span v-else style="color: #999;">暂无图片</span>
-                        </div>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="description" label="商品详情" width="150">
-                    <template slot-scope="scope">
-                        <div v-html="scope.row.description"></div>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="status" label="状态" width="100">
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.status==1">上架</el-tag>
-                        <el-tag v-if="scope.row.status==0">下架</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="sortOrder" label="排序值" width="100"></el-table-column>
-                <el-table-column prop="seasonTag" label="季节标签" width="100"></el-table-column>
-                <el-table-column prop="extraJson" label="扩展字段" width="100"></el-table-column>
-                <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
-                <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
-                <el-table-column
-                        fixed="right"
-                        label="操作"
-                        width="200">
-                    <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizProduct:list:edit,admin" class="item" effect="dark"
-                                    content="编辑" placement="top-start">
-                            <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip class="item" effect="dark"
-                                    content="管理SKU" placement="top-start">
-                            <el-button @click="manageSku(scope.row)" type="info" icon="el-icon-s-grid" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip class="item" effect="dark"
-                                    content="管理SPU属性" placement="top-start">
-                            <el-button @click="manageSpuAttr(scope.row)" type="warning" icon="el-icon-collection" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizProduct:list:del,admin" class="item" effect="dark"
-                                    content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger"
-                                       icon="el-icon-delete" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-            </el-table>
+                        <el-tag v-if="scope.row.imageListArray.length > 3" size="mini">+{{ scope.row.imageListArray.length - 3 }}</el-tag>
+                    </div>
+                    <span v-else class="image-empty">暂无图片</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="description" label="详情" min-width="180" show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <span>{{ plainText(scope.row.description) || '-' }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="sortOrder" label="排序" width="80"></el-table-column>
+            <el-table-column prop="preSaleStart" label="预售开始" width="160"></el-table-column>
+            <el-table-column prop="preSaleEnd" label="预售结束" width="160"></el-table-column>
+            <el-table-column prop="estimatedShipDate" label="预计发货" width="120"></el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="180">
+                <template slot-scope="scope">
+                    <el-tooltip sa:hasPermissionOr="business:bizProduct:list:edit,admin" effect="dark" content="编辑" placement="top">
+                        <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip effect="dark" content="管理SKU" placement="top">
+                        <el-button @click="manageSku(scope.row)" type="info" icon="el-icon-s-grid" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip effect="dark" content="管理SPU属性" placement="top">
+                        <el-button @click="manageSpuAttr(scope.row)" type="warning" icon="el-icon-collection" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip sa:hasPermissionOr="business:bizProduct:list:del,admin" effect="dark" content="删除" placement="top">
+                        <el-button @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+        </el-table>
 
-            <div class="page-box" v-show="pageDto.pageCount>1">
-                <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        @prev-click="prePage"
-                        @next-click="nextPage"
-                        :current-page="pageDto.currentPage"
-                        :page-size="pageDto.pagerCount"
-                        :page-count="pageDto.pageCount"
-                        :pager-count="pageDto.pagerCount"
-                        layout="sizes,prev, pager, next"
-                        :page-sizes="[10, 20, 30, 40, 50, 100]"
-                        :total="pageDto.total">
-                </el-pagination>
-            </div>
-        </section>
+        <div class="page-box">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="pageDto.currentPage"
+                    :page-size="pageDto.pageSize"
+                    :page-count="pageDto.pageCount"
+                    :pager-count="pageDto.pagerCount"
+                    layout="sizes,prev,pager,next"
+                    :page-sizes="[10, 20, 30, 50, 100]"
+                    :total="pageDto.total">
+            </el-pagination>
+        </div>
     </el-card>
 
-
-    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="800px">
-        <el-form :model="itemData" :rules="rules" ref="itemData">
-
-            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                <el-input v-model="itemData.id" autocomplete="off"></el-input>
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="900px">
+        <el-form class="dialog-form" :model="itemData" :rules="rules" ref="itemData" :label-width="formLabelWidth">
+            <el-form-item label="id" prop="id" style="display: none">
+                <el-input v-model="itemData.id"></el-input>
             </el-form-item>
 
-            <el-form-item label="商家ID" prop="merchantId" :label-width="formLabelWidth">
-                <el-input v-model="itemData.merchantId" autocomplete="off" placeholder="请输入商家ID"></el-input>
+            <el-divider content-position="left">基础信息</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="商家ID" prop="merchantId">
+                        <el-input-number v-model="itemData.merchantId" :min="1" :precision="0" controls-position="right" placeholder="请输入商家ID"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="分类ID" prop="categoryId">
+                        <el-input-number v-model="itemData.categoryId" :min="1" :precision="0" controls-position="right" placeholder="请输入分类ID"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-form-item label="商品名称" prop="productName">
+                <el-input v-model="itemData.productName" maxlength="80" show-word-limit placeholder="请输入商品名称"></el-input>
             </el-form-item>
-
-            <el-form-item label="分类ID" prop="categoryId" :label-width="formLabelWidth">
-                <el-input v-model="itemData.categoryId" autocomplete="off" placeholder="请输入分类ID"></el-input>
+            <el-form-item label="商品卖点" prop="productTitle">
+                <el-input v-model="itemData.productTitle" maxlength="120" show-word-limit placeholder="请输入商品卖点"></el-input>
             </el-form-item>
+            <el-row :gutter="16">
+                <el-col :span="8">
+                    <el-form-item label="状态" prop="status">
+                        <el-select v-model="itemData.status" placeholder="请选择状态">
+                            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="季节标签" prop="seasonTag">
+                        <el-select v-model="itemData.seasonTag" placeholder="请选择季节" clearable>
+                            <el-option v-for="item in seasonOptions" :key="item" :label="item" :value="item"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="排序值" prop="sortOrder">
+                        <el-input-number v-model="itemData.sortOrder" :min="0" :precision="0" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-            <el-form-item label="商品名称" prop="productName" :label-width="formLabelWidth">
-                <el-input v-model="itemData.productName" autocomplete="off" placeholder="请输入商品名称"></el-input>
-            </el-form-item>
-
-            <el-form-item label="商品卖点" prop="productTitle" :label-width="formLabelWidth">
-                <el-input v-model="itemData.productTitle" autocomplete="off" placeholder="请输入商品卖点"></el-input>
-            </el-form-item>
-
-            <el-form-item label="商品主图" prop="mainImage" :label-width="formLabelWidth">
-                <el-input v-model="itemData.mainImage" autocomplete="off" placeholder="请输入商品主图"></el-input>
+            <el-divider content-position="left">图片信息</el-divider>
+            <el-form-item label="商品主图" prop="mainImage">
+                <el-input v-model="itemData.mainImage" placeholder="可直接填写图片地址，或上传图片"></el-input>
                 <el-upload
-                        class="upload-demo"
+                        style="margin-top: 10px;"
                         drag
                         :limit="1"
-                        :before-upload="beforeAvatarUpload"
-                        :on-success="uploadSuccess"
-                        :action="uploadUrl"
-                        list-type="picture">
+                        :show-file-list="false"
+                        :before-upload="beforeImageUpload"
+                        :on-success="uploadMainImageSuccess"
+                        :action="uploadUrl">
                     <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+                    <div class="el-upload__text">将图片拖到此处，或 <em>点击上传</em></div>
+                    <div class="upload-tip" slot="tip">支持 JPG/PNG，单张不超过 10MB</div>
                 </el-upload>
-
+                <div class="upload-preview" v-if="itemData.mainImage">
+                    <div class="preview-item">
+                        <el-image :src="itemData.mainImage" fit="cover"></el-image>
+                    </div>
+                </div>
             </el-form-item>
-
-            <el-form-item label="轮播图列表" prop="imageList" :label-width="formLabelWidth">
-                <div v-if="itemData.imageList && itemData.imageList.length" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
-                    <div v-for="(img, index) in itemData.imageList" :key="index" style="position: relative; width: 100px; height: 100px;">
-                        <el-image :src="img" fit="cover" style="width: 50px;border-radius: 4px;">
-                            <div slot="error" class="image-slot">
-                                <i class="el-icon-picture-outline"></i>
-                            </div>
-                        </el-image>
-                        <el-button type="danger" size="mini" circle @click="removeImage(index)" style="position: absolute; top: -8px; right: -8px;">
-                            <i class="el-icon-delete"></i>
-                        </el-button>
+            <el-form-item label="轮播图" prop="imageList">
+                <div class="upload-preview" v-if="itemData.imageList && itemData.imageList.length">
+                    <div class="preview-item" v-for="(img, index) in itemData.imageList" :key="index">
+                        <el-image :src="img" fit="cover"></el-image>
+                        <el-button class="preview-delete" type="danger" size="mini" circle icon="el-icon-close" @click="removeImage(index)"></el-button>
                     </div>
                 </div>
                 <el-upload
-                        class="upload-demo"
+                        style="margin-top: 10px;"
                         drag
-                        :multiple="true"
+                        multiple
                         :limit="5"
+                        :show-file-list="false"
+                        :before-upload="beforeImageUpload"
                         :on-success="uploadImageListSuccess"
-                        :action="uploadUrl"
-                        list-type="picture">
+                        :action="uploadUrl">
                     <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb，最多上传5张</div>
+                    <div class="el-upload__text">将图片拖到此处，或 <em>点击上传</em></div>
+                    <div class="upload-tip" slot="tip">最多维护 5 张轮播图，支持 JPG/PNG</div>
                 </el-upload>
-
             </el-form-item>
 
-            <el-form-item label="商品详情" prop="description" :label-width="formLabelWidth">
-                <el-input type="textarea" v-model="itemData.description" autocomplete="off" placeholder="请输入商品详情"></el-input>
+            <el-divider content-position="left">预售与详情</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="预售开始" prop="preSaleStart">
+                        <el-date-picker v-model="itemData.preSaleStart" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择预售开始时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="预售结束" prop="preSaleEnd">
+                        <el-date-picker v-model="itemData.preSaleEnd" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" placeholder="请选择预售结束时间" clearable></el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-form-item label="预计发货" prop="estimatedShipDate">
+                <el-date-picker v-model="itemData.estimatedShipDate" type="date" value-format="yyyy-MM-dd" placeholder="请选择预计发货日期" clearable></el-date-picker>
             </el-form-item>
-
-            <el-form-item label="季节标签" prop="seasonTag" :label-width="formLabelWidth">
-                <el-select v-model="itemData.seasonTag" placeholder="请选择季节标签">
-                    <el-option label="春季" value="春季"></el-option>
-                    <el-option label="夏季" value="夏季"></el-option>
-                    <el-option label="秋季" value="秋季"></el-option>
-                    <el-option label="冬季" value="冬季"></el-option>
-                </el-select>
+            <el-form-item label="商品详情" prop="description">
+                <el-input type="textarea" v-model="itemData.description" :autosize="{ minRows: 4, maxRows: 8 }" placeholder="请输入商品详情，支持保存 HTML 内容"></el-input>
             </el-form-item>
-
-            <el-form-item label="预售开始时间" prop="preSaleStart" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.preSaleStart"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择预售开始时间"
-                        :picker-options="futurePickerOptions">
-                </el-date-picker>
-            </el-form-item>
-
-            <el-form-item label="预售结束时间" prop="preSaleEnd" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.preSaleEnd"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择预售结束时间"
-                        :picker-options="futurePickerOptions">
-                </el-date-picker>
-            </el-form-item>
-
-            <el-form-item label="预计发货日期" prop="estimatedShipDate" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.estimatedShipDate"
-                        align="right"
-                        type="date"
-                        value-format="yyyy-MM-dd"
-                        placeholder="选择预计发货日期"
-                        :picker-options="futurePickerOptions">
-                </el-date-picker>
-            </el-form-item>
-
-            <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
-                <el-select v-model="itemData.status" placeholder="请选择状态">
-                    <el-option label="下架" :value="0"></el-option>
-                    <el-option label="上架" :value="1"></el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item label="排序值" prop="sortOrder" :label-width="formLabelWidth">
-                <el-input v-model="itemData.sortOrder" autocomplete="off" placeholder="请输入排序值"></el-input>
-            </el-form-item>
-
-            <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                <el-input type="textarea"  v-model="itemData.extraJson" autocomplete="off" placeholder="请输入扩展字段"></el-input>
+            <el-form-item label="扩展字段" prop="extraJson">
+                <el-input type="textarea" v-model="itemData.extraJson" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="JSON 扩展字段"></el-input>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+            <el-button @click="addDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveOrUpdate">{{ dialogTitle }}</el-button>
         </div>
     </el-dialog>
 
-    <el-dialog title="管理SPU属性" :visible.sync="spuAttrDialogVisible" width="700px">
-        <div>
-            <el-form :model="spuAttrForm">
-                <el-form-item label="选择属性">
-                    <el-select v-model="spuAttrForm.attrId" placeholder="请选择属性" @change="onAttrChange">
-                        <el-option v-for="attr in spuAttributeList" :key="attr.id" :label="attr.attrName" :value="attr.id"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="属性值">
-                    <el-select v-model="spuAttrForm.attrValueId" placeholder="请选择属性值">
-                        <el-option v-for="value in currentAttrValues" :key="value.id" :label="value.value" :value="value.id"></el-option>
-                    </el-select>
-                </el-form-item>
-            </el-form>
-            
-            <el-button type="primary" size="small" @click="addSpuAttr">添加属性</el-button>
-            
-            <el-table :data="spuAttrList" style="margin-top: 20px;" border>
-                <el-table-column prop="attrName" label="属性名称"></el-table-column>
-                <el-table-column prop="attrValue" label="属性值"></el-table-column>
-                <el-table-column label="操作">
-                    <template slot-scope="scope">
-                        <el-button type="danger" size="mini" @click="removeSpuAttr(scope.row)">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </div>
+    <el-dialog title="管理SPU属性" :visible.sync="spuAttrDialogVisible" width="720px">
+        <el-form :inline="true" :model="spuAttrForm">
+            <el-form-item label="属性">
+                <el-select v-model="spuAttrForm.attrId" placeholder="请选择属性" clearable @change="onAttrChange">
+                    <el-option v-for="attr in spuAttributeList" :key="attr.id" :label="attr.attrName" :value="attr.id"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="属性值">
+                <el-select v-model="spuAttrForm.attrValueId" placeholder="请选择属性值" clearable>
+                    <el-option v-for="value in currentAttrValues" :key="value.id" :label="value.value" :value="value.id"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" icon="el-icon-plus" @click="addSpuAttr">添加</el-button>
+            </el-form-item>
+        </el-form>
+
+        <el-table :data="spuAttrList" style="margin-top: 12px;" border empty-text="暂无SPU属性">
+            <el-table-column prop="attrName" label="属性名称"></el-table-column>
+            <el-table-column prop="attrValue" label="属性值"></el-table-column>
+            <el-table-column label="操作" width="100">
+                <template slot-scope="scope">
+                    <el-button type="danger" size="mini" icon="el-icon-delete" @click="removeSpuAttr(scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
         <div slot="footer" class="dialog-footer">
+            <el-button @click="spuAttrDialogVisible = false">取消</el-button>
             <el-button type="primary" @click="saveSpuAttrs">保存</el-button>
         </div>
     </el-dialog>
-
 </div>
-<!-- element-ui -->
+
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
 <script th:src="@{/static/vue/api.js}"></script>
 <script type="text/javascript" th:inline="javascript">
     let ctx = [[@{/}]];
-        new Vue({
-            el: '#app',
-            data: function () {
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                listUrl: ctx + 'business/bizProduct/list',
+                delUrl: ctx + 'business/bizProduct/del?id=',
+                batchDelUrl: ctx + 'business/bizProduct/batchDel',
+                addUrl: ctx + 'business/bizProduct/add',
+                editUrl: ctx + 'business/bizProduct/edit',
+                uploadUrl: ctx + 'upload/image?type=product',
+                attrListUrl: ctx + 'business/bizAttribute/list',
+                attrValueListUrl: ctx + 'business/bizAttributeValue/list',
+                spuAttrSaveUrl: ctx + 'business/bizProductSpuAttr/save',
+                spuAttrListUrl: ctx + 'business/bizProductSpuAttr/listByProduct',
+                dialogUrl: '',
+                tableData: [],
+                multipleSelection: [],
+                formDto: {
+                    keyword: ''
+                },
+                showSearch: false,
+                pageDto: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    total: 0,
+                    pageCount: 1,
+                    pagerCount: 9
+                },
+                addDialogVisible: false,
+                spuAttrDialogVisible: false,
+                currentProductId: null,
+                itemData: this.defaultItemData(),
+                dialogTitle: '新增',
+                formLabelWidth: '110px',
+                statusOptions: [
+                    { value: 0, label: '下架', type: 'info' },
+                    { value: 1, label: '上架', type: 'success' }
+                ],
+                seasonOptions: ['春季', '夏季', '秋季', '冬季', '全年'],
+                rules: {
+                    merchantId: [
+                        { required: true, message: '请输入商家ID', trigger: 'change' }
+                    ],
+                    categoryId: [
+                        { required: true, message: '请输入分类ID', trigger: 'change' }
+                    ],
+                    productName: [
+                        { required: true, message: '请输入商品名称', trigger: 'blur' }
+                    ],
+                    mainImage: [
+                        { required: true, message: '请填写或上传商品主图', trigger: 'blur' }
+                    ],
+                    description: [
+                        { required: true, message: '请输入商品详情', trigger: 'blur' }
+                    ],
+                    status: [
+                        { required: true, message: '请选择状态', trigger: 'change' }
+                    ]
+                },
+                spuAttributeList: [],
+                currentAttrValues: [],
+                spuAttrForm: {
+                    attrId: '',
+                    attrValueId: ''
+                },
+                spuAttrList: []
+            }
+        },
+        methods: {
+            defaultItemData: function () {
                 return {
-                    listUrl: ctx + 'business/bizProduct/list',
-                    delUrl: ctx + 'business/bizProduct/del?id=',
-                    batchDelUrl: ctx + 'business/bizProduct/batchDel',
-                    addUrl: ctx + 'business/bizProduct/add',
-                    editUrl: ctx + 'business/bizProduct/edit',
-                    uploadUrl: ctx + 'upload/image?type=product',
-                    attrListUrl: ctx + 'business/bizAttribute/list',
-                    attrValueListUrl: ctx + 'business/bizAttributeValue/list',
-                    spuAttrSaveUrl: ctx + 'business/bizProductSpuAttr/save',
-                    spuAttrListUrl: ctx + 'business/bizProductSpuAttr/listByProduct',
-                    spuAttrDelUrl: ctx + 'business/bizProductSpuAttr/del',
-                    dialogUrl: '',
-                    tableData: [],
-                    multipleSelection: [],
-                    formDto: {
-                        keyword: '',
-                        region: ''
-                    },
-                    showSearch: false,
-                    pageDto: {
-                        currentPage: 1,
-                        pageSize: 10,
-                        total: 110,
-                        pageCount: 1,
-                        pagerCount: 9,
-                    },
-                    addDialogVisible: false,
-                    spuAttrDialogVisible: false,
-                    currentProductId: null,
-                    itemData: {
-                        menuIdList: [],
-                    },
-                    dialogTitle: '新增',
-                    formLabelWidth: '120px',
-                    formTimeLabelWidth: '120px',
-                    pickerOptions: {
-                        disabledDate(time) {
-                            return time.getTime() > Date.now();
-                        },
-                        shortcuts: [{
-                            text: '今天',
-                            onClick(picker) {
-                                picker.$emit('pick', new Date());
-                            }
-                        }, {
-                            text: '昨天',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24);
-                                picker.$emit('pick', date);
-                            }
-                        }, {
-                            text: '一周前',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                                picker.$emit('pick', date);
-                            }
-                        }]
-                    },
-                    futurePickerOptions: {
-                        shortcuts: [{
-                            text: '今天',
-                            onClick(picker) {
-                                picker.$emit('pick', new Date());
-                            }
-                        }, {
-                            text: '明天',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() + 3600 * 1000 * 24);
-                                picker.$emit('pick', date);
-                            }
-                        }, {
-                            text: '一周后',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() + 3600 * 1000 * 24 * 7);
-                                picker.$emit('pick', date);
-                            }
-                        }]
-                    },
-                    rules: {
-                        merchantId: [
-                            {required: true, message: '请输入商家ID', trigger: 'blur'},
-                        ],
-                        categoryId: [
-                            {required: true, message: '请输入分类ID', trigger: 'blur'},
-                        ],
-                        productName: [
-                            {required: true, message: '请输入商品名称', trigger: 'blur'},
-                        ],
-                        mainImage: [
-                            {required: true, message: '请输入商品主图', trigger: 'blur'},
-                        ],
-                        description: [
-                            {required: true, message: '请输入商品详情', trigger: 'blur'},
-                        ],
-                        status: [
-                            {required: true, message: '请输入状态 0:下架 1:上架', trigger: 'blur'},
-                        ],
-
-                    },
-                    spuAttributeList: [],
-                    currentAttrValues: [],
-                    spuAttrForm: {
-                        attrId: '',
-                        attrValueId: ''
-                    },
-                    spuAttrList: []
-
+                    merchantId: undefined,
+                    categoryId: undefined,
+                    productName: '',
+                    productTitle: '',
+                    mainImage: '',
+                    imageList: [],
+                    description: '',
+                    status: 1,
+                    sortOrder: 0,
+                    seasonTag: '',
+                    preSaleStart: null,
+                    preSaleEnd: null,
+                    estimatedShipDate: null,
+                    extraJson: '',
+                    isDeleted: 0
+                };
+            },
+            statusOption: function (status) {
+                let value = Number(status);
+                return this.statusOptions.find(item => item.value === value) || { label: '未知', type: 'info' };
+            },
+            statusLabel: function (status) {
+                return this.statusOption(status).label;
+            },
+            statusType: function (status) {
+                return this.statusOption(status).type;
+            },
+            parseImageList: function (value) {
+                if (!value) {
+                    return [];
+                }
+                if (Array.isArray(value)) {
+                    return value.filter(Boolean);
+                }
+                try {
+                    let list = JSON.parse(value);
+                    return Array.isArray(list) ? list.filter(Boolean) : [];
+                } catch (e) {
+                    return String(value).split(',').map(item => item.trim()).filter(Boolean);
                 }
             },
-            methods: {
-                searchList: function () {
-                    let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
-                    axios.post(url, this.formDto).then(r => {
-                        if (r.data.code === 200) {
-                            let data = r.data.data;
-                            this.pageDto.total = Number(data.total);
-                            this.pageDto.pageCount = Number(data.pages);
-                            const processedData = data.records.map(item => {
-                                if (typeof item.imageList === 'string') {
-                                    try {
-                                        item.imageList = JSON.parse(item.imageList)
-                                    } catch {
-                                        item.imageList = item.imageList.split(',').map(s => s.trim())
-                                    }
-                                }
-                                return item
-                            })
-                            this.tableData = processedData;
-                        }
-                    }).catch(error => {
-                        console.error("请求失败：", error);
+            normalizeProduct: function (item) {
+                let product = Object.assign({}, item);
+                product.imageListArray = this.parseImageList(product.imageList);
+                return product;
+            },
+            plainText: function (html) {
+                if (!html) {
+                    return '';
+                }
+                return String(html).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+            },
+            searchList: function () {
+                this.pageDto.currentPage = 1;
+                this.requestData();
+            },
+            resetSearch: function () {
+                this.formDto.keyword = '';
+                this.searchList();
+            },
+            requestData: function () {
+                let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                axios.post(url, this.formDto).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data || {};
+                        this.pageDto.total = Number(data.total || 0);
+                        this.pageDto.pageCount = Number(data.pages || 1);
+                        this.tableData = (data.records || []).map(item => this.normalizeProduct(item));
+                    } else {
                         ELEMENT.Message({
                             showClose: true,
-                            message: "请求失败，请稍后重试",
+                            message: r.data.msg || '查询失败',
                             type: 'error'
                         });
-                    })
-                },
-                prePage() {
-                    this.pageDto.currentPage -= 1;
-                    this.searchList();
-                },
-                nextPage() {
-                    this.pageDto.currentPage += 1;
-                    this.searchList();
-                },
-                handleSizeChange(val) {
-                    this.pageDto.pageSize = val;
-                    this.searchList();
-                },
-                handleCurrentChange(val) {
-                    this.pageDto.currentPage = val;
-                    this.searchList();
-                },
-                handleSelectionChange(val) {
-                    this.multipleSelection = val;
-                },
-                showSearchBox() {
-                    this.showSearch = !this.showSearch;
-                },
-                add() {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '新增';
-                    this.dialogUrl = this.addUrl;
-                    this.itemData = {};
-                },
-                edit(row) {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '编辑';
-                    const editData = {...row};
-                    if (editData.imageList && typeof editData.imageList === 'string') {
-                        try {
-                            editData.imageList = JSON.parse(editData.imageList);
-                        } catch {
-                            editData.imageList = editData.imageList.split(',').map(s => s.trim());
-                        }
                     }
-                    this.itemData = editData;
-                    this.dialogUrl = this.editUrl;
-                },
-                manageSku(row) {
-                    window.open(ctx + 'business/bizProductSku/page?productId=' + row.id, '_blank');
-                },
-                manageSpuAttr(row) {
-                    this.currentProductId = row.id;
-                    this.spuAttrDialogVisible = true;
-                    this.loadSpuAttrList();
-                    this.loadSpuAttributes();
-                },
-                loadSpuAttributes() {
-                    axios.post(this.attrListUrl + '?pageNum=1&pageSize=100', {keyword: ''}).then(r => {
-                        if (r.data.code === 200) {
-                            this.spuAttributeList = r.data.data.records.filter(a => a.attrType === 1);
-                        }
+                }).catch(error => {
+                    console.error('请求失败：', error);
+                    ELEMENT.Message({
+                        showClose: true,
+                        message: '请求失败，请稍后重试',
+                        type: 'error'
                     });
-                },
-                onAttrChange() {
-                    const attrId = this.spuAttrForm.attrId;
-                    if (attrId) {
-                        axios.post(this.attrValueListUrl + '?pageNum=1&pageSize=100', {keyword: '', attrId: attrId}).then(r => {
-                            if (r.data.code === 200) {
-                                this.currentAttrValues = r.data.data.records;
-                            }
-                        });
-                    } else {
-                        this.currentAttrValues = [];
+                })
+            },
+            handleSizeChange: function (val) {
+                this.pageDto.pageSize = val;
+                this.requestData();
+            },
+            handleCurrentChange: function (val) {
+                this.pageDto.currentPage = val;
+                this.requestData();
+            },
+            handleSelectionChange: function (val) {
+                this.multipleSelection = val;
+            },
+            showSearchBox: function () {
+                this.showSearch = !this.showSearch;
+            },
+            clearFormValidate: function () {
+                this.$nextTick(() => {
+                    if (this.$refs.itemData) {
+                        this.$refs.itemData.clearValidate();
                     }
-                    this.spuAttrForm.attrValueId = '';
-                },
-                loadSpuAttrList() {
-                    axios.get(this.spuAttrListUrl + '?productId=' + this.currentProductId).then(r => {
-                        if (r.data.code === 200) {
-                            this.spuAttrList = r.data.data;
-                        }
-                    });
-                },
-                addSpuAttr() {
-                    if (!this.spuAttrForm.attrId || !this.spuAttrForm.attrValueId) {
-                        ELEMENT.Message.warning('请选择属性和属性值');
-                        return;
+                });
+            },
+            add: function () {
+                this.addDialogVisible = true;
+                this.dialogTitle = '新增';
+                this.dialogUrl = this.addUrl;
+                this.itemData = this.defaultItemData();
+                this.clearFormValidate();
+            },
+            edit: function (row) {
+                this.addDialogVisible = true;
+                this.dialogTitle = '编辑';
+                this.dialogUrl = this.editUrl;
+                let editData = Object.assign({}, row);
+                editData.imageList = this.parseImageList(row.imageList);
+                delete editData.imageListArray;
+                this.itemData = editData;
+                this.clearFormValidate();
+            },
+            manageSku: function (row) {
+                let tab = {
+                    id: 'biz_product_sku_' + row.id,
+                    title: 'SKU管理 - ' + (row.id),
+                    url: ctx + 'business/bizProductSku/page?productId=' + row.id,
+                    targetType: 'iframe-tab',
+                    close: true
+                };
+                if (window.parent && typeof window.parent.addTabs === 'function') {
+                    window.parent.addTabs(tab);
+                    return;
+                }
+                if (typeof addTabs === 'function') {
+                    addTabs(tab);
+                    return;
+                }
+                window.open(tab.url, '_blank');
+            },
+            manageSpuAttr: function (row) {
+                this.currentProductId = row.id;
+                this.spuAttrDialogVisible = true;
+                this.spuAttrForm = { attrId: '', attrValueId: '' };
+                this.currentAttrValues = [];
+                this.loadSpuAttrList();
+                this.loadSpuAttributes();
+            },
+            loadSpuAttributes: function () {
+                axios.post(this.attrListUrl + '?pageNum=1&pageSize=100', { keyword: '' }).then(r => {
+                    if (r.data.code === 200) {
+                        this.spuAttributeList = (r.data.data.records || []).filter(item => item.attrType === 1);
                     }
-                    const attr = this.spuAttributeList.find(a => a.id === this.spuAttrForm.attrId);
-                    const attrValue = this.currentAttrValues.find(v => v.id === this.spuAttrForm.attrValueId);
-                    
-                    const exists = this.spuAttrList.some(item => item.attrId === this.spuAttrForm.attrId);
-                    if (exists) {
-                        ELEMENT.Message.warning('该属性已存在');
-                        return;
-                    }
-                    
-                    this.spuAttrList.push({
-                        id: null,
-                        productId: this.currentProductId,
-                        attrId: this.spuAttrForm.attrId,
-                        attrName: attr ? attr.attrName : '',
-                        attrValueId: this.spuAttrForm.attrValueId,
-                        attrValue: attrValue ? attrValue.value : ''
-                    });
-                    
-                    this.spuAttrForm.attrId = '';
-                    this.spuAttrForm.attrValueId = '';
+                });
+            },
+            onAttrChange: function () {
+                let attrId = this.spuAttrForm.attrId;
+                this.spuAttrForm.attrValueId = '';
+                if (!attrId) {
                     this.currentAttrValues = [];
-                },
-                removeSpuAttr(row) {
-                    const index = this.spuAttrList.indexOf(row);
-                    if (index > -1) {
-                        if (row.id) {
-                            axios.get(this.spuAttrDelUrl + '?id=' + row.id);
-                        }
-                        this.spuAttrList.splice(index, 1);
+                    return;
+                }
+                axios.post(this.attrValueListUrl + '?pageNum=1&pageSize=100', { keyword: '', attrId: attrId }).then(r => {
+                    if (r.data.code === 200) {
+                        this.currentAttrValues = r.data.data.records || [];
                     }
-                },
-                saveSpuAttrs() {
-                    const data = {
-                        productId: this.currentProductId,
-                        attrs: this.spuAttrList.map(item => ({
-                            attrId: item.attrId,
-                            attrValueId: item.attrValueId
-                        }))
-                    };
-                    axios.post(this.spuAttrSaveUrl, data).then(r => {
-                        if (r.data.code === 200) {
-                            ELEMENT.Message.success('保存成功');
-                            this.spuAttrDialogVisible = false;
-                        }
-                    });
-                },
-                saveOrUpdate() {
-                    this.$refs['itemData'].validate((valid) => {
-                        if (valid) {
-                            const submitData = {...this.itemData};
-                            if (submitData.imageList && Array.isArray(submitData.imageList)) {
-                                submitData.imageList = JSON.stringify(submitData.imageList);
-                            }
-                            requestPost(this.dialogUrl, submitData);
-                        } else {
-                            return false;
-                        }
-                    });
-                },
-                batchDel() {
-                    let ids = this.multipleSelection.map(i => i.id);
-                    if (!ids.length) {
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "您未选中任何内容",
-                            type: 'warning'
-                        });
-                        return false;
+                });
+            },
+            loadSpuAttrList: function () {
+                axios.get(this.spuAttrListUrl + '?productId=' + this.currentProductId).then(r => {
+                    if (r.data.code === 200) {
+                        this.spuAttrList = r.data.data || [];
                     }
-                    ELEMENT.MessageBox.confirm('确定删除选中的列表数据?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestPost(this.batchDelUrl, ids);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
-                },
-                del(id) {
-                    ELEMENT.MessageBox.confirm('确定删除该数据吗?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestGet(this.delUrl + id);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
-                },
-                uploadSuccess(res, file, fileList) {
-                    console.log("res:", res);
-                    if (res.code === 200) {
-                        this.itemData.mainImage = res.data;
+                });
+            },
+            addSpuAttr: function () {
+                if (!this.spuAttrForm.attrId || !this.spuAttrForm.attrValueId) {
+                    ELEMENT.Message.warning('请选择属性和属性值');
+                    return;
+                }
+                let attr = this.spuAttributeList.find(item => item.id === this.spuAttrForm.attrId);
+                let attrValue = this.currentAttrValues.find(item => item.id === this.spuAttrForm.attrValueId);
+                let exists = this.spuAttrList.some(item => item.attrId === this.spuAttrForm.attrId);
+                if (exists) {
+                    ELEMENT.Message.warning('该属性已存在');
+                    return;
+                }
+                this.spuAttrList.push({
+                    id: null,
+                    productId: this.currentProductId,
+                    attrId: this.spuAttrForm.attrId,
+                    attrName: attr ? attr.attrName : '',
+                    attrValueId: this.spuAttrForm.attrValueId,
+                    attrValue: attrValue ? attrValue.value : ''
+                });
+                this.spuAttrForm = { attrId: '', attrValueId: '' };
+                this.currentAttrValues = [];
+            },
+            removeSpuAttr: function (row) {
+                let index = this.spuAttrList.indexOf(row);
+                if (index > -1) {
+                    this.spuAttrList.splice(index, 1);
+                }
+            },
+            saveSpuAttrs: function () {
+                let data = {
+                    productId: this.currentProductId,
+                    attrs: this.spuAttrList.map(item => ({
+                        attrId: item.attrId,
+                        attrValueId: item.attrValueId
+                    }))
+                };
+                axios.post(this.spuAttrSaveUrl, data).then(r => {
+                    if (r.data.code === 200) {
+                        ELEMENT.Message.success('保存成功');
+                        this.spuAttrDialogVisible = false;
                     } else {
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "上传失败，请稍后重试",
-                            type: 'warning'
-                        });
+                        ELEMENT.Message.error(r.data.msg || '保存失败');
                     }
-                },
-                uploadImageListSuccess(res, file, fileList) {
-                    console.log("res:", res);
-                    if (res.code === 200) {
-                        if (!this.itemData.imageList) {
-                            this.itemData.imageList = [];
-                        }
-                        this.itemData.imageList.push(res.data);
-                    } else {
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "上传失败，请稍后重试",
-                            type: 'warning'
-                        });
+                });
+            },
+            buildSubmitData: function () {
+                let data = Object.assign({}, this.itemData);
+                data.imageList = data.imageList && data.imageList.length ? JSON.stringify(data.imageList) : null;
+                ['productTitle', 'seasonTag', 'preSaleStart', 'preSaleEnd', 'estimatedShipDate', 'extraJson'].forEach(key => {
+                    if (data[key] === '') {
+                        data[key] = null;
                     }
-                },
-                removeImage(index) {
-                    this.itemData.imageList.splice(index, 1);
-                },
-                beforeAvatarUpload(file) {
-                    const isJPG = (file.type === 'image/jpeg' || file.type === 'image/png');
-                    const isLt2M = file.size / 1024 / 1024 < 10;
-                    if (!isJPG) {
-                        ELEMENT.Message.error('上传头像图片只能是 JPG/PNG 格式!');
+                });
+                return data;
+            },
+            saveOrUpdate: function () {
+                this.$refs.itemData.validate((valid) => {
+                    if (valid) {
+                        requestPost(this.dialogUrl, this.buildSubmitData());
                     }
-                    if (!isLt2M) {
-                        ELEMENT.Message.error('上传头像图片大小不能超过 2MB!');
+                });
+            },
+            batchDel: function () {
+                let ids = this.multipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message({
+                        showClose: true,
+                        message: '请选择要删除的商品',
+                        type: 'warning'
+                    });
+                    return false;
+                }
+                ELEMENT.MessageBox.confirm('确定删除选中的商品吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    requestPost(this.batchDelUrl, ids);
+                }).catch(() => {
+                    ELEMENT.Message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            del: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该商品吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    requestGet(this.delUrl + id);
+                }).catch(() => {
+                    ELEMENT.Message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            uploadMainImageSuccess: function (res) {
+                if (res.code === 200) {
+                    this.itemData.mainImage = res.data;
+                } else {
+                    ELEMENT.Message.warning(res.msg || '上传失败，请稍后重试');
+                }
+            },
+            uploadImageListSuccess: function (res) {
+                if (res.code === 200) {
+                    if (!this.itemData.imageList) {
+                        this.itemData.imageList = [];
                     }
-                    return isJPG && isLt2M;
-                },
-            }, created() {
-                this.searchList();
+                    if (this.itemData.imageList.length >= 5) {
+                        ELEMENT.Message.warning('轮播图最多 5 张');
+                        return;
+                    }
+                    this.itemData.imageList.push(res.data);
+                } else {
+                    ELEMENT.Message.warning(res.msg || '上传失败，请稍后重试');
+                }
+            },
+            removeImage: function (index) {
+                this.itemData.imageList.splice(index, 1);
+            },
+            beforeImageUpload: function (file) {
+                let isImage = file.type === 'image/jpeg' || file.type === 'image/png';
+                let isLt10M = file.size / 1024 / 1024 < 10;
+                if (!isImage) {
+                    ELEMENT.Message.error('只能上传 JPG/PNG 图片');
+                }
+                if (!isLt10M) {
+                    ELEMENT.Message.error('图片大小不能超过 10MB');
+                }
+                return isImage && isLt10M;
             }
-        });
+        },
+        created: function () {
+            this.searchList();
+        }
+    });
 </script>
 
 </body>

@@ -93,6 +93,7 @@ import { ref, computed } from 'vue'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { cartApi, orderApi, addressApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import { payOrder } from '@/utils/pay'
 import { useCartStore } from '@/stores/cart'
 import { THEME_SUCCESS, THEME_TEXT_GREY } from '@/styles/theme'
 import type { CartItem } from '@/api/types/product'
@@ -258,11 +259,28 @@ const submitOrder = async () => {
       submitData.cartIds = cartIds.value.length > 0 ? cartIds.value : undefined
     }
 
-    await orderApi.submit(submitData)
-    uni.showToast({ title: '下单成功', icon: 'success' })
-    setTimeout(() => {
+    const submitResult = await orderApi.submit(submitData)
+    const orderId = Number(submitResult?.orderId || 0)
+    if (!orderId) {
       uni.$grouter.redirectTo('orderList')
-    }, 800)
+      return
+    }
+
+    try {
+      const payResult = await payOrder(orderId)
+      uni.$grouter.redirectTo('payResult', {
+        query: {
+          orderId,
+          orderNo: payResult.orderNo || submitResult.orderNo || '',
+          amount: Number(payResult.payAmount || submitResult.payAmount || totalAmount.value).toFixed(2),
+        },
+      })
+    } catch {
+      uni.showToast({ title: '下单成功，请稍后支付', icon: 'none' })
+      setTimeout(() => {
+        uni.$grouter.redirectTo('orderDetail', { query: { id: orderId } })
+      }, 800)
+    }
   } catch (e) {
     console.error(e)
     uni.showToast({ title: '提交失败，请重试', icon: 'none' })

@@ -129,7 +129,7 @@
         提醒发货
       </view>
       <template v-else-if="order.status === 3">
-        <view class="action-btn outline" @click="showToast('查看物流')">查看物流</view>
+        <view class="action-btn outline" @click="viewLogistics">查看物流</view>
         <view class="action-btn primary" @click="confirmReceive">确认收货</view>
       </template>
       <template v-else-if="order.status === 4">
@@ -149,8 +149,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { aftersaleApi, orderApi, payApi } from '@/api/businessApi'
+import { orderApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import { payOrder } from '@/utils/pay'
 import { THEME_SUCCESS, THEME_TEXT_GREY, THEME_TEXT_INVERSE } from '@/styles/theme'
 
 type OrderStatus = 0 | 1 | 2 | 3 | 4 | 5
@@ -188,13 +189,6 @@ interface OrderDetail {
   merchantName?: string
   address: OrderAddress | null
   items: OrderGoodsItem[]
-}
-
-interface AfterSaleRecord {
-  orderId: number
-  afterSaleNo?: string
-  status?: number
-  handleRemark?: string
 }
 
 interface StatusMeta {
@@ -331,10 +325,16 @@ const goPay = async () => {
   if (!orderId) return
 
   try {
-    await payApi.mockPaySuccess(orderId)
-    showToast('支付成功', 'success')
+    const payResult = await payOrder(orderId)
     order.value.status = 2
     order.value.payTime = formatCurrentTime()
+    uni.$grouter.redirectTo('payResult', {
+      query: {
+        orderId,
+        orderNo: payResult.orderNo || order.value.orderNo || '',
+        amount: Number(payResult.payAmount || order.value.payAmount || 0).toFixed(2),
+      },
+    })
   } catch {
     showToast('支付失败')
   }
@@ -365,34 +365,19 @@ const buyAgain = () => {
 const goAfterSale = () => {
   const orderId = getOrderId()
   if (!orderId) return
-  uni.$grouter.navigateTo('orderDetail', { query: { id: orderId, mode: 'aftersale' } })
+  uni.$grouter.navigateTo('afterSaleApply', { query: { orderId } })
 }
 
-const viewAfterSale = async () => {
+const viewAfterSale = () => {
   const orderId = getOrderId()
   if (!orderId) return
+  uni.$grouter.navigateTo('afterSaleDetail', { query: { orderId } })
+}
 
-  try {
-    const list = await aftersaleApi.list() as AfterSaleRecord[]
-    const item = (list || []).find(record => record.orderId === orderId)
-    if (item) {
-      const statusLabelMap: Record<number, string> = {
-        0: '待处理',
-        1: '已同意',
-        2: '已拒绝',
-        3: '已完成',
-      }
-      uni.showModal({
-        title: '售后状态',
-        content: `售后编号：${item.afterSaleNo || '-'}\n状态：${statusLabelMap[item.status || 0] || '未知'}\n处理备注：${item.handleRemark || '暂无'}`,
-        showCancel: false,
-      })
-    } else {
-      showToast('暂无售后记录')
-    }
-  } catch {
-    showToast('查询失败')
-  }
+const viewLogistics = () => {
+  const orderId = getOrderId()
+  if (!orderId) return
+  uni.$grouter.navigateTo('orderLogistics', { query: { orderId } })
 }
 </script>
 

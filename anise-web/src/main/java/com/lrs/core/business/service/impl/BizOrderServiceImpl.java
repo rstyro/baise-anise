@@ -100,7 +100,7 @@ public class BizOrderServiceImpl extends ServiceImpl<BizOrderMapper, BizOrder> i
     public Page<BizOrder> getPage(Page page, BaseDto dto) {
         LambdaQueryWrapper<BizOrder> queryWrapper = new LambdaQueryWrapper<>();
         if (!ObjectUtils.isEmpty(dto.getKeyword())) {
-            // queryWrapper.like(BizOrder::getRemark, dto.getKeyword());
+            queryWrapper.like(BizOrder::getOrderNo, dto.getKeyword());
         }
         queryWrapper.orderByDesc(BizOrder::getId);
         return page(page, queryWrapper);

@@ -75,6 +75,9 @@ public class BizProductSkuAttrController extends BaseController {
 
         BizProductSkuAttr first = bizProductSkuAttrService.getOne(new LambdaQueryWrapper<BizProductSkuAttr>().eq(BizProductSkuAttr::getSkuId, skuId));
         Long productId = first != null ? first.getProductId() : null;
+        if (productId == null && data.get("productId") != null) {
+            productId = ((Number) data.get("productId")).longValue();
+        }
 
         LambdaQueryWrapper<BizProductSkuAttr> deleteQuery = new LambdaQueryWrapper<>();
         deleteQuery.eq(BizProductSkuAttr::getSkuId, skuId);

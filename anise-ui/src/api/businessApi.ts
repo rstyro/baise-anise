@@ -43,6 +43,10 @@ export const orderApi = {
   detail(orderId: number): Promise<any> {
     return http.post(`${baseUrl}/app/order/detail`, { orderId })
   },
+  /** 订单物流 */
+  logistics(orderId: number): Promise<any> {
+    return http.post(`${baseUrl}/app/order/logistics`, { orderId })
+  },
   /** 取消订单 */
   cancel(orderId: number): Promise<void> {
     return http.post(`${baseUrl}/app/order/cancel`, { orderId })

@@ -41,7 +41,7 @@ public class BizProductServiceImpl extends ServiceImpl<BizProductMapper, BizProd
     public Page<BizProduct> getPage(Page page, BaseDto dto) {
         LambdaQueryWrapper<BizProduct> queryWrapper = new LambdaQueryWrapper<>();
         if (!ObjectUtils.isEmpty(dto.getKeyword())) {
-            // queryWrapper.like(BizProduct::getRemark, dto.getKeyword());
+            queryWrapper.like(BizProduct::getProductName, dto.getKeyword());
         }
         queryWrapper.orderByDesc(BizProduct::getId);
         return page(page, queryWrapper);

@@ -47,6 +47,26 @@
 			"style": { "navigationBarTitleText": "订单详情" }
 		},
 		{
+			"path": "pages/order/logistics/logistics",
+			"name": "orderLogistics",
+			"style": { "navigationBarTitleText": "物流详情" }
+		},
+		{
+			"path": "pages/pay/result/result",
+			"name": "payResult",
+			"style": { "navigationBarTitleText": "支付结果" }
+		},
+		{
+			"path": "pages/aftersale/apply/apply",
+			"name": "afterSaleApply",
+			"style": { "navigationBarTitleText": "申请售后" }
+		},
+		{
+			"path": "pages/aftersale/detail/detail",
+			"name": "afterSaleDetail",
+			"style": { "navigationBarTitleText": "售后详情" }
+		},
+		{
 			"path": "pages/address/list/list",
 			"name": "addressList",
 			"style": { "navigationBarTitleText": "收货地址" }

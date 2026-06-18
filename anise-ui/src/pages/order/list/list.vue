@@ -95,7 +95,7 @@
                       提醒发货
                     </view>
                     <template v-else-if="order.status === 3">
-                      <view class="btn btn-plain" @click.stop="viewLogistics">查看物流</view>
+                      <view class="btn btn-plain" @click.stop="viewLogistics(order)">查看物流</view>
                       <view class="btn btn-primary" @click.stop="confirmReceive(order)">确认收货</view>
                     </template>
                     <template v-else-if="order.status === 4">
@@ -127,7 +127,8 @@
 import { ref, getCurrentInstance } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getImageUrl } from '@/utils/image'
-import { orderApi, payApi } from '@/api/businessApi'
+import { orderApi } from '@/api/businessApi'
+import { payOrder } from '@/utils/pay'
 
 // ========== 类型 ==========
 interface GoodsItem {
@@ -392,11 +393,14 @@ const cancelOrder = async (order: OrderItem) => {
 }
 const goPay = async (order: OrderItem) => {
   try { 
-    await payApi.mockPaySuccess(order.id as number)
-    uni.$u.toast('支付成功')
-    const tabIdx = Math.max(0, Math.min(order.status - 1, 3))
-    pageNum.value.splice(tabIdx, 1, 1)
-    loadOrders(tabIdx)
+    const payResult = await payOrder(order.id as number)
+    uni.$grouter.navigateTo('payResult', {
+      query: {
+        orderId: order.id,
+        orderNo: payResult.orderNo || order.orderNo || '',
+        amount: Number(payResult.payAmount || order.payAmount || totalPrice(order.goodsList)).toFixed(2),
+      },
+    })
   } catch { 
     uni.$u.toast('支付失败') 
   }
@@ -412,7 +416,9 @@ const confirmReceive = async (order: OrderItem) => {
   }
 }
 const remindDelivery = () => uni.$u.toast('已提醒发货')
-const viewLogistics = () => uni.$u.toast('查看物流')
+const viewLogistics = (order: OrderItem) => {
+  uni.$grouter.navigateTo('orderLogistics', { query: { orderId: order.id } })
+}
 const evaluateOrder = () => uni.$u.toast('评价')
 const buyAgain = () => uni.$u.toast('再次购买')
 const goShop = () => uni.$grouter.switchTab('index')

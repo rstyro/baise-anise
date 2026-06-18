@@ -6,3 +6,15 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+
+declare global {
+  interface ImportMeta {
+    hot?: {
+      accept: (...args: any[]) => void
+      dispose: (...args: any[]) => void
+      [key: string]: any
+    }
+  }
+}
+
+export {}

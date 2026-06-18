@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sa="http://www.thymeleaf.org/extras/sa-token">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -7,559 +8,790 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>SKU管理</title>
-    <!-- element-ui 引入样式 -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
     <style>
-        .container{
+        .container {
             padding: 5px;
         }
 
-        .container .search-box{
+        .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header{
+        .toolbar {
             margin-bottom: 10px;
         }
 
-        .container .content-header .content-header-right {
+        .toolbar-right {
             text-align: right;
         }
-        
-        .spec-item {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
+
+        .page-box {
+            text-align: right;
         }
-        
-        .sku-attr-item {
-            margin-bottom: 10px;
+
+        .sku-code {
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .muted {
+            margin-top: 4px;
+            color: #909399;
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .money {
+            color: #f56c6c;
+            font-weight: 600;
+        }
+
+        .number-strong {
+            color: #303133;
+            font-weight: 600;
+        }
+
+        .rule-line {
+            line-height: 20px;
+        }
+
+        .dialog-form {
+            padding-right: 24px;
+        }
+
+        .dialog-form .el-select,
+        .dialog-form .el-input-number {
+            width: 100%;
+        }
+
+        .product-option {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .product-option-name {
+            overflow: hidden;
+            color: #303133;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-option-id {
+            flex-shrink: 0;
+            color: #909399;
+            font-size: 12px;
+        }
+
+        .attr-toolbar {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .attr-toolbar .el-form {
+            flex: 1;
+        }
+
+        .attr-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 34px;
+        }
+
+        .empty-tip {
+            padding: 28px 0;
+            text-align: center;
+            color: #909399;
+            background: #fafafa;
+            border: 1px dashed #dcdfe6;
+            border-radius: 4px;
         }
     </style>
-    <script th:src="@{/static/vue/api.js}"></script>
 </head>
 <body>
+
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
-        <el-form :inline="true" :model="formDto" class="demo-form-inline">
-            <el-form-item label="关键词检索">
-                <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
+        <el-form :inline="true" :model="formDto">
+            <el-form-item label="SKU编码">
+                <el-input v-model="formDto.keyword" placeholder="请输入SKU编码" clearable @keyup.enter.native="searchList"></el-input>
+            </el-form-item>
+            <el-form-item label="商品ID">
+                <el-input-number v-model="formDto.productId" :min="1" :precision="0" controls-position="right"></el-input-number>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="searchList">查询</el-button>
+                <el-button type="primary" icon="el-icon-search" @click="searchList">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
             </el-form-item>
         </el-form>
     </el-card>
 
     <el-card class="box-card">
-        <section class="content-header">
-            <el-row :gutter="2">
-                <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizProductSku:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增SKU</el-button>
-                    <el-button sa:hasPermissionOr="business:bizProductSku:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
-                </el-col>
-                <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
-                </div>
-            </el-row>
+        <el-row class="toolbar" :gutter="10">
+            <el-col :span="12">
+                <el-button sa:hasPermissionOr="business:bizProductSku:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增SKU</el-button>
+                <el-button sa:hasPermissionOr="business:bizProductSku:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+                <el-tag v-if="currentProductId" size="mini" type="info" style="margin-left: 8px;">当前商品ID：{{ currentProductId }}</el-tag>
+            </el-col>
+            <el-col :span="12" class="toolbar-right">
+                <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+            </el-col>
+        </el-row>
 
-        </section>
+        <el-table
+                :data="tableData"
+                style="width: 100%;margin-bottom: 20px;"
+                row-key="id"
+                border
+                empty-text="暂无SKU数据"
+                @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+            <el-table-column label="SKU信息" min-width="190" show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <div class="sku-code">{{ scope.row.skuCode || '自动生成' }}</div>
+                    <div class="muted">商品ID：{{ scope.row.productId || '-' }} / 单位：{{ scope.row.saleUnit || '-' }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column label="价格" width="150">
+                <template slot-scope="scope">
+                    <div class="money">￥{{ formatMoney(scope.row.price) }}</div>
+                    <div class="muted">原价 ￥{{ formatMoney(scope.row.originalPrice) }}</div>
+                    <div class="muted">批发 ￥{{ formatMoney(scope.row.wholesalePrice) }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column label="库存/销量" width="130">
+                <template slot-scope="scope">
+                    <div>库存 <span class="number-strong">{{ formatNumber(scope.row.stock) }}</span></div>
+                    <div class="muted">销量 {{ scope.row.sales || 0 }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column label="购买规则" width="170">
+                <template slot-scope="scope">
+                    <div class="rule-line">最小 {{ formatNumber(scope.row.minQuantity) }}</div>
+                    <div class="rule-line">最大 {{ formatNumber(scope.row.maxQuantity) }}</div>
+                    <div class="muted">步进 {{ formatNumber(scope.row.quantityStep) }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column label="重量" width="130">
+                <template slot-scope="scope">
+                    <div>{{ formatNumber(scope.row.unitWeight) }} kg</div>
+                    <el-tag :type="scope.row.isVariableWeight == 1 ? 'warning' : 'info'" size="mini">
+                        {{ scope.row.isVariableWeight == 1 ? '浮动重量' : '固定重量' }}
+                    </el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="sortOrder" label="排序" width="80"></el-table-column>
+            <el-table-column prop="status" label="状态" width="90">
+                <template slot-scope="scope">
+                    <el-tag :type="statusType(scope.row.status)" size="mini">{{ statusLabel(scope.row.status) }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+            <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="150">
+                <template slot-scope="scope">
+                    <el-tooltip sa:hasPermissionOr="business:bizProductSku:list:edit,admin" effect="dark" content="编辑" placement="top">
+                        <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip effect="dark" content="销售属性" placement="top">
+                        <el-button @click="manageSkuAttr(scope.row)" type="warning" icon="el-icon-collection-tag" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip sa:hasPermissionOr="business:bizProductSku:list:del,admin" effect="dark" content="删除" placement="top">
+                        <el-button @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+        </el-table>
 
-        <!-- Main content -->
-        <section class="content">
-            <el-table
-                    :data="tableData"
-                    style="width: 100%;margin-bottom: 20px;"
-                    row-key="id"
-                    border
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="id" label="SKU-ID" width="100" ></el-table-column>
-                <el-table-column prop="productId" label="商品ID" width="100" ></el-table-column>
-                <el-table-column prop="skuCode" label="SKU编码" width="150" ></el-table-column>
-                <el-table-column prop="saleUnit" label="销售单位" width="100" ></el-table-column>
-                <el-table-column prop="unitWeight" label="单位重量(kg)" width="120" ></el-table-column>
-                <el-table-column prop="isVariableWeight" label="是否浮动重量" width="120" >
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.isVariableWeight==1">是</el-tag>
-                        <el-tag v-if="scope.row.isVariableWeight==0">否</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="minQuantity" label="最小购买量" width="100" ></el-table-column>
-                <el-table-column prop="maxQuantity" label="最大购买量" width="100" ></el-table-column>
-                <el-table-column prop="quantityStep" label="购买步进" width="100" ></el-table-column>
-                <el-table-column prop="price" label="销售价" width="100" ></el-table-column>
-                <el-table-column prop="originalPrice" label="划线原价" width="100" ></el-table-column>
-                <el-table-column prop="wholesalePrice" label="批发价" width="100" ></el-table-column>
-                <el-table-column prop="stock" label="库存" width="100" ></el-table-column>
-                <el-table-column prop="sales" label="销量" width="100" ></el-table-column>
-                <el-table-column prop="sortOrder" label="排序" width="80" ></el-table-column>
-                <el-table-column prop="status" label="状态" width="100" >
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.status==1">启用</el-tag>
-                        <el-tag type="danger" v-if="scope.row.status==0">禁用</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="createTime" label="创建时间" width="160" ></el-table-column>
-                <el-table-column prop="updateTime" label="更新时间" width="160" ></el-table-column>
-                <el-table-column
-                        fixed="right"
-                        label="操作"
-                        width="200">
-                    <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizProductSku:list:edit,admin" class="item" effect="dark" content="编辑" placement="top-start">
-                            <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip class="item" effect="dark" content="管理SKU属性" placement="top-start">
-                            <el-button @click="manageSkuAttr(scope.row)" type="warning" icon="el-icon-collection-tag" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizProductSku:list:del,admin" class="item" effect="dark" content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini"
-                                       circle></el-button>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-            </el-table>
-
-            <div class="page-box" v-show="pageDto.pageCount>1">
-                <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        @prev-click="prePage"
-                        @next-click="nextPage"
-                        :current-page="pageDto.currentPage"
-                        :page-size="pageDto.pagerCount"
-                        :page-count="pageDto.pageCount"
-                        :pager-count="pageDto.pagerCount"
-                        layout="sizes,prev, pager, next"
-                        :page-sizes="[10, 20, 30, 40, 50, 100]"
-                        :total="pageDto.total">
-                </el-pagination>
-            </div>
-        </section>
+        <div class="page-box">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="pageDto.currentPage"
+                    :page-size="pageDto.pageSize"
+                    :page-count="pageDto.pageCount"
+                    :pager-count="pageDto.pagerCount"
+                    layout="sizes,prev,pager,next"
+                    :page-sizes="[10, 20, 30, 50, 100]"
+                    :total="pageDto.total">
+            </el-pagination>
+        </div>
     </el-card>
 
-
-    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="800px">
-        <el-form :model="itemData" :rules="rules" ref="itemData">
-
-            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                <el-input v-model="itemData.id" autocomplete="off"></el-input>
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="900px">
+        <el-form class="dialog-form" :model="itemData" :rules="rules" ref="itemData" :label-width="formLabelWidth">
+            <el-form-item label="id" prop="id" style="display: none">
+                <el-input v-model="itemData.id"></el-input>
             </el-form-item>
 
-            <el-form-item label="商品ID" prop="productId" :label-width="formLabelWidth">
-                <el-input v-model="itemData.productId" autocomplete="off" placeholder="请输入商品ID" ></el-input>
-            </el-form-item>
+            <el-divider content-position="left">基础信息</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="所属商品" prop="productId">
+                        <el-select
+                                v-model="itemData.productId"
+                                filterable
+                                remote
+                                clearable
+                                reserve-keyword
+                                :remote-method="searchProductOptions"
+                                :loading="productLoading"
+                                placeholder="输入商品名称搜索选择">
+                            <el-option
+                                    v-for="product in productOptions"
+                                    :key="product.id"
+                                    :label="productOptionLabel(product)"
+                                    :value="product.id">
+                                <div class="product-option">
+                                    <span class="product-option-name">{{ product.productName || productOptionLabel(product) }}</span>
+                                    <span class="product-option-id">ID：{{ product.id }}</span>
+                                </div>
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="SKU编码" prop="skuCode">
+                        <el-input v-model="itemData.skuCode" maxlength="64" show-word-limit placeholder="留空则自动生成"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="销售单位" prop="saleUnit">
+                        <el-input v-model="itemData.saleUnit" maxlength="20" placeholder="如：箱、斤、个、份"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="状态" prop="status">
+                        <el-select v-model="itemData.status" placeholder="请选择状态">
+                            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-            <el-form-item label="SKU编码" prop="skuCode" :label-width="formLabelWidth">
-                <el-input v-model="itemData.skuCode" autocomplete="off" placeholder="请输入SKU编码" ></el-input>
-            </el-form-item>
+            <el-divider content-position="left">价格与库存</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="8">
+                    <el-form-item label="销售价" prop="price">
+                        <el-input-number v-model="itemData.price" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="划线原价" prop="originalPrice">
+                        <el-input-number v-model="itemData.originalPrice" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="批发价" prop="wholesalePrice">
+                        <el-input-number v-model="itemData.wholesalePrice" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="库存" prop="stock">
+                        <el-input-number v-model="itemData.stock" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="排序" prop="sortOrder">
+                        <el-input-number v-model="itemData.sortOrder" :min="0" :precision="0" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-            <el-form-item label="销售单位" prop="saleUnit" :label-width="formLabelWidth">
-                <el-input v-model="itemData.saleUnit" autocomplete="off" placeholder="如：箱、斤、个、份" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="单位重量(kg)" prop="unitWeight" :label-width="formLabelWidth">
-                <el-input v-model="itemData.unitWeight" type="number" step="0.01" autocomplete="off" placeholder="用于运费计算" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="是否浮动重量" prop="isVariableWeight" :label-width="formLabelWidth">
-                <el-select v-model="itemData.isVariableWeight" placeholder="请选择">
-                    <el-option label="否(按件/箱)" :value="0"></el-option>
-                    <el-option label="是(按斤输入)" :value="1"></el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item label="最小购买量" prop="minQuantity" :label-width="formLabelWidth">
-                <el-input v-model="itemData.minQuantity" type="number" step="0.5" autocomplete="off" placeholder="支持小数" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="最大购买量" prop="maxQuantity" :label-width="formLabelWidth">
-                <el-input v-model="itemData.maxQuantity" type="number" step="0.5" autocomplete="off" placeholder="支持小数" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="购买步进" prop="quantityStep" :label-width="formLabelWidth">
-                <el-input v-model="itemData.quantityStep" type="number" step="0.5" autocomplete="off" placeholder="如1.0或0.5" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="销售价" prop="price" :label-width="formLabelWidth">
-                <el-input v-model="itemData.price" type="number" step="0.01" autocomplete="off" placeholder="请输入销售价" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="划线原价" prop="originalPrice" :label-width="formLabelWidth">
-                <el-input v-model="itemData.originalPrice" type="number" step="0.01" autocomplete="off" placeholder="请输入划线原价" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="批发价" prop="wholesalePrice" :label-width="formLabelWidth">
-                <el-input v-model="itemData.wholesalePrice" type="number" step="0.01" autocomplete="off" placeholder="请输入批发价" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="库存" prop="stock" :label-width="formLabelWidth">
-                <el-input v-model="itemData.stock" type="number" step="0.01" autocomplete="off" placeholder="支持小数" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="排序" prop="sortOrder" :label-width="formLabelWidth">
-                <el-input v-model="itemData.sortOrder" type="number" autocomplete="off" placeholder="越小越靠前" ></el-input>
-            </el-form-item>
-
-            <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
-                <el-select v-model="itemData.status" placeholder="请选择状态">
-                    <el-option label="禁用" :value="0"></el-option>
-                    <el-option label="启用" :value="1"></el-option>
-                </el-select>
-            </el-form-item>
+            <el-divider content-position="left">重量与购买规则</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="单位重量(kg)" prop="unitWeight">
+                        <el-input-number v-model="itemData.unitWeight" :min="0" :precision="3" :step="0.1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="重量类型" prop="isVariableWeight">
+                        <el-select v-model="itemData.isVariableWeight" placeholder="请选择重量类型">
+                            <el-option label="固定重量" :value="0"></el-option>
+                            <el-option label="浮动重量" :value="1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="8">
+                    <el-form-item label="最小购买量" prop="minQuantity">
+                        <el-input-number v-model="itemData.minQuantity" :min="0" :precision="2" :step="0.5" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="最大购买量" prop="maxQuantity">
+                        <el-input-number v-model="itemData.maxQuantity" :min="0" :precision="2" :step="1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="购买步进" prop="quantityStep">
+                        <el-input-number v-model="itemData.quantityStep" :min="0.01" :precision="2" :step="0.5" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+            </el-row>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+            <el-button @click="addDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveOrUpdate">{{ dialogTitle }}</el-button>
         </div>
     </el-dialog>
 
-    <el-dialog title="管理SKU属性" :visible.sync="skuAttrDialogVisible" width="700px">
-        <div>
-            <el-form :model="skuAttrForm">
-                <el-form-item label="选择属性">
-                    <el-select v-model="skuAttrForm.attrId" placeholder="请选择销售属性" @change="onSkuAttrChange">
+    <el-dialog :title="skuAttrDialogTitle" :visible.sync="skuAttrDialogVisible" width="760px">
+        <div class="attr-toolbar">
+            <el-form :inline="true" :model="skuAttrForm">
+                <el-form-item label="属性">
+                    <el-select v-model="skuAttrForm.attrId" placeholder="请选择销售属性" clearable @change="onSkuAttrChange">
                         <el-option v-for="attr in skuAttributeList" :key="attr.id" :label="attr.attrName" :value="attr.id"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="属性值">
-                    <el-select v-model="skuAttrForm.attrValueId" placeholder="请选择属性值">
+                    <el-select v-model="skuAttrForm.attrValueId" placeholder="请选择属性值" clearable>
                         <el-option v-for="value in currentSkuAttrValues" :key="value.id" :label="value.value" :value="value.id"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
-            
-            <el-button type="primary" size="small" @click="addSkuAttr">添加属性</el-button>
-            
-            <el-table :data="skuAttrList" style="margin-top: 20px;" border>
-                <el-table-column prop="attrName" label="属性名称"></el-table-column>
-                <el-table-column prop="attrValue" label="属性值"></el-table-column>
-                <el-table-column label="操作">
-                    <template slot-scope="scope">
-                        <el-button type="danger" size="mini" @click="removeSkuAttr(scope.row)">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <el-button type="primary" icon="el-icon-plus" @click="addSkuAttr">添加</el-button>
         </div>
+
+        <div class="attr-list" v-if="skuAttrList.length">
+            <el-tag
+                    v-for="item in skuAttrList"
+                    :key="item.attrId"
+                    closable
+                    type="warning"
+                    @close="removeSkuAttr(item)">
+                {{ item.attrName }}：{{ item.attrValue }}
+            </el-tag>
+        </div>
+        <div v-else class="empty-tip">暂无销售属性</div>
+
+        <el-table :data="skuAttrList" style="margin-top: 14px;" border empty-text="暂无销售属性">
+            <el-table-column prop="attrName" label="属性名称"></el-table-column>
+            <el-table-column prop="attrValue" label="属性值"></el-table-column>
+            <el-table-column label="操作" width="100">
+                <template slot-scope="scope">
+                    <el-button type="danger" size="mini" icon="el-icon-delete" @click="removeSkuAttr(scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
         <div slot="footer" class="dialog-footer">
+            <el-button @click="skuAttrDialogVisible = false">取消</el-button>
             <el-button type="primary" @click="saveSkuAttrs">保存</el-button>
         </div>
     </el-dialog>
-
 </div>
-<!-- element-ui -->
+
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
+<script th:src="@{/static/vue/api.js}"></script>
 
 <script type="text/javascript" th:inline="javascript">
     let ctx = [[@{/}]];
     let urlParams = new URLSearchParams(window.location.search);
     let defaultProductId = urlParams.get('productId');
-    
-        new Vue({
-            el: '#app',
-            data: function () {
-                return {
-                    listUrl: ctx + 'business/bizProductSku/list',
-                    delUrl: ctx + 'business/bizProductSku/del?id=',
-                    batchDelUrl: ctx + 'business/bizProductSku/batchDel',
-                    addUrl: ctx + 'business/bizProductSku/add',
-                    editUrl: ctx + 'business/bizProductSku/edit',
-                    attrListUrl: ctx + 'business/bizAttribute/list',
-                    attrValueListUrl: ctx + 'business/bizAttributeValue/list',
-                    skuAttrSaveUrl: ctx + 'business/bizProductSkuAttr/save',
-                    skuAttrListUrl: ctx + 'business/bizProductSkuAttr/listBySku',
-                    skuAttrDelUrl: ctx + 'business/bizProductSkuAttr/del',
-                    dialogUrl:'',
-                    tableData: [],
-                    multipleSelection: [],
-                    formDto: {
-                        keyword: '',
-                        region: ''
-                    },
-                    showSearch: false,
-                    pageDto: {
-                        currentPage: 1,
-                        pageSize: 10,
-                        total: 110,
-                        pageCount: 1,
-                        pagerCount: 9,
-                    },
-                    addDialogVisible: false,
-                    skuAttrDialogVisible: false,
-                    currentSkuId: null,
-                    currentProductId: defaultProductId ? parseInt(defaultProductId) : null,
-                    itemData: {
-                        menuIdList:[],
-                    },
-                    skuAttributeList: [],
-                    currentSkuAttrValues: [],
-                    skuAttrForm: {
-                        attrId: '',
-                        attrValueId: ''
-                    },
-                    skuAttrList: [],
-                    dialogTitle: '新增',
-                    formLabelWidth: '120px',
-                    formTimeLabelWidth: '120px',
-                    pickerOptions: {
-                        disabledDate(time) {
-                            return time.getTime() > Date.now();
-                        },
-                        shortcuts: [{
-                            text: '今天',
-                            onClick(picker) {
-                                picker.$emit('pick', new Date());
-                            }
-                        }, {
-                            text: '昨天',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24);
-                                picker.$emit('pick', date);
-                            }
-                        }, {
-                            text: '一周前',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                                picker.$emit('pick', date);
-                            }
-                        }]
-                    },
-                    rules: {
-                        productId: [
-                            { required: true, message: '请输入商品ID', trigger: 'blur' },
-                        ],
-                        skuCode: [
-                            { required: true, message: '请输入SKU编码', trigger: 'blur' },
-                        ],
-                        saleUnit: [
-                            { required: true, message: '请输入销售单位', trigger: 'blur' },
-                        ],
-                        price: [
-                            { required: true, message: '请输入销售价', trigger: 'blur' },
-                        ],
-                        stock: [
-                            { required: true, message: '请输入库存', trigger: 'blur' },
-                        ],
-                        status: [
-                            { required: true, message: '请输入状态 0:禁用 1:启用', trigger: 'blur' },
-                        ],
-                    }
+    let initialProductId = defaultProductId ? Number(defaultProductId) : null;
 
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                listUrl: ctx + 'business/bizProductSku/list',
+                delUrl: ctx + 'business/bizProductSku/del?id=',
+                batchDelUrl: ctx + 'business/bizProductSku/batchDel',
+                addUrl: ctx + 'business/bizProductSku/add',
+                editUrl: ctx + 'business/bizProductSku/edit',
+                productListUrl: ctx + 'business/bizProduct/list',
+                attrListUrl: ctx + 'business/bizAttribute/list',
+                attrValueListUrl: ctx + 'business/bizAttributeValue/list',
+                skuAttrSaveUrl: ctx + 'business/bizProductSkuAttr/save',
+                skuAttrListUrl: ctx + 'business/bizProductSkuAttr/listBySku',
+                dialogUrl: '',
+                tableData: [],
+                multipleSelection: [],
+                currentProductId: initialProductId,
+                formDto: {
+                    keyword: '',
+                    productId: initialProductId || undefined
+                },
+                showSearch: false,
+                pageDto: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    total: 0,
+                    pageCount: 1,
+                    pagerCount: 9
+                },
+                addDialogVisible: false,
+                skuAttrDialogVisible: false,
+                currentSkuId: null,
+                currentSkuProductId: null,
+                itemData: {
+                    productId: initialProductId || undefined,
+                    skuCode: '',
+                    saleUnit: '个',
+                    unitWeight: 0,
+                    isVariableWeight: 0,
+                    minQuantity: 1,
+                    maxQuantity: 999,
+                    quantityStep: 1,
+                    price: 0,
+                    originalPrice: 0,
+                    wholesalePrice: 0,
+                    stock: 0,
+                    sales: 0,
+                    status: 1,
+                    sortOrder: 0,
+                    isDeleted: 0
+                },
+                dialogTitle: '新增',
+                skuAttrDialogTitle: '销售属性',
+                formLabelWidth: '120px',
+                statusOptions: [
+                    { value: 0, label: '禁用', type: 'danger' },
+                    { value: 1, label: '启用', type: 'success' }
+                ],
+                rules: {
+                    productId: [
+                        { required: true, message: '请选择所属商品', trigger: 'change' }
+                    ],
+                    saleUnit: [
+                        { required: true, message: '请输入销售单位', trigger: 'blur' }
+                    ],
+                    price: [
+                        { required: true, message: '请输入销售价', trigger: 'change' }
+                    ],
+                    stock: [
+                        { required: true, message: '请输入库存', trigger: 'change' }
+                    ],
+                    status: [
+                        { required: true, message: '请选择状态', trigger: 'change' }
+                    ]
+                },
+                skuAttributeList: [],
+                currentSkuAttrValues: [],
+                productOptions: initialProductId ? [{ id: initialProductId, productName: '商品ID：' + initialProductId }] : [],
+                productLoading: false,
+                skuAttrForm: {
+                    attrId: '',
+                    attrValueId: ''
+                },
+                skuAttrList: []
+            };
+        },
+        methods: {
+            defaultItemData: function () {
+                return {
+                    productId: this.currentProductId || undefined,
+                    skuCode: '',
+                    saleUnit: '个',
+                    unitWeight: 0,
+                    isVariableWeight: 0,
+                    minQuantity: 1,
+                    maxQuantity: 999,
+                    quantityStep: 1,
+                    price: 0,
+                    originalPrice: 0,
+                    wholesalePrice: 0,
+                    stock: 0,
+                    sales: 0,
+                    status: 1,
+                    sortOrder: 0,
+                    isDeleted: 0
+                };
+            },
+            formatMoney: function (value) {
+                let number = Number(value || 0);
+                return number.toFixed(2);
+            },
+            formatNumber: function (value) {
+                if (value === null || value === undefined || value === '') {
+                    return '0';
+                }
+                let number = Number(value);
+                return Number.isInteger(number) ? String(number) : String(Number(number.toFixed(2)));
+            },
+            statusOption: function (status) {
+                let value = Number(status);
+                return this.statusOptions.find(item => item.value === value) || { label: '未知', type: 'info' };
+            },
+            statusLabel: function (status) {
+                return this.statusOption(status).label;
+            },
+            statusType: function (status) {
+                return this.statusOption(status).type;
+            },
+            productOptionLabel: function (product) {
+                if (!product) {
+                    return '';
+                }
+                let name = product.productName || ('商品ID：' + product.id);
+                return name + '（ID：' + product.id + '）';
+            },
+            ensureProductOption: function (productId) {
+                if (!productId) {
+                    return;
+                }
+                let exists = this.productOptions.some(item => Number(item.id) === Number(productId));
+                if (!exists) {
+                    this.productOptions.unshift({
+                        id: Number(productId),
+                        productName: '商品ID：' + productId
+                    });
                 }
             },
-            methods: {
-                searchList: function () {
-                    let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
-                    const searchDto = {...this.formDto};
-                    if (this.currentProductId) {
-                        searchDto.productId = this.currentProductId;
-                    }
-                    axios.post(url, searchDto).then(r => {
-                        if (r.data.code === 200) {
-                            let data = r.data.data;
-                            this.pageDto.total = Number(data.total);
-                            this.pageDto.pageCount = Number(data.pages);
-                            this.tableData = data.records;
-                        }
-                    }).catch(error => {
-                        console.error("请求失败：", error);
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "请求失败，请稍后重试",
-                            type: 'error'
-                        });
-                    })
-                },
-                prePage() {
-                    this.pageDto.currentPage -= 1;
-                    this.searchList();
-                },
-                nextPage() {
-                    this.pageDto.currentPage += 1;
-                    this.searchList();
-                },
-                handleSizeChange(val) {
-                    this.pageDto.pageSize=val;
-                    this.searchList();
-                },
-                handleCurrentChange(val) {
-                    this.pageDto.currentPage=val;
-                    this.searchList();
-                },
-                handleSelectionChange(val) {
-                    this.multipleSelection = val;
-                },
-                showSearchBox() {
-                    this.showSearch = !this.showSearch;
-                },
-                add() {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '新增';
-                    this.dialogUrl=this.addUrl;
-                    this.itemData = {
-                        productId: this.currentProductId,
-                        saleUnit: '个',
-                        isVariableWeight: 0,
-                        minQuantity: 1,
-                        maxQuantity: 999,
-                        quantityStep: 1,
-                        status: 1,
-                        sortOrder: 0
-                    };
-                },
-                edit(row) {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '编辑';
-                    this.itemData = {...row};
-                    this.dialogUrl=this.editUrl;
-                },
-                manageSkuAttr(row) {
-                    this.currentSkuId = row.id;
-                    this.skuAttrDialogVisible = true;
-                    this.loadSkuAttrList();
-                    this.loadSkuAttributes();
-                },
-                loadSkuAttributes() {
-                    axios.post(this.attrListUrl + '?pageNum=1&pageSize=100', {keyword: ''}).then(r => {
-                        if (r.data.code === 200) {
-                            this.skuAttributeList = r.data.data.records.filter(a => a.attrType === 2);
-                        }
-                    });
-                },
-                onSkuAttrChange() {
-                    const attrId = this.skuAttrForm.attrId;
-                    if (attrId) {
-                        axios.post(this.attrValueListUrl + '?pageNum=1&pageSize=100', {keyword: '', attrId: attrId}).then(r => {
-                            if (r.data.code === 200) {
-                                this.currentSkuAttrValues = r.data.data.records;
-                            }
-                        });
+            searchProductOptions: function (keyword) {
+                this.productLoading = true;
+                axios.post(this.productListUrl + '?pageNum=1&pageSize=20', { keyword: keyword || '' }).then(r => {
+                    if (r.data.code === 200) {
+                        this.productOptions = r.data.data.records || [];
+                        this.ensureProductOption(this.itemData.productId);
                     } else {
-                        this.currentSkuAttrValues = [];
+                        ELEMENT.Message.error(r.data.msg || '商品查询失败');
                     }
-                    this.skuAttrForm.attrValueId = '';
-                },
-                loadSkuAttrList() {
-                    axios.get(this.skuAttrListUrl + '?skuId=' + this.currentSkuId).then(r => {
-                        if (r.data.code === 200) {
-                            this.skuAttrList = r.data.data;
-                        }
-                    });
-                },
-                addSkuAttr() {
-                    if (!this.skuAttrForm.attrId || !this.skuAttrForm.attrValueId) {
-                        ELEMENT.Message.warning('请选择属性和属性值');
-                        return;
-                    }
-                    const attr = this.skuAttributeList.find(a => a.id === this.skuAttrForm.attrId);
-                    const attrValue = this.currentSkuAttrValues.find(v => v.id === this.skuAttrForm.attrValueId);
-                    
-                    const exists = this.skuAttrList.some(item => item.attrId === this.skuAttrForm.attrId);
-                    if (exists) {
-                        ELEMENT.Message.warning('该属性已存在');
-                        return;
-                    }
-                    
-                    this.skuAttrList.push({
-                        id: null,
-                        skuId: this.currentSkuId,
-                        attrId: this.skuAttrForm.attrId,
-                        attrName: attr ? attr.attrName : '',
-                        attrValueId: this.skuAttrForm.attrValueId,
-                        attrValue: attrValue ? attrValue.value : ''
-                    });
-                    
-                    this.skuAttrForm.attrId = '';
-                    this.skuAttrForm.attrValueId = '';
-                    this.currentSkuAttrValues = [];
-                },
-                removeSkuAttr(row) {
-                    const index = this.skuAttrList.indexOf(row);
-                    if (index > -1) {
-                        if (row.id) {
-                            axios.get(this.skuAttrDelUrl + '?id=' + row.id);
-                        }
-                        this.skuAttrList.splice(index, 1);
-                    }
-                },
-                saveSkuAttrs() {
-                    const data = {
-                        skuId: this.currentSkuId,
-                        attrs: this.skuAttrList.map(item => ({
-                            attrId: item.attrId,
-                            attrValueId: item.attrValueId
-                        }))
-                    };
-                    axios.post(this.skuAttrSaveUrl, data).then(r => {
-                        if (r.data.code === 200) {
-                            ELEMENT.Message.success('保存成功');
-                            this.skuAttrDialogVisible = false;
-                        }
-                    });
-                },
-                saveOrUpdate(){
-                    this.$refs['itemData'].validate((valid) => {
-                        if (valid) {
-                            requestPost(this.dialogUrl, this.itemData);
-                        } else {
-                            return false;
-                        }
-                    });
-                },
-                batchDel() {
-                    let ids = this.multipleSelection.map(i => i.id);
-                    if (!ids.length) {
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "您未选中任何内容",
-                            type: 'warning'
-                        });
-                        return false;
-                    }
-                    ELEMENT.MessageBox.confirm('确定删除选中的列表数据?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestPost(this.batchDelUrl, ids);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
-                },
-                del(id) {
-                    ELEMENT.MessageBox.confirm('确定删除该数据吗?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestGet(this.delUrl + id);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
-                },
-                viewJson(str){
-                    return formatJSON(str)
-                }
-            }, created() {
+                }).catch(() => {
+                    ELEMENT.Message.error('商品查询失败，请稍后重试');
+                }).finally(() => {
+                    this.productLoading = false;
+                });
+            },
+            searchList: function () {
+                this.pageDto.currentPage = 1;
+                this.requestData();
+            },
+            resetSearch: function () {
+                this.formDto.keyword = '';
+                this.formDto.productId = this.currentProductId || undefined;
                 this.searchList();
+            },
+            requestData: function () {
+                let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                let searchDto = Object.assign({}, this.formDto);
+                if (this.currentProductId) {
+                    searchDto.productId = this.currentProductId;
+                }
+                axios.post(url, searchDto).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data || {};
+                        this.pageDto.total = Number(data.total || 0);
+                        this.pageDto.pageCount = Number(data.pages || 1);
+                        this.tableData = data.records || [];
+                    } else {
+                        ELEMENT.Message.error(r.data.msg || '查询失败');
+                    }
+                }).catch(() => {
+                    ELEMENT.Message.error('请求失败，请稍后重试');
+                });
+            },
+            handleSizeChange: function (val) {
+                this.pageDto.pageSize = val;
+                this.requestData();
+            },
+            handleCurrentChange: function (val) {
+                this.pageDto.currentPage = val;
+                this.requestData();
+            },
+            handleSelectionChange: function (val) {
+                this.multipleSelection = val;
+            },
+            showSearchBox: function () {
+                this.showSearch = !this.showSearch;
+            },
+            clearFormValidate: function () {
+                this.$nextTick(() => {
+                    if (this.$refs.itemData) {
+                        this.$refs.itemData.clearValidate();
+                    }
+                });
+            },
+            add: function () {
+                this.addDialogVisible = true;
+                this.dialogTitle = '新增';
+                this.dialogUrl = this.addUrl;
+                this.itemData = this.defaultItemData();
+                this.ensureProductOption(this.itemData.productId);
+                this.searchProductOptions('');
+                this.clearFormValidate();
+            },
+            edit: function (row) {
+                this.addDialogVisible = true;
+                this.dialogTitle = '编辑';
+                this.dialogUrl = this.editUrl;
+                this.itemData = Object.assign({}, row);
+                this.ensureProductOption(this.itemData.productId);
+                this.searchProductOptions('');
+                this.clearFormValidate();
+            },
+            manageSkuAttr: function (row) {
+                this.currentSkuId = row.id;
+                this.currentSkuProductId = row.productId;
+                this.skuAttrDialogTitle = '销售属性 - ' + (row.skuCode || ('SKU-' + row.id));
+                this.skuAttrDialogVisible = true;
+                this.skuAttrForm = { attrId: '', attrValueId: '' };
+                this.currentSkuAttrValues = [];
+                this.loadSkuAttrList();
+                this.loadSkuAttributes();
+            },
+            loadSkuAttributes: function () {
+                axios.post(this.attrListUrl + '?pageNum=1&pageSize=100', { keyword: '' }).then(r => {
+                    if (r.data.code === 200) {
+                        this.skuAttributeList = (r.data.data.records || []).filter(item => item.attrType === 2);
+                    }
+                });
+            },
+            onSkuAttrChange: function () {
+                let attrId = this.skuAttrForm.attrId;
+                this.skuAttrForm.attrValueId = '';
+                if (!attrId) {
+                    this.currentSkuAttrValues = [];
+                    return;
+                }
+                axios.post(this.attrValueListUrl + '?pageNum=1&pageSize=100', { keyword: '', attrId: attrId }).then(r => {
+                    if (r.data.code === 200) {
+                        this.currentSkuAttrValues = r.data.data.records || [];
+                    }
+                });
+            },
+            loadSkuAttrList: function () {
+                axios.get(this.skuAttrListUrl + '?skuId=' + this.currentSkuId).then(r => {
+                    if (r.data.code === 200) {
+                        this.skuAttrList = r.data.data || [];
+                    }
+                });
+            },
+            addSkuAttr: function () {
+                if (!this.skuAttrForm.attrId || !this.skuAttrForm.attrValueId) {
+                    ELEMENT.Message.warning('请选择属性和属性值');
+                    return;
+                }
+                let exists = this.skuAttrList.some(item => item.attrId === this.skuAttrForm.attrId);
+                if (exists) {
+                    ELEMENT.Message.warning('该属性已存在');
+                    return;
+                }
+                let attr = this.skuAttributeList.find(item => item.id === this.skuAttrForm.attrId);
+                let attrValue = this.currentSkuAttrValues.find(item => item.id === this.skuAttrForm.attrValueId);
+                this.skuAttrList.push({
+                    id: null,
+                    skuId: this.currentSkuId,
+                    productId: this.currentSkuProductId,
+                    attrId: this.skuAttrForm.attrId,
+                    attrName: attr ? attr.attrName : '',
+                    attrValueId: this.skuAttrForm.attrValueId,
+                    attrValue: attrValue ? attrValue.value : ''
+                });
+                this.skuAttrForm = { attrId: '', attrValueId: '' };
+                this.currentSkuAttrValues = [];
+            },
+            removeSkuAttr: function (row) {
+                let index = this.skuAttrList.indexOf(row);
+                if (index > -1) {
+                    this.skuAttrList.splice(index, 1);
+                }
+            },
+            saveSkuAttrs: function () {
+                let data = {
+                    skuId: this.currentSkuId,
+                    productId: this.currentSkuProductId,
+                    attrs: this.skuAttrList.map(item => ({
+                        attrId: item.attrId,
+                        attrValueId: item.attrValueId
+                    }))
+                };
+                axios.post(this.skuAttrSaveUrl, data).then(r => {
+                    if (r.data.code === 200) {
+                        ELEMENT.Message.success('保存成功');
+                        this.skuAttrDialogVisible = false;
+                    } else {
+                        ELEMENT.Message.error(r.data.msg || '保存失败');
+                    }
+                });
+            },
+            buildSubmitData: function () {
+                let data = Object.assign({}, this.itemData);
+                ['skuCode'].forEach(key => {
+                    if (data[key] === '') {
+                        data[key] = null;
+                    }
+                });
+                return data;
+            },
+            saveOrUpdate: function () {
+                this.$refs.itemData.validate((valid) => {
+                    if (valid) {
+                        axios.post(this.dialogUrl, this.buildSubmitData()).then(r => {
+                            if (r.data.code === 200) {
+                                ELEMENT.Message.success('保存成功');
+                                this.addDialogVisible = false;
+                                this.requestData();
+                            } else {
+                                ELEMENT.Message.error(r.data.msg || '保存失败');
+                            }
+                        }).catch(() => {
+                            ELEMENT.Message.error('请求失败，请稍后重试');
+                        });
+                    }
+                });
+            },
+            batchDel: function () {
+                let ids = this.multipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message.warning('请选择要删除的SKU');
+                    return false;
+                }
+                ELEMENT.MessageBox.confirm('确定删除选中的SKU吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.post(this.batchDelUrl, ids).then(r => {
+                        if (r.data.code === 200) {
+                            ELEMENT.Message.success('删除成功');
+                            this.requestData();
+                        } else {
+                            ELEMENT.Message.error(r.data.msg || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                    ELEMENT.Message.info('已取消删除');
+                });
+            },
+            del: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该SKU吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.get(this.delUrl + id).then(r => {
+                        if (r.data.code === 200) {
+                            ELEMENT.Message.success('删除成功');
+                            this.requestData();
+                        } else {
+                            ELEMENT.Message.error(r.data.msg || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                    ELEMENT.Message.info('已取消删除');
+                });
             }
-        });
+        },
+        created: function () {
+            this.searchList();
+        }
+    });
 </script>
 
 </body>

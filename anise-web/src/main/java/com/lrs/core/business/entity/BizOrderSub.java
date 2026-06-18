@@ -162,20 +162,6 @@ public class BizOrderSub implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime receiveTime;
 
-    // ==================== 物流信息（商家独立填写） ====================
-
-    /**
-     * 快递公司
-     */
-    @TableField("express_company")
-    private String expressCompany;
-
-    /**
-     * 快递单号
-     */
-    @TableField("express_no")
-    private String expressNo;
-
     /**
      * 商家备注
      */

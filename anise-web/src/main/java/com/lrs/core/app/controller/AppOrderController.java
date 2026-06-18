@@ -16,13 +16,16 @@ import com.lrs.core.app.dto.order.OrderSubmitDto;
 import com.lrs.core.app.vo.BizOrderItemVo;
 import com.lrs.core.app.vo.OrderDetailVo;
 import com.lrs.core.app.vo.OrderGoodsVo;
+import com.lrs.core.app.vo.OrderLogisticsVo;
 import com.lrs.core.app.vo.OrderListVo;
 import com.lrs.core.base.BaseController;
 import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.entity.BizOrderItem;
+import com.lrs.core.business.entity.BizOrderLogistics;
 import com.lrs.core.business.entity.BizOrderSub;
 import com.lrs.core.business.entity.BizProductSku;
 import com.lrs.core.business.service.IBizOrderItemService;
+import com.lrs.core.business.service.IBizOrderLogisticsService;
 import com.lrs.core.business.service.IBizOrderService;
 import com.lrs.core.business.service.IBizOrderSubService;
 import com.lrs.core.business.service.IBizProductSkuService;
@@ -62,6 +65,9 @@ public class AppOrderController extends BaseController {
 
     @Resource
     private IBizProductSkuService bizProductSkuService;
+
+    @Resource
+    private IBizOrderLogisticsService bizOrderLogisticsService;
 
     private Long getUserId() {
         UserVo user = getLoginSysUser();
@@ -171,8 +177,9 @@ public class AppOrderController extends BaseController {
             vo.setAddress(JSON.parseObject(order.getAddressSnapshot()));
         }
 
+        Map<Long, List<OrderLogisticsVo.PackageVo>> logisticsMap = buildLogisticsPackageMap(subs);
+
         // 附加子订单信息
-        final Long finalUserId = userId;
         List<Map<String, Object>> subList = subs.stream().map(sub -> {
             Map<String, Object> subMap = new LinkedHashMap<>();
             subMap.put("subId", sub.getId());
@@ -180,12 +187,49 @@ public class AppOrderController extends BaseController {
             subMap.put("merchantName", sub.getMerchantName());
             subMap.put("merchantId", sub.getMerchantId());
             subMap.put("deliveryStatus", sub.getDeliveryStatus());
-            subMap.put("expressCompany", sub.getExpressCompany());
-            subMap.put("expressNo", sub.getExpressNo());
             subMap.put("deliveryTime", sub.getDeliveryTime());
+            subMap.put("receiveTime", sub.getReceiveTime());
+            subMap.put("packages", logisticsMap.getOrDefault(sub.getId(), Collections.emptyList()));
             return subMap;
         }).collect(Collectors.toList());
         vo.setSubList(subList);
+
+        return R.ok(vo);
+    }
+
+    /**
+     * 订单物流详情
+     * 仅返回当前登录用户自己的订单物流信息，支持多商家子订单拆单展示。
+     */
+    @PostMapping("/logistics")
+    @ResponseBody
+    public R logistics(@RequestBody OrderIdDto dto) {
+        Long userId = getUserId();
+        Long orderId = dto.getOrderId();
+
+        BizOrder order = bizOrderService.getById(orderId);
+        if (order == null || !order.getUserId().equals(userId)) return R.error("订单不存在");
+
+        List<BizOrderSub> subs = bizOrderSubService.getByOrderId(orderId);
+        Map<Long, List<OrderLogisticsVo.PackageVo>> logisticsMap = buildLogisticsPackageMap(subs);
+
+        OrderLogisticsVo vo = new OrderLogisticsVo();
+        vo.setOrderId(order.getId());
+        vo.setOrderNo(order.getOrderNo());
+        vo.setStatus(order.getStatus());
+        vo.setDeliveryType(order.getDeliveryType());
+        vo.setShipTime(order.getShipTime());
+        vo.setReceiveTime(order.getReceiveTime());
+        vo.setSubList(subs.stream().map(sub -> {
+            OrderLogisticsVo.SubLogisticsVo subVo = new OrderLogisticsVo.SubLogisticsVo();
+            subVo.setSubNo(sub.getSubNo());
+            subVo.setMerchantName(sub.getMerchantName());
+            subVo.setDeliveryStatus(sub.getDeliveryStatus());
+            subVo.setDeliveryTime(sub.getDeliveryTime());
+            subVo.setReceiveTime(sub.getReceiveTime());
+            subVo.setPackages(logisticsMap.getOrDefault(sub.getId(), Collections.emptyList()));
+            return subVo;
+        }).collect(Collectors.toList()));
 
         return R.ok(vo);
     }
@@ -265,15 +309,17 @@ public class AppOrderController extends BaseController {
         if (subId != null) {
             // 按子订单确认收货
             BizOrderSub sub = bizOrderSubService.getById(subId);
-            if (sub == null) return R.error("子订单不存在");
+            if (sub == null || !orderId.equals(sub.getOrderId())) return R.error("子订单不存在");
             if (sub.getDeliveryStatus() != BizOrderSub.DELIVERY_STATUS_SHIPPED) {
                 return R.error("仅已发货订单可确认收货");
             }
 
             sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_RECEIVED);
-            sub.setReceiveTime(LocalDateTime.now());
-            sub.setUpdateTime(LocalDateTime.now());
+            LocalDateTime now = LocalDateTime.now();
+            sub.setReceiveTime(now);
+            sub.setUpdateTime(now);
             bizOrderSubService.updateById(sub);
+            bizOrderLogisticsService.markDeliveredBySubOrderIds(Collections.singletonList(subId), now);
 
             // 检查是否所有子订单都已收货
             List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(orderId);
@@ -282,8 +328,8 @@ public class AppOrderController extends BaseController {
 
             if (allReceived) {
                 order.setStatus(BizOrder.STATUS_RECEIVED);
-                order.setReceiveTime(LocalDateTime.now());
-                order.setUpdateTime(LocalDateTime.now());
+                order.setReceiveTime(now);
+                order.setUpdateTime(now);
                 bizOrderService.updateById(order);
             }
         } else {
@@ -293,18 +339,22 @@ public class AppOrderController extends BaseController {
             }
 
             List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(orderId);
+            LocalDateTime now = LocalDateTime.now();
+            List<Long> receivedSubIds = new ArrayList<>();
             for (BizOrderSub sub : allSubs) {
                 if (sub.getDeliveryStatus() == BizOrderSub.DELIVERY_STATUS_SHIPPED) {
                     sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_RECEIVED);
-                    sub.setReceiveTime(LocalDateTime.now());
-                    sub.setUpdateTime(LocalDateTime.now());
+                    sub.setReceiveTime(now);
+                    sub.setUpdateTime(now);
                     bizOrderSubService.updateById(sub);
+                    receivedSubIds.add(sub.getId());
                 }
             }
+            bizOrderLogisticsService.markDeliveredBySubOrderIds(receivedSubIds, now);
 
             order.setStatus(BizOrder.STATUS_RECEIVED);
-            order.setReceiveTime(LocalDateTime.now());
-            order.setUpdateTime(LocalDateTime.now());
+            order.setReceiveTime(now);
+            order.setUpdateTime(now);
             bizOrderService.updateById(order);
         }
 
@@ -321,5 +371,37 @@ public class AppOrderController extends BaseController {
         public void setOrderId(Long orderId) { this.orderId = orderId; }
         public Long getSubId() { return subId; }
         public void setSubId(Long subId) { this.subId = subId; }
+    }
+
+    /**
+     * 批量组装子订单物流包裹，避免按子订单循环查询物流表。
+     */
+    private Map<Long, List<OrderLogisticsVo.PackageVo>> buildLogisticsPackageMap(List<BizOrderSub> subs) {
+        if (subs == null || subs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Long> subIds = subs.stream().map(BizOrderSub::getId).collect(Collectors.toList());
+        List<BizOrderLogistics> logisticsList = bizOrderLogisticsService.getBySubOrderIds(subIds);
+        if (logisticsList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return logisticsList.stream().collect(Collectors.groupingBy(
+                BizOrderLogistics::getSubOrderId,
+                LinkedHashMap::new,
+                Collectors.mapping(this::toPackageVo, Collectors.toList())
+        ));
+    }
+
+    private OrderLogisticsVo.PackageVo toPackageVo(BizOrderLogistics logistics) {
+        OrderLogisticsVo.PackageVo packageVo = new OrderLogisticsVo.PackageVo();
+        packageVo.setLogisticsCompany(logistics.getLogisticsCompany());
+        packageVo.setExpressCode(logistics.getExpressCode());
+        packageVo.setTrackingNo(logistics.getTrackingNo());
+        packageVo.setStatus(logistics.getStatus());
+        packageVo.setEstimatedDeliveryDate(logistics.getEstimatedDeliveryDate());
+        packageVo.setDeliveredTime(logistics.getDeliveredTime());
+        packageVo.setLastTrackDetail(logistics.getLastTrackDetail());
+        packageVo.setCreateTime(logistics.getCreateTime());
+        return packageVo;
     }
 }

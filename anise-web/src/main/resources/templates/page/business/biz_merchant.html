@@ -7,25 +7,121 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <title>菜单按钮</title>
-    <!-- element-ui 引入样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
-          th:href="@{/static/element-ui/index.css}">
+    <title>商家管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" th:href="@{/static/element-ui/index.css}">
     <style>
         .container {
             padding: 5px;
         }
 
-        .container .search-box {
+        .search-box {
             margin-bottom: 20px;
         }
 
-        .container .content-header {
+        .toolbar {
             margin-bottom: 10px;
         }
 
-        .container .content-header .content-header-right {
+        .toolbar-right,
+        .page-box {
             text-align: right;
+        }
+
+        .merchant-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .merchant-logo {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            background: #f5f7fa;
+            overflow: hidden;
+        }
+
+        .merchant-name {
+            color: #303133;
+            font-weight: 600;
+            line-height: 20px;
+        }
+
+        .muted {
+            margin-top: 4px;
+            color: #909399;
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .image-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #c0c4cc;
+        }
+
+        .cert-list {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .cert-item {
+            width: 46px;
+            height: 46px;
+            border: 1px solid #ebeef5;
+            border-radius: 4px;
+            background: #fafafa;
+            overflow: hidden;
+        }
+
+        .dialog-form {
+            padding-right: 24px;
+        }
+
+        .dialog-form .el-select,
+        .dialog-form .el-date-editor,
+        .dialog-form .el-input-number {
+            width: 100%;
+        }
+
+        .upload-preview {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 88px;
+            height: 88px;
+            border: 1px solid #ebeef5;
+            border-radius: 4px;
+            overflow: visible;
+            background: #fafafa;
+        }
+
+        .preview-item .el-image {
+            width: 88px;
+            height: 88px;
+            border-radius: 4px;
+        }
+
+        .preview-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        .upload-tip {
+            color: #909399;
+            font-size: 12px;
+            line-height: 20px;
         }
     </style>
 </head>
@@ -33,418 +129,587 @@
 
 <div id="app" class="container">
     <el-card class="box-card search-box" v-show="showSearch">
-        <el-form :inline="true" :model="formDto" class="demo-form-inline">
-            <el-form-item label="关键词检索">
-                <el-input v-model="formDto.keyword" placeholder="请输入关键词"></el-input>
+        <el-form :inline="true" :model="formDto">
+            <el-form-item label="商家名称">
+                <el-input v-model="formDto.keyword" placeholder="请输入商家名称/联系人/产地" clearable @keyup.enter.native="searchList"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="searchList">查询</el-button>
+                <el-button type="primary" icon="el-icon-search" @click="searchList">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="resetSearch">重置</el-button>
             </el-form-item>
         </el-form>
     </el-card>
 
     <el-card class="box-card">
-        <section class="content-header">
-            <el-row :gutter="2">
-                <el-col :span="11">
-                    <el-button sa:hasPermissionOr="business:bizMerchant:list:add,admin" @click="add" type="success"
-                               size="mini" icon="el-icon-plus">新增
-                    </el-button>
-                    <el-button sa:hasPermissionOr="business:bizMerchant:list:del,admin" @click="batchDel" type="danger"
-                               size="mini" icon="el-icon-delete">删除
-                    </el-button>
-                </el-col>
-                <div class="content-header-right">
-                    <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search"
-                               circle></el-button>
-                </div>
-            </el-row>
+        <el-row class="toolbar" :gutter="10">
+            <el-col :span="12">
+                <el-button sa:hasPermissionOr="business:bizMerchant:list:add,admin" @click="add" type="success" size="mini" icon="el-icon-plus">新增</el-button>
+                <el-button sa:hasPermissionOr="business:bizMerchant:list:del,admin" @click="batchDel" type="danger" size="mini" icon="el-icon-delete">删除</el-button>
+            </el-col>
+            <el-col :span="12" class="toolbar-right">
+                <el-button type="primary" @click="showSearchBox" size="mini" icon="el-icon-search" circle></el-button>
+            </el-col>
+        </el-row>
 
-        </section>
-
-        <!-- Main content -->
-        <section class="content">
-            <el-table
-                    :data="tableData"
-                    style="width: 100%;margin-bottom: 20px;"
-                    row-key="id"
-                    border
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="id" label="主键ID" width="100"></el-table-column>
-                <el-table-column prop="userId" label="关联管理员" width="100"></el-table-column>
-                <el-table-column prop="merchantName" label="商家名称" width="200"></el-table-column>
-                <el-table-column prop="contactName" label="联系人" width="100"></el-table-column>
-                <el-table-column prop="contactPhone" label="联系电话" width="120"></el-table-column>
-                <el-table-column prop="originPlace" label="产地地址" width="220"></el-table-column>
-                <el-table-column prop="licenseImage" label="营业执照" width="100">
-                    <template slot-scope="scope">
-                        <el-image :src="scope.row.licenseImage">
-                            <div slot="error" class="image-slot">
+        <el-table
+                :data="tableData"
+                style="width: 100%;margin-bottom: 20px;"
+                row-key="id"
+                border
+                empty-text="暂无商家数据"
+                @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+            <el-table-column label="商家信息" min-width="240" show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <div class="merchant-info">
+                        <el-image class="merchant-logo" :src="scope.row.logoUrl" fit="cover">
+                            <div slot="error" class="image-empty">
                                 <i class="el-icon-picture-outline"></i>
                             </div>
                         </el-image>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="foodLicenseImage" label="食品经营许可证" width="120">
-                    <template slot-scope="scope">
-                        <el-image :src="scope.row.foodLicenseImage">
-                            <div slot="error" class="image-slot">
-                                <i class="el-icon-picture-outline"></i>
-                            </div>
-                        </el-image>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="auditStatus" label="审核状态" width="100">
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.auditStatus==1">通过</el-tag>
-                        <el-tag v-if="scope.row.auditStatus==0">待审核</el-tag>
-                        <el-tag type="danger" v-if="scope.row.auditStatus==2">拒绝</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="auditRemark" label="审核备注" width="100"></el-table-column>
-                <el-table-column prop="commissionRate" label="平台抽成(%)" width="120"></el-table-column>
-                <el-table-column prop="status" label="状态" width="100">
-                    <template slot-scope="scope">
-                        <el-tag type="success" v-if="scope.row.status==1">正常</el-tag>
-                        <el-tag type="danger" v-if="scope.row.status==0">禁用</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="extraJson" label="扩展字段" width="100"></el-table-column>
-                <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
-                <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
-                <el-table-column
-                        fixed="right"
-                        label="操作"
-                        width="140">
-                    <template slot-scope="scope">
-                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:edit,admin" class="item" effect="dark"
-                                    content="编辑" placement="top-start">
-                            <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini"
-                                       circle></el-button>
+                        <div>
+                            <div class="merchant-name">{{ scope.row.merchantName || '-' }}</div>
+                            <div class="muted">管理员ID：{{ scope.row.userId || '-' }}</div>
+                        </div>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="联系人" width="150">
+                <template slot-scope="scope">
+                    <div>{{ scope.row.contactName || '-' }}</div>
+                    <div class="muted">{{ maskPhone(scope.row.contactPhone) }}</div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="originPlace" label="产地地址" min-width="180" show-overflow-tooltip></el-table-column>
+            <el-table-column label="资质" width="130">
+                <template slot-scope="scope">
+                    <div class="cert-list">
+                        <el-tooltip effect="dark" content="营业执照" placement="top">
+                            <el-image class="cert-item" :src="scope.row.licenseImage" fit="cover">
+                                <div slot="error" class="image-empty">
+                                    <i class="el-icon-picture-outline"></i>
+                                </div>
+                            </el-image>
                         </el-tooltip>
-                        <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:del,admin" class="item" effect="dark"
-                                    content="删除" placement="top-start">
-                            <el-button v-if="scope.row.username != 'admin'" @click="del(scope.row.id)" type="danger"
-                                       icon="el-icon-delete" size="mini"
-                                       circle></el-button>
+                        <el-tooltip effect="dark" content="食品经营许可证" placement="top">
+                            <el-image class="cert-item" :src="scope.row.foodLicenseImage" fit="cover">
+                                <div slot="error" class="image-empty">
+                                    <i class="el-icon-picture-outline"></i>
+                                </div>
+                            </el-image>
                         </el-tooltip>
-                    </template>
-                </el-table-column>
-            </el-table>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="auditStatus" label="审核" width="90">
+                <template slot-scope="scope">
+                    <el-tag :type="auditType(scope.row.auditStatus)" size="mini">{{ auditLabel(scope.row.auditStatus) }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="commissionRate" label="抽成" width="90">
+                <template slot-scope="scope">
+                    <span>{{ formatRate(scope.row.commissionRate) }}%</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="settlementType" label="结算" width="90">
+                <template slot-scope="scope">
+                    <el-tag size="mini" type="info">{{ settlementLabel(scope.row.settlementType) }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="90">
+                <template slot-scope="scope">
+                    <el-tag :type="statusType(scope.row.status)" size="mini">{{ statusLabel(scope.row.status) }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="description" label="简介" min-width="180" show-overflow-tooltip>
+                <template slot-scope="scope">
+                    <span>{{ plainText(scope.row.description) || '-' }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="160"></el-table-column>
+            <el-table-column prop="updateTime" label="更新时间" width="160"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="120">
+                <template slot-scope="scope">
+                    <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:edit,admin" effect="dark" content="编辑" placement="top">
+                        <el-button @click="edit(scope.row)" type="primary" icon="el-icon-edit" size="mini" circle></el-button>
+                    </el-tooltip>
+                    <el-tooltip sa:hasPermissionOr="business:bizMerchant:list:del,admin" effect="dark" content="删除" placement="top">
+                        <el-button @click="del(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" circle></el-button>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+        </el-table>
 
-            <div class="page-box" v-show="pageDto.pageCount>1">
-                <el-pagination
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                        @prev-click="prePage"
-                        @next-click="nextPage"
-                        :current-page="pageDto.currentPage"
-                        :page-size="pageDto.pagerCount"
-                        :page-count="pageDto.pageCount"
-                        :pager-count="pageDto.pagerCount"
-                        layout="sizes,prev, pager, next"
-                        :page-sizes="[10, 20, 30, 40, 50, 100]"
-                        :total="pageDto.total">
-                </el-pagination>
-            </div>
-        </section>
+        <div class="page-box">
+            <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="pageDto.currentPage"
+                    :page-size="pageDto.pageSize"
+                    :page-count="pageDto.pageCount"
+                    :pager-count="pageDto.pagerCount"
+                    layout="sizes,prev,pager,next"
+                    :page-sizes="[10, 20, 30, 50, 100]"
+                    :total="pageDto.total">
+            </el-pagination>
+        </div>
     </el-card>
 
-
-    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
-        <el-form :model="itemData" :rules="rules" ref="itemData">
-
-            <el-form-item label="id" prop="id" :label-width="formLabelWidth" style="display: none">
-                <el-input v-model="itemData.id" autocomplete="off"></el-input>
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible" width="900px">
+        <el-form class="dialog-form" :model="itemData" :rules="rules" ref="itemData" :label-width="formLabelWidth">
+            <el-form-item label="id" prop="id" style="display: none">
+                <el-input v-model="itemData.id"></el-input>
             </el-form-item>
 
-            <el-form-item label="关联管理员ID" prop="userId" :label-width="formLabelWidth">
-                <el-input v-model="itemData.userId" autocomplete="off" placeholder="请输入关联管理员用户ID"></el-input>
+            <el-divider content-position="left">基础信息</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="管理员ID" prop="userId">
+                        <el-input-number v-model="itemData.userId" :min="1" :precision="0" controls-position="right" placeholder="请输入关联管理员ID"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="商家名称" prop="merchantName">
+                        <el-input v-model="itemData.merchantName" maxlength="80" show-word-limit placeholder="请输入果园/商家名称"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-form-item label="店铺简介" prop="description">
+                <el-input
+                        type="textarea"
+                        v-model="itemData.description"
+                        :autosize="{ minRows: 3, maxRows: 6 }"
+                        maxlength="500"
+                        show-word-limit
+                        placeholder="请输入面向用户展示的店铺简介">
+                </el-input>
+            </el-form-item>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="联系人" prop="contactName">
+                        <el-input v-model="itemData.contactName" maxlength="30" placeholder="请输入联系人"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="联系电话" prop="contactPhone">
+                        <el-input v-model="itemData.contactPhone" maxlength="20" placeholder="请输入联系电话"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-form-item label="产地地址" prop="originPlace">
+                <el-input v-model="itemData.originPlace" maxlength="200" show-word-limit placeholder="请输入产地地址"></el-input>
             </el-form-item>
 
-            <el-form-item label="果园/商家名称" prop="merchantName" :label-width="formLabelWidth">
-                <el-input v-model="itemData.merchantName" autocomplete="off"
-                          placeholder="请输入果园/商家名称"></el-input>
+            <el-divider content-position="left">店铺与资质图片</el-divider>
+            <el-form-item label="店铺Logo" prop="logoUrl">
+                <el-upload :before-upload="beforeImageUpload" :on-success="uploadLogoSuccess" :action="uploadUrl">
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将图片拖到此处，或 <em>点击上传</em></div>
+                    <div class="upload-tip" slot="tip">支持 JPG/PNG，单张不超过 10MB</div>
+                </el-upload>
+                <div class="upload-preview" v-if="itemData.logoUrl">
+                    <div class="preview-item">
+                        <el-image :src="itemData.logoUrl" fit="cover"></el-image>
+                        <el-button class="preview-delete" type="danger" size="mini" circle icon="el-icon-close" @click="clearImage('logoUrl')"></el-button>
+                    </div>
+                </div>
             </el-form-item>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="营业执照" prop="licenseImage">
+                        <el-upload :before-upload="beforeImageUpload" :on-success="uploadLicenseSuccess" :action="uploadUrl">
+                            <i class="el-icon-upload"></i>
+                            <div class="el-upload__text">点击上传</div>
+                            <div class="upload-tip" slot="tip">后台资质审核使用</div>
+                        </el-upload>
+                        <div class="upload-preview" v-if="itemData.licenseImage">
+                            <div class="preview-item">
+                                <el-image :src="itemData.licenseImage" fit="cover"></el-image>
+                                <el-button class="preview-delete" type="danger" size="mini" circle icon="el-icon-close" @click="clearImage('licenseImage')"></el-button>
+                            </div>
+                        </div>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="经营许可证" prop="foodLicenseImage">
+                        <el-upload :before-upload="beforeImageUpload" :on-success="uploadFoodLicenseSuccess" :action="uploadUrl">
+                            <i class="el-icon-upload"></i>
+                            <div class="el-upload__text">点击上传</div>
+                            <div class="upload-tip" slot="tip">食品经营许可证，可选</div>
+                        </el-upload>
+                        <div class="upload-preview" v-if="itemData.foodLicenseImage">
+                            <div class="preview-item">
+                                <el-image :src="itemData.foodLicenseImage" fit="cover"></el-image>
+                                <el-button class="preview-delete" type="danger" size="mini" circle icon="el-icon-close" @click="clearImage('foodLicenseImage')"></el-button>
+                            </div>
+                        </div>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-            <el-form-item label="联系人" prop="contactName" :label-width="formLabelWidth">
-                <el-input v-model="itemData.contactName" autocomplete="off" placeholder="请输入联系人"></el-input>
-            </el-form-item>
-
-            <el-form-item label="联系电话" prop="contactPhone" :label-width="formLabelWidth">
-                <el-input v-model="itemData.contactPhone" autocomplete="off" placeholder="请输入联系电话"></el-input>
-            </el-form-item>
-
-            <el-form-item label="产地地址" prop="originPlace" :label-width="formLabelWidth">
-                <el-input v-model="itemData.originPlace" autocomplete="off" placeholder="请输入产地地址"></el-input>
-            </el-form-item>
-
-            <el-form-item label="营业执照URL" prop="licenseImage" :label-width="formLabelWidth">
-                <el-input v-model="itemData.licenseImage" autocomplete="off" placeholder="请输入营业执照URL"></el-input>
-            </el-form-item>
-
-            <el-form-item label="经营许可证URL" prop="foodLicenseImage" :label-width="formLabelWidth">
-                <el-input v-model="itemData.foodLicenseImage" autocomplete="off"
-                          placeholder="请输入食品经营许可证URL"></el-input>
-            </el-form-item>
-
-            <el-form-item label="审核状态" prop="auditStatus" :label-width="formLabelWidth">
-                <el-select v-model="itemData.auditStatus" placeholder="请输入审核状态">
-                    <el-option label="待审核" :value="0"></el-option>
-                    <el-option label="通过" :value="1"></el-option>
-                    <el-option label="拒绝" :value="2"></el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item label="审核备注" prop="auditRemark" :label-width="formLabelWidth">
-                <el-input v-model="itemData.auditRemark" autocomplete="off" placeholder="请输入审核备注"></el-input>
-            </el-form-item>
-
-            <el-form-item label="平台抽成比例(%)" prop="commissionRate" :label-width="formLabelWidth">
-                <el-input v-model="itemData.commissionRate" autocomplete="off"
-                          placeholder="请输入平台抽成比例(%)"></el-input>
-            </el-form-item>
-
-            <el-form-item label="状态" prop="status" :label-width="formLabelWidth">
-                <el-select v-model="itemData.status" placeholder="请选择账号状态">
-                    <el-option label="禁用" :value="0"></el-option>
-                    <el-option label="正常" :value="1"></el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item label="扩展字段" prop="extraJson" :label-width="formLabelWidth">
-                <el-input type="textarea" v-model="itemData.extraJson" autocomplete="off"
-                          placeholder="请输入扩展字段"></el-input>
-            </el-form-item>
-
-            <el-form-item label="创建时间" prop="createTime" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.createTime"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择日期"
-                        :picker-options="pickerOptions">
-                </el-date-picker>
-            </el-form-item>
-
-            <el-form-item label="更新时间" prop="updateTime" :label-width="formLabelWidth">
-                <el-date-picker
-                        v-model="itemData.updateTime"
-                        align="right"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:mm:ss"
-                        placeholder="选择日期"
-                        :picker-options="pickerOptions">
-                </el-date-picker>
+            <el-divider content-position="left">审核与结算</el-divider>
+            <el-row :gutter="16">
+                <el-col :span="8">
+                    <el-form-item label="审核状态" prop="auditStatus">
+                        <el-select v-model="itemData.auditStatus" placeholder="请选择审核状态">
+                            <el-option v-for="item in auditOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="状态" prop="status">
+                        <el-select v-model="itemData.status" placeholder="请选择状态">
+                            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                    <el-form-item label="结算方式" prop="settlementType">
+                        <el-select v-model="itemData.settlementType" placeholder="请选择结算方式">
+                            <el-option v-for="item in settlementOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="16">
+                <el-col :span="12">
+                    <el-form-item label="平台抽成" prop="commissionRate">
+                        <el-input-number v-model="itemData.commissionRate" :min="0" :max="100" :precision="2" :step="0.1" controls-position="right"></el-input-number>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="审核备注" prop="auditRemark">
+                        <el-input v-model="itemData.auditRemark" maxlength="200" show-word-limit placeholder="审核拒绝或补充说明时填写"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-form-item label="扩展字段" prop="extraJson">
+                <el-input
+                        type="textarea"
+                        v-model="itemData.extraJson"
+                        :autosize="{ minRows: 2, maxRows: 5 }"
+                        placeholder="JSON扩展字段，非必要不填写">
+                </el-input>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="saveOrUpdate">{{dialogTitle}}</el-button>
+            <el-button @click="addDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveOrUpdate">{{ dialogTitle }}</el-button>
         </div>
     </el-dialog>
-
 </div>
-<!-- element-ui -->
+
 <script src="https://unpkg.com/vue@2/dist/vue.js" th:src="@{/static/vue/vue.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js" th:src="@{/static/vue/axios.min.js}" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js" th:src="@{/static/element-ui/index.js}"></script>
 <script th:src="@{/static/vue/api.js}"></script>
 <script type="text/javascript" th:inline="javascript">
     let ctx = [[@{/}]];
-        new Vue({
-            el: '#app',
-            data: function () {
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                listUrl: ctx + 'business/bizMerchant/list',
+                delUrl: ctx + 'business/bizMerchant/del?id=',
+                batchDelUrl: ctx + 'business/bizMerchant/batchDel',
+                addUrl: ctx + 'business/bizMerchant/add',
+                editUrl: ctx + 'business/bizMerchant/edit',
+                uploadUrl: ctx + 'upload/image?type=merchant',
+                dialogUrl: '',
+                tableData: [],
+                multipleSelection: [],
+                formDto: {
+                    keyword: ''
+                },
+                showSearch: false,
+                pageDto: {
+                    currentPage: 1,
+                    pageSize: 10,
+                    total: 0,
+                    pageCount: 1,
+                    pagerCount: 9
+                },
+                addDialogVisible: false,
+                itemData: {
+                    userId: undefined,
+                    merchantName: '',
+                    logoUrl: '',
+                    description: '',
+                    contactName: '',
+                    contactPhone: '',
+                    originPlace: '',
+                    licenseImage: '',
+                    foodLicenseImage: '',
+                    auditStatus: 0,
+                    auditRemark: '',
+                    commissionRate: 0,
+                    settlementType: 7,
+                    status: 1,
+                    extraJson: '',
+                    isDeleted: 0
+                },
+                dialogTitle: '新增',
+                formLabelWidth: '110px',
+                auditOptions: [
+                    { value: 0, label: '待审核', type: 'info' },
+                    { value: 1, label: '通过', type: 'success' },
+                    { value: 2, label: '拒绝', type: 'danger' }
+                ],
+                statusOptions: [
+                    { value: 0, label: '禁用', type: 'danger' },
+                    { value: 1, label: '正常', type: 'success' }
+                ],
+                settlementOptions: [
+                    { value: 1, label: 'T+1' },
+                    { value: 7, label: 'T+7' },
+                    { value: 30, label: 'T+30' }
+                ],
+                rules: {
+                    userId: [
+                        { required: true, message: '请输入关联管理员ID', trigger: 'change' }
+                    ],
+                    merchantName: [
+                        { required: true, message: '请输入果园/商家名称', trigger: 'blur' }
+                    ],
+                    contactName: [
+                        { required: true, message: '请输入联系人', trigger: 'blur' }
+                    ],
+                    contactPhone: [
+                        { required: true, message: '请输入联系电话', trigger: 'blur' }
+                    ],
+                    originPlace: [
+                        { required: true, message: '请输入产地地址', trigger: 'blur' }
+                    ],
+                    commissionRate: [
+                        { required: true, message: '请输入平台抽成比例', trigger: 'change' }
+                    ],
+                    auditStatus: [
+                        { required: true, message: '请选择审核状态', trigger: 'change' }
+                    ],
+                    status: [
+                        { required: true, message: '请选择状态', trigger: 'change' }
+                    ]
+                }
+            };
+        },
+        methods: {
+            defaultItemData: function () {
                 return {
-                    listUrl: ctx + 'business/bizMerchant/list',
-                    delUrl: ctx + 'business/bizMerchant/del?id=',
-                    batchDelUrl: ctx + 'business/bizMerchant/batchDel',
-                    addUrl: ctx + 'business/bizMerchant/add',
-                    editUrl: ctx + 'business/bizMerchant/edit',
-                    dialogUrl: '',
-                    tableData: [],
-                    multipleSelection: [],
-                    formDto: {
-                        keyword: '',
-                        region: ''
-                    },
-                    showSearch: false,
-                    pageDto: {
-                        currentPage: 1,
-                        pageSize: 10,
-                        total: 110,
-                        pageCount: 1, //总页数
-                        pagerCount: 9, //页码按钮的数量
-                    },
-                    addDialogVisible: false,
-                    itemData: {
-                        menuIdList: [],
-                    },
-                    dialogTitle: '新增',
-                    formLabelWidth: '140px',
-                    formTimeLabelWidth: '120px',
-                    pickerOptions: {
-                        disabledDate(time) {
-                            return time.getTime() > Date.now();
-                        },
-                        shortcuts: [{
-                            text: '今天',
-                            onClick(picker) {
-                                picker.$emit('pick', new Date());
-                            }
-                        }, {
-                            text: '昨天',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24);
-                                picker.$emit('pick', date);
-                            }
-                        }, {
-                            text: '一周前',
-                            onClick(picker) {
-                                const date = new Date();
-                                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                                picker.$emit('pick', date);
-                            }
-                        }]
-                    },
-                    rules: {
-                        userId: [
-                            {required: true, message: '请输入关联管理员用户ID', trigger: 'blur'},
-                        ],
-                        merchantName: [
-                            {required: true, message: '请输入果园/商家名称', trigger: 'blur'},
-                        ],
-                        contactName: [
-                            {required: true, message: '请输入联系人', trigger: 'blur'},
-                        ],
-                        contactPhone: [
-                            {required: true, message: '请输入联系电话', trigger: 'blur'},
-                        ],
-                        originPlace: [
-                            {required: true, message: '请输入产地地址', trigger: 'blur'},
-                        ],
-
-                        commissionRate: [
-                            {required: true, message: '请输入平台抽成比例(%)', trigger: 'blur'},
-                        ],
-                        status: [
-                            {required: true, message: '请输入状态 0:禁用 1:正常', trigger: 'blur'},
-                        ],
-
+                    userId: undefined,
+                    merchantName: '',
+                    logoUrl: '',
+                    description: '',
+                    contactName: '',
+                    contactPhone: '',
+                    originPlace: '',
+                    licenseImage: '',
+                    foodLicenseImage: '',
+                    auditStatus: 0,
+                    auditRemark: '',
+                    commissionRate: 0,
+                    settlementType: 7,
+                    status: 1,
+                    extraJson: '',
+                    isDeleted: 0
+                };
+            },
+            optionItem: function (options, value) {
+                let number = Number(value);
+                return options.find(item => item.value === number) || { label: '未知', type: 'info' };
+            },
+            auditLabel: function (status) {
+                return this.optionItem(this.auditOptions, status).label;
+            },
+            auditType: function (status) {
+                return this.optionItem(this.auditOptions, status).type;
+            },
+            statusLabel: function (status) {
+                return this.optionItem(this.statusOptions, status).label;
+            },
+            statusType: function (status) {
+                return this.optionItem(this.statusOptions, status).type;
+            },
+            settlementLabel: function (value) {
+                return this.optionItem(this.settlementOptions, value).label;
+            },
+            formatRate: function (value) {
+                let number = Number(value || 0);
+                return Number.isInteger(number) ? String(number) : String(Number(number.toFixed(2)));
+            },
+            maskPhone: function (phone) {
+                if (!phone) {
+                    return '-';
+                }
+                let text = String(phone);
+                return text.length >= 7 ? text.replace(/^(\d{3})\d+(\d{4})$/, '$1****$2') : text;
+            },
+            plainText: function (html) {
+                if (!html) {
+                    return '';
+                }
+                return String(html).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+            },
+            searchList: function () {
+                this.pageDto.currentPage = 1;
+                this.requestData();
+            },
+            resetSearch: function () {
+                this.formDto.keyword = '';
+                this.searchList();
+            },
+            requestData: function () {
+                let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
+                axios.post(url, this.formDto).then(r => {
+                    if (r.data.code === 200) {
+                        let data = r.data.data || {};
+                        this.pageDto.total = Number(data.total || 0);
+                        this.pageDto.pageCount = Number(data.pages || 1);
+                        this.tableData = data.records || [];
+                    } else {
+                        ELEMENT.Message.error(r.data.msg || '查询失败');
                     }
-
+                }).catch(() => {
+                    ELEMENT.Message.error('请求失败，请稍后重试');
+                });
+            },
+            handleSizeChange: function (val) {
+                this.pageDto.pageSize = val;
+                this.requestData();
+            },
+            handleCurrentChange: function (val) {
+                this.pageDto.currentPage = val;
+                this.requestData();
+            },
+            handleSelectionChange: function (val) {
+                this.multipleSelection = val;
+            },
+            showSearchBox: function () {
+                this.showSearch = !this.showSearch;
+            },
+            clearFormValidate: function () {
+                this.$nextTick(() => {
+                    if (this.$refs.itemData) {
+                        this.$refs.itemData.clearValidate();
+                    }
+                });
+            },
+            add: function () {
+                this.addDialogVisible = true;
+                this.dialogTitle = '新增';
+                this.dialogUrl = this.addUrl;
+                this.itemData = this.defaultItemData();
+                this.clearFormValidate();
+            },
+            edit: function (row) {
+                this.addDialogVisible = true;
+                this.dialogTitle = '编辑';
+                this.dialogUrl = this.editUrl;
+                this.itemData = Object.assign({}, row);
+                this.clearFormValidate();
+            },
+            buildSubmitData: function () {
+                let data = Object.assign({}, this.itemData);
+                ['logoUrl', 'description', 'licenseImage', 'foodLicenseImage', 'auditRemark', 'extraJson'].forEach(key => {
+                    if (data[key] === '') {
+                        data[key] = null;
+                    }
+                });
+                return data;
+            },
+            saveOrUpdate: function () {
+                this.$refs.itemData.validate((valid) => {
+                    if (valid) {
+                        axios.post(this.dialogUrl, this.buildSubmitData()).then(r => {
+                            if (r.data.code === 200) {
+                                ELEMENT.Message.success('保存成功');
+                                this.addDialogVisible = false;
+                                this.requestData();
+                            } else {
+                                ELEMENT.Message.error(r.data.msg || '保存失败');
+                            }
+                        }).catch(() => {
+                            ELEMENT.Message.error('请求失败，请稍后重试');
+                        });
+                    }
+                });
+            },
+            batchDel: function () {
+                let ids = this.multipleSelection.map(i => i.id);
+                if (!ids.length) {
+                    ELEMENT.Message.warning('请选择要删除的商家');
+                    return false;
+                }
+                ELEMENT.MessageBox.confirm('确定删除选中的商家吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.post(this.batchDelUrl, ids).then(r => {
+                        if (r.data.code === 200) {
+                            ELEMENT.Message.success('删除成功');
+                            this.requestData();
+                        } else {
+                            ELEMENT.Message.error(r.data.msg || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                    ELEMENT.Message.info('已取消删除');
+                });
+            },
+            del: function (id) {
+                ELEMENT.MessageBox.confirm('确定删除该商家吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.get(this.delUrl + id).then(r => {
+                        if (r.data.code === 200) {
+                            ELEMENT.Message.success('删除成功');
+                            this.requestData();
+                        } else {
+                            ELEMENT.Message.error(r.data.msg || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                    ELEMENT.Message.info('已取消删除');
+                });
+            },
+            uploadLogoSuccess: function (res) {
+                this.handleUploadSuccess(res, 'logoUrl');
+            },
+            uploadLicenseSuccess: function (res) {
+                this.handleUploadSuccess(res, 'licenseImage');
+            },
+            uploadFoodLicenseSuccess: function (res) {
+                this.handleUploadSuccess(res, 'foodLicenseImage');
+            },
+            handleUploadSuccess: function (res, field) {
+                if (res.code === 200) {
+                    this.itemData[field] = res.data;
+                } else {
+                    ELEMENT.Message.warning(res.msg || '上传失败，请稍后重试');
                 }
             },
-            methods: {
-                searchList: function () {
-                    // 列表检索
-                    let url = this.listUrl + '?pageNum=' + this.pageDto.currentPage + '&pageSize=' + this.pageDto.pageSize;
-                    axios.post(url, this.formDto).then(r => {
-                        if (r.data.code === 200) {
-                            let data = r.data.data;
-                            this.pageDto.total = Number(data.total);
-                            this.pageDto.pageCount = Number(data.pages);
-                            this.tableData = data.records;
-                        }
-                    }).catch(error => {
-                        console.error("请求失败：", error);
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "请求失败，请稍后重试",
-                            type: 'error'
-                        });
-                    })
-                },
-                prePage() {
-                    this.pageDto.currentPage -= 1;
-                    this.searchList();
-                },
-                nextPage() {
-                    this.pageDto.currentPage += 1;
-                    this.searchList();
-                },
-                handleSizeChange(val) {
-                    this.pageDto.pageSize = val;
-                    this.searchList();
-                },
-                handleCurrentChange(val) {
-                    this.pageDto.currentPage = val;
-                    this.searchList();
-                },
-                handleSelectionChange(val) {
-                    //当选择项发生变化时会触发该事件
-                    this.multipleSelection = val;
-                },
-                showSearchBox() {
-                    this.showSearch = !this.showSearch;
-                },
-                add() {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '新增';
-                    this.dialogUrl = this.addUrl;
-                    this.itemData = {};
-                },
-                edit(row) {
-                    this.addDialogVisible = true;
-                    this.dialogTitle = '编辑';
-                    this.itemData = row;
-                    this.dialogUrl = this.editUrl;
-                },
-                saveOrUpdate() {
-                    this.$refs['itemData'].validate((valid) => {
-                        if (valid) {
-                            requestPost(this.dialogUrl, this.itemData);
-                        } else {
-                            return false;
-                        }
-                    });
-                },
-                batchDel() {
-                    let ids = this.multipleSelection.map(i => i.id);
-                    if (!ids.length) {
-                        // 数组为空
-                        ELEMENT.Message({
-                            showClose: true,
-                            message: "您未选中任何内容",
-                            type: 'warning'
-                        });
-                        return false;
-                    }
-                    ELEMENT.MessageBox.confirm('确定删除选中的列表数据?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestPost(this.batchDelUrl, ids);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
-                },
-                del(id) {
-                    ELEMENT.MessageBox.confirm('确定删除该数据吗?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        requestGet(this.delUrl + id);
-                    }).catch(() => {
-                        ELEMENT.Message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });
-                    });
+            clearImage: function (field) {
+                this.itemData[field] = '';
+            },
+            beforeImageUpload: function (file) {
+                let isImage = file.type === 'image/jpeg' || file.type === 'image/png';
+                let isLt10M = file.size / 1024 / 1024 < 10;
+                if (!isImage) {
+                    ELEMENT.Message.error('只能上传 JPG/PNG 图片');
                 }
-            }, created() {
-                this.searchList();
+                if (!isLt10M) {
+                    ELEMENT.Message.error('图片大小不能超过 10MB');
+                }
+                return isImage && isLt10M;
             }
-        });
+        },
+        created: function () {
+            this.searchList();
+        }
+    });
 </script>
 
 </body>
