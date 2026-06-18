@@ -32,4 +32,29 @@ public interface IBizProductService extends IService<BizProduct> {
     PageResultVo<ProductVo> getAppProductList(ProductListDto dto, int pageNo, int pageSize);
 
     ProductDetailVo getAppProductDetail(ProductDetailDto dto);
+
+    /**
+     * 查询商家商品列表。
+     */
+    Object listMerchantProducts(Long merchantId, ProductListDto dto, int pageNo, int pageSize);
+
+    /**
+     * 查询商家商品详情。
+     */
+    ProductDetailVo getMerchantProductDetail(Long merchantId, ProductDetailDto dto);
+
+    /**
+     * 新增商家商品。
+     */
+    Long addMerchantProduct(Long merchantId, BizProduct product);
+
+    /**
+     * 更新商家商品。
+     */
+    void updateMerchantProduct(Long merchantId, BizProduct product);
+
+    /**
+     * 下架商家商品。
+     */
+    void deleteMerchantProduct(Long merchantId, Long productId);
 }

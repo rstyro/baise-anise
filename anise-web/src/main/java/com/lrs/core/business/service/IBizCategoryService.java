@@ -19,6 +19,10 @@ import java.util.List;
 public interface IBizCategoryService extends IService<BizCategory> {
 
     Page<BizCategory> getPage(Page page, BaseDto dto);
+    /**
+     * 查询小程序端商品分类列表。
+     */
+    List<BizCategory> listAppCategories();
     boolean add(BizCategory item);
     boolean edit(BizCategory item);
     boolean del(Long id);

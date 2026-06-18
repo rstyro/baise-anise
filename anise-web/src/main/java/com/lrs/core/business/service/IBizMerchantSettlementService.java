@@ -6,6 +6,7 @@ import com.lrs.core.business.entity.BizMerchantSettlement;
 import com.lrs.core.system.dto.BaseDto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -31,6 +32,21 @@ public interface IBizMerchantSettlementService extends IService<BizMerchantSettl
      * 根据结算单号查询
      */
     BizMerchantSettlement getBySettleNo(String settleNo);
+
+    /**
+     * 查询商家结算记录分页。
+     */
+    Map<String, Object> listMerchantSettlements(Long merchantId, int pageNo, int pageSize);
+
+    /**
+     * 查询商家结算详情。
+     */
+    Map<String, Object> getMerchantSettlementDetail(Long merchantId, Long settleId);
+
+    /**
+     * 商家确认收款。
+     */
+    void confirmMerchantSettlement(Long merchantId, Long settleId);
 
     /**
      * 新增

@@ -422,6 +422,7 @@ public PageResultVo<ProductVo> getAppProductListByMerchant(Long merchantId, int 
 - RESTful API 设计规范
 - 统一的响应格式（R<T>）
 - 必要的参数校验
+- Controller 接收复杂 JSON 请求体时必须定义 DTO，不要使用 `Map<String, Object>` 或原始 `Map` 接收业务参数；嵌套结构使用内部 DTO 类或独立 DTO 类表达清楚。
 
 ### 6.4 数据库操作
 - 使用逻辑删除而非物理删除

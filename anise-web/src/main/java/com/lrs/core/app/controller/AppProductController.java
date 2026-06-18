@@ -8,15 +8,12 @@ import com.lrs.core.app.dto.product.ProductListDto;
 import com.lrs.core.app.dto.product.ProductVo;
 import com.lrs.core.app.vo.PageResultVo;
 import com.lrs.core.base.BaseController;
-import com.lrs.core.business.entity.BizCategory;
 import com.lrs.core.business.service.IBizCategoryService;
 import com.lrs.core.business.service.IBizProductService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 小程序商品控制器
@@ -40,8 +37,7 @@ public class AppProductController extends BaseController {
     @PostMapping("/categoryList")
     @ResponseBody
     public R categoryList() {
-        List<BizCategory> list = bizCategoryService.list();
-        return R.ok(list);
+        return R.ok(bizCategoryService.listAppCategories());
     }
 
     /**

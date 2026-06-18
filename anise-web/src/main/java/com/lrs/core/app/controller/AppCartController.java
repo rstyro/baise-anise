@@ -1,6 +1,7 @@
 package com.lrs.core.app.controller;
 
 import com.lrs.common.annotation.OperateLog;
+import com.lrs.common.exception.ServiceException;
 import com.lrs.common.vo.R;
 import com.lrs.common.vo.UserVo;
 import com.lrs.core.app.dto.cart.CartAddDto;
@@ -14,13 +15,16 @@ import com.lrs.core.business.service.IBizCartService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 /**
- * 小程序购物车控制器
- * 负责接收请求、调用Service、返回响应，不包含业务逻辑
+ * 小程序购物车 Controller，只负责参数接收和 Service 调用。
  */
 @Slf4j
 @RestController
@@ -31,17 +35,16 @@ public class AppCartController extends BaseController {
     @Resource
     private IBizCartService bizCartService;
 
-    /**
-     * 获取当前登录用户ID
-     */
     private Long getUserId() {
         UserVo user = getLoginSysUser();
-        if (user == null) throw new RuntimeException("请先登录");
+        if (user == null) {
+            throw new ServiceException("请先登录");
+        }
         return user.getUserId();
     }
 
     /**
-     * 加入购物车
+     * 加入购物车。
      */
     @OperateLog(title = "小程序-加入购物车")
     @PostMapping("/add")
@@ -52,7 +55,7 @@ public class AppCartController extends BaseController {
     }
 
     /**
-     * 购物车列表
+     * 购物车列表。
      */
     @PostMapping("/list")
     @ResponseBody
@@ -62,7 +65,7 @@ public class AppCartController extends BaseController {
     }
 
     /**
-     * 更新数量
+     * 更新数量。
      */
     @OperateLog(title = "小程序-更新购物车数量")
     @PostMapping("/updateQuantity")
@@ -73,7 +76,7 @@ public class AppCartController extends BaseController {
     }
 
     /**
-     * 更新选中状态
+     * 更新选中状态。
      */
     @PostMapping("/updateSelected")
     @ResponseBody
@@ -83,7 +86,7 @@ public class AppCartController extends BaseController {
     }
 
     /**
-     * 全选/取消全选
+     * 全选或取消全选。
      */
     @PostMapping("/selectAll")
     @ResponseBody
@@ -93,19 +96,21 @@ public class AppCartController extends BaseController {
     }
 
     /**
-     * 删除购物车项
+     * 删除购物车项。
      */
     @OperateLog(title = "小程序-删除购物车")
     @PostMapping("/delete")
     @ResponseBody
     public R delete(@RequestBody CartDeleteDto dto) {
-        if (dto.getCartId() == null) return R.error("cartId不能为空");
+        if (dto.getCartId() == null) {
+            return R.error("cartId不能为空");
+        }
         boolean success = bizCartService.deleteCartItem(getUserId(), dto.getCartId());
         return success ? R.ok() : R.error("购物车记录不存在");
     }
 
     /**
-     * 清除已选中的商品（下单后调用）
+     * 清除已选中的商品。
      */
     @PostMapping("/clearSelected")
     @ResponseBody
@@ -113,6 +118,4 @@ public class AppCartController extends BaseController {
         bizCartService.clearSelected(getUserId());
         return R.ok();
     }
-
 }
-

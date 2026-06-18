@@ -2,6 +2,9 @@ package com.lrs.core.business.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lrs.core.app.dto.order.MerchantOrderCancelDto;
+import com.lrs.core.app.dto.order.MerchantOrderDeliveryDto;
+import com.lrs.core.app.dto.order.OrderQueryDto;
 import com.lrs.core.business.entity.BizOrderSub;
 import com.lrs.core.system.dto.BaseDto;
 
@@ -37,6 +40,26 @@ public interface IBizOrderSubService extends IService<BizOrderSub> {
      * 统计多个订单的子订单数量
      */
     Map<Long, Long> countByOrderIds(List<Long> orderIds);
+
+    /**
+     * 查询商家子订单列表。
+     */
+    Object listMerchantOrders(Long merchantId, OrderQueryDto dto, int pageNo, int pageSize);
+
+    /**
+     * 查询商家子订单详情。
+     */
+    Map<String, Object> getMerchantSubDetail(Long merchantId, Long subId);
+
+    /**
+     * 商家对子订单发货。
+     */
+    void deliverMerchantSubOrder(Long merchantId, MerchantOrderDeliveryDto dto);
+
+    /**
+     * 商家取消子订单。
+     */
+    void cancelMerchantSubOrder(Long merchantId, MerchantOrderCancelDto dto);
 
     /**
      * 新增

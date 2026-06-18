@@ -19,6 +19,10 @@ import java.util.List;
 public interface IBizBannerService extends IService<BizBanner> {
 
     Page<BizBanner> getPage(Page page, BaseDto dto);
+    /**
+     * 查询小程序端启用的 Banner 列表。
+     */
+    List<BizBanner> listAppBanners();
     boolean add(BizBanner item);
     boolean edit(BizBanner item);
     boolean del(Long id);

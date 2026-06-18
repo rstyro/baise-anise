@@ -37,6 +37,14 @@ public class BizBannerServiceImpl extends ServiceImpl<BizBannerMapper, BizBanner
         }
 
         @Override
+        public List<BizBanner> listAppBanners() {
+            LambdaQueryWrapper<BizBanner> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BizBanner::getStatus, (byte) 1)
+                    .orderByAsc(BizBanner::getSortOrder);
+            return list(queryWrapper);
+        }
+
+        @Override
         public boolean add(BizBanner item) {
             return save(item);
         }

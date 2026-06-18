@@ -37,6 +37,11 @@ public class BizCategoryServiceImpl extends ServiceImpl<BizCategoryMapper, BizCa
         }
 
         @Override
+        public List<BizCategory> listAppCategories() {
+            return list();
+        }
+
+        @Override
         public boolean add(BizCategory item) {
             return save(item);
         }

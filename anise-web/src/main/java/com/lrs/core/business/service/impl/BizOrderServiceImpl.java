@@ -1,15 +1,22 @@
 package com.lrs.core.business.service.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lrs.common.exception.ServiceException;
 import com.lrs.common.utils.OrderNumberGenerator;
+import com.lrs.core.app.dto.order.OrderQueryDto;
 import com.lrs.core.app.dto.order.OrderSubmitDto;
+import com.lrs.core.app.vo.BizOrderItemVo;
+import com.lrs.core.app.vo.OrderDetailVo;
 import com.lrs.core.app.vo.OrderGoodsVo;
+import com.lrs.core.app.vo.OrderLogisticsVo;
+import com.lrs.core.app.vo.OrderListVo;
 import com.lrs.core.app.vo.OrderSubmitResultVo;
+import com.lrs.core.app.vo.PayResultVo;
 import com.lrs.core.business.entity.BizAddress;
 import com.lrs.core.business.entity.BizAttribute;
 import com.lrs.core.business.entity.BizAttributeValue;
@@ -17,6 +24,7 @@ import com.lrs.core.business.entity.BizCart;
 import com.lrs.core.business.entity.BizMerchant;
 import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.entity.BizOrderItem;
+import com.lrs.core.business.entity.BizOrderLogistics;
 import com.lrs.core.business.entity.BizOrderSub;
 import com.lrs.core.business.entity.BizProduct;
 import com.lrs.core.business.entity.BizProductSku;
@@ -28,6 +36,7 @@ import com.lrs.core.business.service.IBizAttributeValueService;
 import com.lrs.core.business.service.IBizCartService;
 import com.lrs.core.business.service.IBizMerchantService;
 import com.lrs.core.business.service.IBizOrderItemService;
+import com.lrs.core.business.service.IBizOrderLogisticsService;
 import com.lrs.core.business.service.IBizOrderService;
 import com.lrs.core.business.service.IBizOrderSubService;
 import com.lrs.core.business.service.IBizProductService;
@@ -71,6 +80,9 @@ public class BizOrderServiceImpl extends ServiceImpl<BizOrderMapper, BizOrder> i
 
     @Resource
     private IBizOrderItemService bizOrderItemService;
+
+    @Resource
+    private IBizOrderLogisticsService bizOrderLogisticsService;
 
     @Resource
     private IBizCartService bizCartService;
@@ -137,6 +149,283 @@ public class BizOrderServiceImpl extends ServiceImpl<BizOrderMapper, BizOrder> i
             return Collections.emptyList();
         }
         return baseMapper.selectOrderGoodsList(orderIds);
+    }
+
+    @Override
+    public Object listAppOrders(Long userId, OrderQueryDto dto, int pageNo, int pageSize) {
+        LambdaQueryWrapper<BizOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BizOrder::getUserId, userId)
+                .orderByDesc(BizOrder::getId);
+
+        Integer status = dto == null ? null : dto.getStatus();
+        if (status != null) {
+            if (status == -1) {
+                queryWrapper.in(BizOrder::getStatus, 2, 3);
+            } else if (status == 4) {
+                queryWrapper.eq(BizOrder::getStatus, 4);
+            } else if (status > 0) {
+                queryWrapper.eq(BizOrder::getStatus, status);
+            }
+        }
+
+        Page<BizOrder> page = new Page<>(pageNo, pageSize);
+        Page<BizOrder> result = page(page, queryWrapper);
+        if (result.getRecords().isEmpty()) {
+            return result;
+        }
+
+        List<Long> orderIds = result.getRecords().stream().map(BizOrder::getId).collect(Collectors.toList());
+        List<OrderGoodsVo> allGoods = getGoodsList(orderIds);
+        allGoods.forEach(OrderGoodsVo::parseSkuSpecs);
+        Map<Long, List<OrderGoodsVo>> goodsMap = allGoods.stream()
+                .collect(Collectors.groupingBy(OrderGoodsVo::getOrderId));
+        Map<Long, Long> subCountMap = bizOrderSubService.countByOrderIds(orderIds);
+
+        List<OrderListVo> voList = result.getRecords().stream().map(order -> {
+            OrderListVo vo = new OrderListVo();
+            BeanUtil.copyProperties(order, vo);
+            vo.setGoodsList(goodsMap.getOrDefault(order.getId(), Collections.emptyList()));
+            vo.setSubCount(subCountMap.getOrDefault(order.getId(), 0L).intValue());
+            return vo;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> pageResult = new LinkedHashMap<>();
+        pageResult.put("records", voList);
+        pageResult.put("total", result.getTotal());
+        pageResult.put("current", result.getCurrent());
+        pageResult.put("pages", result.getPages());
+        return pageResult;
+    }
+
+    @Override
+    public OrderDetailVo getAppOrderDetail(Long userId, Long orderId) {
+        BizOrder order = getUserOrder(userId, orderId);
+        List<BizOrderSub> subs = bizOrderSubService.getByOrderId(orderId);
+        List<BizOrderItem> items = bizOrderItemService.list(
+                new LambdaQueryWrapper<BizOrderItem>().eq(BizOrderItem::getOrderId, orderId));
+
+        OrderDetailVo vo = new OrderDetailVo();
+        BeanUtil.copyProperties(order, vo);
+        vo.setItems(items.stream()
+                .map(item -> BeanUtil.toBean(item, BizOrderItemVo.class))
+                .collect(Collectors.toList()));
+        if (order.getAddressSnapshot() != null) {
+            vo.setAddress(JSON.parseObject(order.getAddressSnapshot()));
+        }
+
+        Map<Long, List<OrderLogisticsVo.PackageVo>> logisticsMap = buildLogisticsPackageMap(subs);
+        List<Map<String, Object>> subList = subs.stream().map(sub -> {
+            Map<String, Object> subMap = new LinkedHashMap<>();
+            subMap.put("subId", sub.getId());
+            subMap.put("subNo", sub.getSubNo());
+            subMap.put("merchantName", sub.getMerchantName());
+            subMap.put("merchantId", sub.getMerchantId());
+            subMap.put("deliveryStatus", sub.getDeliveryStatus());
+            subMap.put("deliveryTime", sub.getDeliveryTime());
+            subMap.put("receiveTime", sub.getReceiveTime());
+            subMap.put("packages", logisticsMap.getOrDefault(sub.getId(), Collections.emptyList()));
+            return subMap;
+        }).collect(Collectors.toList());
+        vo.setSubList(subList);
+        return vo;
+    }
+
+    @Override
+    public OrderLogisticsVo getAppOrderLogistics(Long userId, Long orderId) {
+        BizOrder order = getUserOrder(userId, orderId);
+        List<BizOrderSub> subs = bizOrderSubService.getByOrderId(orderId);
+        Map<Long, List<OrderLogisticsVo.PackageVo>> logisticsMap = buildLogisticsPackageMap(subs);
+
+        OrderLogisticsVo vo = new OrderLogisticsVo();
+        vo.setOrderId(order.getId());
+        vo.setOrderNo(order.getOrderNo());
+        vo.setStatus(order.getStatus());
+        vo.setDeliveryType(order.getDeliveryType());
+        vo.setShipTime(order.getShipTime());
+        vo.setReceiveTime(order.getReceiveTime());
+        vo.setSubList(subs.stream().map(sub -> {
+            OrderLogisticsVo.SubLogisticsVo subVo = new OrderLogisticsVo.SubLogisticsVo();
+            subVo.setSubNo(sub.getSubNo());
+            subVo.setMerchantName(sub.getMerchantName());
+            subVo.setDeliveryStatus(sub.getDeliveryStatus());
+            subVo.setDeliveryTime(sub.getDeliveryTime());
+            subVo.setReceiveTime(sub.getReceiveTime());
+            subVo.setPackages(logisticsMap.getOrDefault(sub.getId(), Collections.emptyList()));
+            return subVo;
+        }).collect(Collectors.toList()));
+        return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelAppOrder(Long userId, Long orderId) {
+        BizOrder order = getUserOrder(userId, orderId);
+        if (order.getStatus() != BizOrder.STATUS_PENDING_PAY) {
+            throw new ServiceException("仅待支付订单可取消");
+        }
+
+        List<BizOrderItem> items = bizOrderItemService.list(
+                new LambdaQueryWrapper<BizOrderItem>().eq(BizOrderItem::getOrderId, orderId));
+        for (BizOrderItem item : items) {
+            BizProductSku sku = bizProductSkuService.getById(item.getSkuId());
+            if (sku != null) {
+                sku.setStock(sku.getStock().add(BigDecimal.valueOf(item.getQuantity())));
+                bizProductSkuService.updateById(sku);
+            }
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        List<BizOrderSub> subs = bizOrderSubService.getByOrderId(orderId);
+        for (BizOrderSub sub : subs) {
+            sub.setIsDeleted((byte) 1);
+            sub.setUpdateTime(now);
+            bizOrderSubService.updateById(sub);
+        }
+
+        order.setStatus(BizOrder.STATUS_CANCELLED);
+        order.setCancelTime(now);
+        order.setUpdateTime(now);
+        updateById(order);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmAppReceive(Long userId, Long orderId, Long subId) {
+        BizOrder order = getUserOrder(userId, orderId);
+        if (subId != null) {
+            confirmSubReceive(order, subId);
+            return;
+        }
+
+        if (order.getStatus() != BizOrder.STATUS_DELIVERED) {
+            throw new ServiceException("仅已发货订单可确认收货");
+        }
+        List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(orderId);
+        LocalDateTime now = LocalDateTime.now();
+        List<Long> receivedSubIds = new ArrayList<>();
+        for (BizOrderSub sub : allSubs) {
+            if (sub.getDeliveryStatus() == BizOrderSub.DELIVERY_STATUS_SHIPPED) {
+                sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_RECEIVED);
+                sub.setReceiveTime(now);
+                sub.setUpdateTime(now);
+                bizOrderSubService.updateById(sub);
+                receivedSubIds.add(sub.getId());
+            }
+        }
+        bizOrderLogisticsService.markDeliveredBySubOrderIds(receivedSubIds, now);
+
+        order.setStatus(BizOrder.STATUS_RECEIVED);
+        order.setReceiveTime(now);
+        order.setUpdateTime(now);
+        updateById(order);
+    }
+
+    @Override
+    public PayResultVo createMockPayOrder(Long orderId) {
+        BizOrder order = getOrder(orderId);
+        if (order.getStatus() != BizOrder.STATUS_PENDING_PAY) {
+            throw new ServiceException("订单状态不正确");
+        }
+
+        PayResultVo result = new PayResultVo();
+        result.setPrepayId("prepay_mock_" + orderId);
+        result.setOrderNo(order.getOrderNo());
+        result.setPayAmount(order.getPayAmount());
+        result.setNonceStr("mock_nonce");
+        result.setTimeStamp(String.valueOf(System.currentTimeMillis() / 1000));
+        result.setSignType("MD5");
+        result.setPaySign("mock_sign");
+        return result;
+    }
+
+    @Override
+    public void mockPaySuccess(Long orderId) {
+        BizOrder order = getOrder(orderId);
+        if (order.getStatus() != BizOrder.STATUS_PENDING_PAY) {
+            throw new ServiceException("订单状态不正确，仅待支付订单可支付");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        order.setStatus(BizOrder.STATUS_PENDING_DELIVERY);
+        order.setPayTime(now);
+        order.setPayType((byte) 1);
+        order.setUpdateTime(now);
+        updateById(order);
+    }
+
+    private BizOrder getUserOrder(Long userId, Long orderId) {
+        BizOrder order = getOrder(orderId);
+        if (!userId.equals(order.getUserId())) {
+            throw new ServiceException("订单不存在");
+        }
+        return order;
+    }
+
+    private BizOrder getOrder(Long orderId) {
+        if (orderId == null) {
+            throw new ServiceException("订单ID不能为空");
+        }
+        BizOrder order = getById(orderId);
+        if (order == null) {
+            throw new ServiceException("订单不存在");
+        }
+        return order;
+    }
+
+    private void confirmSubReceive(BizOrder order, Long subId) {
+        BizOrderSub sub = bizOrderSubService.getById(subId);
+        if (sub == null || !order.getId().equals(sub.getOrderId())) {
+            throw new ServiceException("子订单不存在");
+        }
+        if (sub.getDeliveryStatus() != BizOrderSub.DELIVERY_STATUS_SHIPPED) {
+            throw new ServiceException("仅已发货订单可确认收货");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        sub.setDeliveryStatus(BizOrderSub.DELIVERY_STATUS_RECEIVED);
+        sub.setReceiveTime(now);
+        sub.setUpdateTime(now);
+        bizOrderSubService.updateById(sub);
+        bizOrderLogisticsService.markDeliveredBySubOrderIds(Collections.singletonList(subId), now);
+
+        List<BizOrderSub> allSubs = bizOrderSubService.getByOrderId(order.getId());
+        boolean allReceived = allSubs.stream()
+                .allMatch(item -> item.getDeliveryStatus() == BizOrderSub.DELIVERY_STATUS_RECEIVED);
+        if (allReceived) {
+            order.setStatus(BizOrder.STATUS_RECEIVED);
+            order.setReceiveTime(now);
+            order.setUpdateTime(now);
+            updateById(order);
+        }
+    }
+
+    private Map<Long, List<OrderLogisticsVo.PackageVo>> buildLogisticsPackageMap(List<BizOrderSub> subs) {
+        if (subs == null || subs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Long> subIds = subs.stream().map(BizOrderSub::getId).collect(Collectors.toList());
+        List<BizOrderLogistics> logisticsList = bizOrderLogisticsService.getBySubOrderIds(subIds);
+        if (logisticsList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return logisticsList.stream().collect(Collectors.groupingBy(
+                BizOrderLogistics::getSubOrderId,
+                LinkedHashMap::new,
+                Collectors.mapping(this::toPackageVo, Collectors.toList())
+        ));
+    }
+
+    private OrderLogisticsVo.PackageVo toPackageVo(BizOrderLogistics logistics) {
+        OrderLogisticsVo.PackageVo packageVo = new OrderLogisticsVo.PackageVo();
+        packageVo.setLogisticsCompany(logistics.getLogisticsCompany());
+        packageVo.setExpressCode(logistics.getExpressCode());
+        packageVo.setTrackingNo(logistics.getTrackingNo());
+        packageVo.setStatus(logistics.getStatus());
+        packageVo.setEstimatedDeliveryDate(logistics.getEstimatedDeliveryDate());
+        packageVo.setDeliveredTime(logistics.getDeliveredTime());
+        packageVo.setLastTrackDetail(logistics.getLastTrackDetail());
+        packageVo.setCreateTime(logistics.getCreateTime());
+        return packageVo;
     }
 
     /**

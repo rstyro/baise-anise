@@ -2,25 +2,19 @@ package com.lrs.core.app.controller;
 
 import com.lrs.common.vo.R;
 import com.lrs.core.app.dto.pay.PayOrderIdDto;
-import com.lrs.core.app.vo.PayResultVo;
 import com.lrs.core.base.BaseController;
-import com.lrs.core.business.entity.BizOrder;
 import com.lrs.core.business.service.IBizOrderService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 小程序 - 支付 Controller
- * <p>
- * 微信支付集成骨架。当前为模拟实现，接入真实微信支付时替换内部调用。
- * </p>
- *
- * @author rstyro
- * @since 2026-06-11
+ * 小程序支付 Controller。
  */
 @Slf4j
 @RestController
@@ -32,67 +26,31 @@ public class AppPayController extends BaseController {
     private IBizOrderService bizOrderService;
 
     /**
-     * 统一下单（模拟）
-     * 真实接入时：调用微信统一下单API → 获取 prepay_id → 签名 → 返回给小程序调起支付
+     * 统一下单（模拟）。
      */
     @PostMapping("/unifiedOrder")
     @ResponseBody
     public R unifiedOrder(@RequestBody PayOrderIdDto dto) {
-        Long orderId = dto.getOrderId();
-        BizOrder order = bizOrderService.getById(orderId);
-        if (order == null) return R.error("订单不存在");
-        if (order.getStatus() != 1) return R.error("订单状态不正确");
-
-        // TODO: 真实接入微信支付时替换以下逻辑
-        // 1. 调用 WechatPayService.unifiedOrder(order)
-        // 2. 返回 prepay_id + 签名参数
-
-        PayResultVo result = new PayResultVo();
-        result.setPrepayId("prepay_mock_" + orderId);
-        result.setOrderNo(order.getOrderNo());
-        result.setPayAmount(order.getPayAmount());
-        result.setNonceStr("mock_nonce");
-        result.setTimeStamp(String.valueOf(System.currentTimeMillis() / 1000));
-        result.setSignType("MD5");
-        result.setPaySign("mock_sign");
-        return R.ok(result);
+        return R.ok(bizOrderService.createMockPayOrder(dto.getOrderId()));
     }
 
     /**
-     * 支付回调（模拟）
-     * 真实接入时：此接口由微信异步调用，需验签 + 更新订单状态
-     * 注意：此接口需在 LoginIntercept 中排除拦截
+     * 支付回调（模拟）。
      */
     @PostMapping("/notify")
     @ResponseBody
     public String notify(@RequestBody String xmlBody) {
-        // TODO: 真实接入时
-        // 1. 验签 xmlBody
-        // 2. 解析订单号
-        // 3. 更新 order.payStatus=1, order.status=2, order.payTime
         log.info("支付回调通知(Mock): {}", xmlBody);
         return "<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>";
     }
 
     /**
-     * 模拟支付成功（开发测试用）
+     * 模拟支付成功。
      */
     @PostMapping("/mockPaySuccess")
     @ResponseBody
     public R mockPaySuccess(@RequestBody PayOrderIdDto dto) {
-        Long orderId = dto.getOrderId();
-        BizOrder order = bizOrderService.getById(orderId);
-        if (order == null) return R.error("订单不存在");
-        if (order.getStatus() != BizOrder.STATUS_PENDING_PAY) return R.error("订单状态不正确，仅待支付订单可支付");
-
-        order.setStatus(BizOrder.STATUS_PENDING_DELIVERY);
-        order.setPayTime(LocalDateTime.now());
-        order.setPayType((byte) 1);
-        order.setUpdateTime(LocalDateTime.now());
-        bizOrderService.updateById(order);
-
+        bizOrderService.mockPaySuccess(dto.getOrderId());
         return R.ok();
     }
-
 }
-

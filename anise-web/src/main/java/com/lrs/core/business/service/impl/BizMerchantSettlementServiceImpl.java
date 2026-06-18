@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lrs.common.exception.ServiceException;
 import com.lrs.common.utils.OrderNumberGenerator;
 import com.lrs.core.business.entity.BizMerchantSettlement;
 import com.lrs.core.business.entity.BizOrderSub;
@@ -17,8 +18,11 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -61,6 +65,58 @@ public class BizMerchantSettlementServiceImpl extends ServiceImpl<BizMerchantSet
         LambdaQueryWrapper<BizMerchantSettlement> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BizMerchantSettlement::getSettleNo, settleNo);
         return getOne(queryWrapper);
+    }
+
+    @Override
+    public Map<String, Object> listMerchantSettlements(Long merchantId, int pageNo, int pageSize) {
+        LambdaQueryWrapper<BizMerchantSettlement> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BizMerchantSettlement::getMerchantId, merchantId)
+                .orderByDesc(BizMerchantSettlement::getId);
+        Page<BizMerchantSettlement> result = page(new Page<>(pageNo, pageSize), queryWrapper);
+
+        Map<String, Object> pageResult = new LinkedHashMap<>();
+        pageResult.put("records", result.getRecords());
+        pageResult.put("total", result.getTotal());
+        pageResult.put("current", result.getCurrent());
+        pageResult.put("pages", result.getPages());
+        return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getMerchantSettlementDetail(Long merchantId, Long settleId) {
+        BizMerchantSettlement settlement = getMerchantSettlement(merchantId, settleId);
+        LambdaQueryWrapper<BizOrderSub> subQuery = new LambdaQueryWrapper<>();
+        subQuery.eq(BizOrderSub::getMerchantId, merchantId)
+                .like(BizOrderSub::getSettlePeriod, settlement.getSettleNo());
+        List<BizOrderSub> subs = bizOrderSubService.list(subQuery);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("settlement", settlement);
+        result.put("orderSubs", subs);
+        return result;
+    }
+
+    @Override
+    public void confirmMerchantSettlement(Long merchantId, Long settleId) {
+        BizMerchantSettlement settlement = getMerchantSettlement(merchantId, settleId);
+        if (settlement.getStatus() != BizMerchantSettlement.STATUS_CONFIRMED) {
+            throw new ServiceException("当前状态不可确认收款");
+        }
+
+        settlement.setStatus(BizMerchantSettlement.STATUS_ARRIVED);
+        settlement.setArriveTime(LocalDateTime.now());
+        updateById(settlement);
+    }
+
+    private BizMerchantSettlement getMerchantSettlement(Long merchantId, Long settleId) {
+        if (settleId == null) {
+            throw new ServiceException("结算记录ID不能为空");
+        }
+        BizMerchantSettlement settlement = getById(settleId);
+        if (settlement == null || !merchantId.equals(settlement.getMerchantId())) {
+            throw new ServiceException("结算记录不存在");
+        }
+        return settlement;
     }
 
     @Override

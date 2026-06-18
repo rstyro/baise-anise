@@ -3,6 +3,7 @@ package com.lrs.core.business.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lrs.common.vo.R;
 import com.lrs.core.base.BaseController;
+import com.lrs.core.business.dto.ProductSkuAttrSaveDto;
 import com.lrs.core.business.entity.BizAttribute;
 import com.lrs.core.business.entity.BizAttributeValue;
 import com.lrs.core.business.entity.BizProductSkuAttr;
@@ -69,32 +70,11 @@ public class BizProductSkuAttrController extends BaseController {
     }
 
     @PostMapping("/save")
-    public R save(@RequestBody Map<String, Object> data) {
-        Long skuId = ((Number) data.get("skuId")).longValue();
-        List<Map<String, Object>> attrs = (List<Map<String, Object>>) data.get("attrs");
-
-        BizProductSkuAttr first = bizProductSkuAttrService.getOne(new LambdaQueryWrapper<BizProductSkuAttr>().eq(BizProductSkuAttr::getSkuId, skuId));
-        Long productId = first != null ? first.getProductId() : null;
-        if (productId == null && data.get("productId") != null) {
-            productId = ((Number) data.get("productId")).longValue();
+    public R save(@RequestBody ProductSkuAttrSaveDto dto) {
+        if (dto == null || dto.getSkuId() == null) {
+            return R.error("SKU ID不能为空");
         }
-
-        LambdaQueryWrapper<BizProductSkuAttr> deleteQuery = new LambdaQueryWrapper<>();
-        deleteQuery.eq(BizProductSkuAttr::getSkuId, skuId);
-        bizProductSkuAttrService.remove(deleteQuery);
-
-        for (Map<String, Object> attr : attrs) {
-            Long attrId = ((Number) attr.get("attrId")).longValue();
-            Long attrValueId = ((Number) attr.get("attrValueId")).longValue();
-
-            BizProductSkuAttr skuAttr = new BizProductSkuAttr()
-                    .setSkuId(skuId)
-                    .setProductId(productId)
-                    .setAttrId(attrId)
-                    .setAttrValueId(attrValueId);
-            bizProductSkuAttrService.save(skuAttr);
-        }
-
+        bizProductSkuAttrService.saveSkuAttrs(dto);
         return R.ok();
     }
 
