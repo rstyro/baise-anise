@@ -1,199 +1,236 @@
 <template>
-	<view class="page">
-		<view class="header-section">
+  <view class="page">
+    <view class="profile-hero">
+      <view class="hero-bg" />
+      <view class="profile-card">
+        <!-- #ifdef MP-WEIXIN -->
+        <button class="avatar-wrapper" open-type="chooseAvatar" @chooseavatar="onChooseAvatar">
+          <image :src="displayAvatarUrl" class="avatar-img" mode="aspectFill" />
+          <view class="avatar-edit-icon">
+            <u-icon name="camera-fill" size="22" :color="THEME_TEXT_INVERSE" />
+          </view>
+        </button>
+        <!-- #endif -->
 
-		<!-- #ifdef MP-WEIXIN -->
-			<button class="avatar-wrapper" open-type="chooseAvatar" @chooseavatar="onChooseAvatar">
-				<image 
-					:src="displayAvatarUrl || '/static/logo.png'" 
-					class="avatar-img" 
-					mode="aspectFill"
-				></image>
-				<view class="avatar-edit-icon">
-					<u-icon name="camera-fill" size="24" color="#fff"></u-icon>
-				</view>
-			</button>
-			<!-- #endif -->
+        <!-- #ifndef MP-WEIXIN -->
+        <view class="avatar-wrapper" @click="onH5ChooseAvatar">
+          <image :src="displayAvatarUrl" class="avatar-img" mode="aspectFill" />
+          <view class="avatar-edit-icon">
+            <u-icon name="camera-fill" size="22" :color="THEME_TEXT_INVERSE" />
+          </view>
+        </view>
+        <!-- #endif -->
 
-			<!-- H5专用点击区域 -->
-			<!-- #ifdef H5 -->
-			<view class="avatar-wrapper" @click="onH5ChooseAvatar">
-				<image 
-					:src="displayAvatarUrl || '/static/logo.png'" 
-					class="avatar-img" 
-					mode="aspectFill"
-				></image>
-				<view class="avatar-edit-icon">
-					<u-icon name="camera-fill" size="24" color="#fff"></u-icon>
-				</view>
-			</view>
-			<!-- #endif -->
+        <view class="profile-main">
+          <text class="nickname u-line-1">{{ userInfo.nickname || '未设置昵称' }}</text>
+          <text class="profile-subtitle">{{ userInfo.phone || '资料待完善' }}</text>
+        </view>
+        <view class="login-badge" :class="{ active: isLoggedIn }">
+          {{ isLoggedIn ? '已登录' : '未登录' }}
+        </view>
+      </view>
+    </view>
 
+    <view class="content">
+      <view class="section-card info-section">
+        <view class="section-title">基础资料</view>
 
-			<text class="nickname">{{ userInfo.nickname || '未设置昵称' }}</text>
-		</view>
+        <view class="info-item" :class="{ clickable: !userInfo.username }" @click="!userInfo.username && editUsername()">
+          <view class="info-left">
+            <view class="info-icon primary">
+              <u-icon name="user" size="20" :color="THEME_PRIMARY" />
+            </view>
+            <text class="info-label">用户名</text>
+          </view>
+          <view class="info-right">
+            <text class="info-value u-line-1">{{ userInfo.username || '未设置' }}</text>
+            <u-icon v-if="!userInfo.username" name="arrow-right" size="18" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
 
-		<view class="info-section">
-			<view class="info-item" @click="editUsername" v-if="!userInfo.username">
-				<view class="info-left">
-					<u-icon name="user" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">用户名</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ userInfo.username || '未设置' }}</text>
-					<u-icon name="arrow-right" size="20" color="#ccc"></u-icon>
-				</view>
-			</view>
+        <view class="info-item clickable" @click="editNickname">
+          <view class="info-left">
+            <view class="info-icon success">
+              <u-icon name="account" size="20" :color="THEME_SUCCESS" />
+            </view>
+            <text class="info-label">昵称</text>
+          </view>
+          <view class="info-right">
+            <text class="info-value u-line-1">{{ userInfo.nickname || '未设置' }}</text>
+            <u-icon name="arrow-right" size="18" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
 
-			<view class="info-item" v-else>
-				<view class="info-left">
-					<u-icon name="user" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">用户名</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ userInfo.username }}</text>
-				</view>
-			</view>
+        <view class="info-item clickable" @click="editSex">
+          <view class="info-left">
+            <view class="info-icon warning">
+              <u-icon name="man" size="20" :color="THEME_WARNING" />
+            </view>
+            <text class="info-label">性别</text>
+          </view>
+          <view class="info-right">
+            <text class="info-value">{{ sexMap[userInfo.sex] || '保密' }}</text>
+            <u-icon name="arrow-right" size="18" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
 
-			<view class="info-item" @click="editNickname">
-				<view class="info-left">
-					<u-icon name="account" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">昵称</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ userInfo.nickname || '未设置' }}</text>
-					<u-icon name="arrow-right" size="20" color="#ccc"></u-icon>
-				</view>
-			</view>
+        <view class="info-item">
+          <view class="info-left">
+            <view class="info-icon success">
+              <u-icon name="phone" size="20" :color="THEME_SUCCESS" />
+            </view>
+            <text class="info-label">手机号</text>
+          </view>
+          <view class="info-right">
+            <text class="info-value u-line-1">{{ userInfo.phone || '未绑定' }}</text>
+          </view>
+        </view>
 
-			<view class="info-item" @click="editSex">
-				<view class="info-left">
-					<u-icon name="man" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">性别</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ sexMap[userInfo.sex] }}</text>
-					<u-icon name="arrow-right" size="20" color="#ccc"></u-icon>
-				</view>
-			</view>
+        <view class="info-item">
+          <view class="info-left">
+            <view class="info-icon muted">
+              <u-icon name="grid" size="20" :color="THEME_TEXT_GREY" />
+            </view>
+            <text class="info-label">用户ID</text>
+          </view>
+          <view class="info-right">
+            <text class="info-value">{{ userInfo.userId || '-' }}</text>
+          </view>
+        </view>
+      </view>
 
-			<view class="info-item">
-				<view class="info-left">
-					<u-icon name="phone" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">手机号</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ userInfo.phone || '未绑定' }}</text>
-				</view>
-			</view>
+      <view v-if="isLoggedIn" class="action-section">
+        <button class="logout-btn" @click="handleLogout">退出登录</button>
+      </view>
+    </view>
 
-			<view class="info-item">
-				<view class="info-left">
-					<u-icon name="grid" size="24" color="#5199ff"></u-icon>
-					<text class="info-label">用户ID</text>
-				</view>
-				<view class="info-right">
-					<text class="info-value">{{ userInfo.userId || '-' }}</text>
-				</view>
-			</view>
-		</view>
+    <view v-if="showNicknameModal" class="edit-modal" @click="closeNicknameModal">
+      <view class="modal-content" @click.stop>
+        <view class="modal-header">
+          <text class="modal-title">修改昵称</text>
+          <view class="close-btn" @click="closeNicknameModal">
+            <u-icon name="close" size="24" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
+        <view class="modal-body">
+          <input
+            v-model="tempNickname"
+            class="text-input"
+            placeholder="请输入昵称"
+            placeholder-class="input-placeholder"
+            type="nickname"
+            maxlength="20"
+          />
+        </view>
+        <view class="modal-footer">
+          <button class="confirm-btn" @click="confirmNickname">确认修改</button>
+        </view>
+      </view>
+    </view>
 
-		<view class="action-section" v-if="isLoggedIn">
-			<button class="logout-btn" @click="handleLogout">退出登录</button>
-		</view>
+    <view v-if="showUsernameModal" class="edit-modal" @click="closeUsernameModal">
+      <view class="modal-content" @click.stop>
+        <view class="modal-header">
+          <text class="modal-title">设置用户名</text>
+          <view class="close-btn" @click="closeUsernameModal">
+            <u-icon name="close" size="24" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
+        <view class="modal-body">
+          <input
+            v-model="tempUsername"
+            class="text-input"
+            placeholder="请输入用户名"
+            placeholder-class="input-placeholder"
+            type="text"
+            maxlength="20"
+          />
+          <text class="input-hint">用户名设置后不可在当前页面再次修改</text>
+        </view>
+        <view class="modal-footer">
+          <button class="confirm-btn" @click="confirmUsername">确认设置</button>
+        </view>
+      </view>
+    </view>
 
-		<view class="nickname-modal" v-if="showNicknameModal" @click="showNicknameModal = false">
-			<view class="modal-content" @click.stop>
-				<view class="modal-header">
-					<text class="modal-title">修改昵称</text>
-					<view class="close-btn" @click="showNicknameModal = false">
-						<u-icon name="close" size="32" color="#999"></u-icon>
-					</view>
-				</view>
-				<view class="modal-body">
-					<input 
-						v-model="tempNickname" 
-						class="nickname-input" 
-						placeholder="请输入昵称"
-						type="nickname"
-						maxlength="20"
-					/>
-				</view>
-				<view class="modal-footer">
-					<button class="confirm-btn" @click="confirmNickname">确认修改</button>
-				</view>
-			</view>
-		</view>
-
-		<view class="nickname-modal" v-if="showUsernameModal" @click="showUsernameModal = false">
-			<view class="modal-content" @click.stop>
-				<view class="modal-header">
-					<text class="modal-title">设置用户名</text>
-					<view class="close-btn" @click="showUsernameModal = false">
-						<u-icon name="close" size="32" color="#999"></u-icon>
-					</view>
-				</view>
-				<view class="modal-body">
-					<input 
-						v-model="tempUsername" 
-						class="nickname-input" 
-						placeholder="请输入用户名"
-						type="text"
-						maxlength="20"
-					/>
-				</view>
-				<view class="modal-footer">
-					<button class="confirm-btn" @click="confirmUsername">确认设置</button>
-				</view>
-			</view>
-		</view>
-
-		<view class="nickname-modal" v-if="showSexModal" @click="showSexModal = false">
-			<view class="modal-content" @click.stop>
-				<view class="modal-header">
-					<text class="modal-title">选择性别</text>
-					<view class="close-btn" @click="showSexModal = false">
-						<u-icon name="close" size="32" color="#999"></u-icon>
-					</view>
-				</view>
-				<view class="modal-body">
-					<view class="sex-options">
-						<view 
-							v-for="(option, index) in sexOptions" 
-							:key="index"
-							class="sex-option"
-							:class="{ active: tempSex === index }"
-							@click="tempSex = index"
-						>
-							<u-icon name="check" size="28" color="#5199ff" v-if="tempSex === index"></u-icon>
-							<text class="sex-text">{{ option }}</text>
-						</view>
-					</view>
-				</view>
-				<view class="modal-footer">
-					<button class="confirm-btn" @click="confirmSex">确认修改</button>
-				</view>
-			</view>
-		</view>
-	</view>
+    <view v-if="showSexModal" class="edit-modal" @click="closeSexModal">
+      <view class="modal-content" @click.stop>
+        <view class="modal-header">
+          <text class="modal-title">选择性别</text>
+          <view class="close-btn" @click="closeSexModal">
+            <u-icon name="close" size="24" :color="THEME_TEXT_GREY" />
+          </view>
+        </view>
+        <view class="modal-body">
+          <view class="sex-options">
+            <view
+              v-for="(option, index) in sexOptions"
+              :key="option"
+              class="sex-option"
+              :class="{ active: tempSex === index }"
+              @click="setTempSex(index)"
+            >
+              <view class="sex-check">
+                <u-icon v-if="tempSex === index" name="check" size="20" :color="THEME_TEXT_INVERSE" />
+              </view>
+              <text class="sex-text">{{ option }}</text>
+            </view>
+          </view>
+        </view>
+        <view class="modal-footer">
+          <button class="confirm-btn" @click="confirmSex">确认修改</button>
+        </view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { userApi } from '@/api/userApi'
 import { useUserStore } from '@/stores/user'
 import { baseUrl } from '@/env'
 import { getImageUrl } from '@/utils/image'
+import { THEME_PRIMARY, THEME_SUCCESS, THEME_WARNING, THEME_TEXT_GREY, THEME_TEXT_INVERSE } from '@/styles/theme'
+
+interface AppUserInfo {
+  userId: number
+  token: string
+  username: string
+  nickname: string
+  avatarUrl: string
+  phone: string
+  sex: 0 | 1 | 2
+}
+
+interface ChooseAvatarEvent {
+  detail?: {
+    avatarUrl?: string
+  }
+}
+
+interface ChooseImageResult {
+  tempFilePaths: string[]
+}
+
+interface UploadAvatarResponse {
+  code?: number
+  success?: boolean
+  data?: string
+  url?: string
+  message?: string
+}
 
 const userStore = useUserStore()
 
-const userInfo = reactive({
-	userId: 0,
-	username: '',
-	nickname: '',
-	avatarUrl: '',
-	phone: '',
-	sex: 0
+const userInfo = reactive<AppUserInfo>({
+  userId: 0,
+  token: '',
+  username: '',
+  nickname: '',
+  avatarUrl: '',
+  phone: '',
+  sex: 0,
 })
 
 const isLoggedIn = ref(false)
@@ -205,430 +242,583 @@ const showUsernameModal = ref(false)
 const tempUsername = ref('')
 
 const showSexModal = ref(false)
-const tempSex = ref(0)
+const tempSex = ref<0 | 1 | 2>(0)
 
 const sexOptions = ['保密', '男', '女']
-const sexMap = {
-	0: '保密',
-	1: '男',
-	2: '女'
+const sexMap: Record<number, string> = {
+  0: '保密',
+  1: '男',
+  2: '女',
 }
 
-// 头像地址，使用统一的 getImageUrl 方法
 const displayAvatarUrl = computed(() => getImageUrl(userInfo.avatarUrl))
 
 onMounted(async () => {
-	await loadUserInfo()
+  await loadUserInfo()
 })
 
+const showToast = (title: string, icon: 'none' | 'success' = 'none') => {
+  uni.showToast({ title, icon })
+}
+
 const loadUserInfo = async () => {
-	try {
-		const res = await userApi.getUserInfo();
-		Object.assign(userInfo, res)
-		userStore.login(res.token, res)
-		isLoggedIn.value = true
-	} catch (error) {
-		console.error('获取用户信息失败:', error)
-		isLoggedIn.value = false
-	}
+  try {
+    const res = await userApi.getUserInfo() as Partial<AppUserInfo>
+    Object.assign(userInfo, {
+      userId: res.userId || 0,
+      token: res.token || '',
+      username: res.username || '',
+      nickname: res.nickname || '',
+      avatarUrl: res.avatarUrl || '',
+      phone: res.phone || '',
+      sex: (res.sex ?? 0) as 0 | 1 | 2,
+    })
+    userStore.login(userInfo.token || userStore.token, userInfo)
+    isLoggedIn.value = true
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    isLoggedIn.value = false
+  }
 }
 
 const editNickname = () => {
-	tempNickname.value = userInfo.nickname
-	showNicknameModal.value = true
+  tempNickname.value = userInfo.nickname
+  showNicknameModal.value = true
 }
 
 const editUsername = () => {
-	tempUsername.value = userInfo.username
-	showUsernameModal.value = true
+  tempUsername.value = userInfo.username
+  showUsernameModal.value = true
 }
 
 const editSex = () => {
-	tempSex.value = userInfo.sex
-	showSexModal.value = true
+  tempSex.value = userInfo.sex
+  showSexModal.value = true
+}
+
+const setTempSex = (index: number) => {
+  if (index === 0 || index === 1 || index === 2) {
+    tempSex.value = index
+  }
+}
+
+const closeNicknameModal = () => {
+  showNicknameModal.value = false
+}
+
+const closeUsernameModal = () => {
+  showUsernameModal.value = false
+}
+
+const closeSexModal = () => {
+  showSexModal.value = false
 }
 
 const confirmNickname = async () => {
-	if (!tempNickname.value.trim()) {
-		uni.$u.toast('昵称不能为空')
-		return
-	}
+  const nickname = tempNickname.value.trim()
+  if (!nickname) {
+    showToast('昵称不能为空')
+    return
+  }
 
-	try {
-		uni.showLoading({ title: '修改中...' })
-		await userApi.updateUserInfo({ nickname: tempNickname.value })
-		userInfo.nickname = tempNickname.value
-		userStore.updateName(tempNickname.value)
-		showNicknameModal.value = false
-		uni.hideLoading()
-		uni.$u.toast('修改成功')
-	} catch (error) {
-		uni.hideLoading()
-		console.error('修改昵称失败:', error)
-		uni.$u.toast('修改失败，请重试')
-	}
+  try {
+    uni.showLoading({ title: '修改中...' })
+    await userApi.updateUserInfo({ nickname } as any)
+    userInfo.nickname = nickname
+    userStore.updateName(nickname)
+    showNicknameModal.value = false
+    showToast('修改成功', 'success')
+  } catch (error) {
+    console.error('修改昵称失败:', error)
+    showToast('修改失败，请重试')
+  } finally {
+    uni.hideLoading()
+  }
 }
 
 const confirmUsername = async () => {
-	if (!tempUsername.value.trim()) {
-		uni.$u.toast('用户名不能为空')
-		return
-	}
+  const username = tempUsername.value.trim()
+  if (!username) {
+    showToast('用户名不能为空')
+    return
+  }
 
-	try {
-		uni.showLoading({ title: '设置中...' })
-		await userApi.updateUserInfo({ username: tempUsername.value })
-		userInfo.username = tempUsername.value
-		showUsernameModal.value = false
-		uni.hideLoading()
-		uni.$u.toast('设置成功')
-	} catch (error) {
-		uni.hideLoading()
-		console.error('设置用户名失败:', error)
-		uni.$u.toast('设置失败，请重试')
-	}
+  try {
+    uni.showLoading({ title: '设置中...' })
+    await userApi.updateUserInfo({ username } as any)
+    userInfo.username = username
+    showUsernameModal.value = false
+    showToast('设置成功', 'success')
+  } catch (error) {
+    console.error('设置用户名失败:', error)
+    showToast('设置失败，请重试')
+  } finally {
+    uni.hideLoading()
+  }
 }
 
 const confirmSex = async () => {
-	try {
-		uni.showLoading({ title: '修改中...' })
-		await userApi.updateUserInfo({ sex: tempSex.value })
-		userInfo.sex = tempSex.value
-		showSexModal.value = false
-		uni.hideLoading()
-		uni.$u.toast('修改成功')
-	} catch (error) {
-		uni.hideLoading()
-		console.error('修改性别失败:', error)
-		uni.$u.toast('修改失败，请重试')
-	}
+  try {
+    uni.showLoading({ title: '修改中...' })
+    await userApi.updateUserInfo({ sex: tempSex.value } as any)
+    userInfo.sex = tempSex.value
+    showSexModal.value = false
+    showToast('修改成功', 'success')
+  } catch (error) {
+    console.error('修改性别失败:', error)
+    showToast('修改失败，请重试')
+  } finally {
+    uni.hideLoading()
+  }
 }
 
-const onChooseAvatar = async (e) => {
-	try {
-		uni.showLoading({ title: '上传中...' })
-		
-		const { avatarUrl } = e.detail
-		
-		const uploadResult = await uploadAvatar(avatarUrl)
+const onChooseAvatar = async (event: ChooseAvatarEvent) => {
+  const avatarUrl = event.detail?.avatarUrl
+  if (!avatarUrl) return
 
-		userInfo.avatarUrl = uploadResult
-		userStore.updateAvatar(uploadResult)
-		uni.hideLoading()
-		uni.$u.toast('头像修改成功')
-	} catch (error) {
-		uni.hideLoading()
-		console.error('上传头像失败:', error)
-		uni.$u.toast('上传失败，请重试')
-	}
+  try {
+    uni.showLoading({ title: '上传中...' })
+    const uploadResult = await uploadAvatar(avatarUrl)
+    userInfo.avatarUrl = uploadResult
+    userStore.updateAvatar(uploadResult)
+    showToast('头像修改成功', 'success')
+  } catch (error) {
+    console.error('上传头像失败:', error)
+    showToast('上传失败，请重试')
+  } finally {
+    uni.hideLoading()
+  }
 }
 
 const onH5ChooseAvatar = async () => {
-	try {
-		uni.showLoading({ title: '选择图片...' })
-		const chooseResult = await new Promise((resolve, reject) => {
-			uni.chooseImage({
-				count: 1,
-				sizeType: ['compressed'],
-				sourceType: ['album', 'camera'],
-				success: resolve,
-				fail: reject
-			})
-		})
-		uni.hideLoading()
-		const tempFilePath = chooseResult.tempFilePaths[0]
-		console.log('选择的图片路径:', tempFilePath)
-		uni.showLoading({ title: '上传中...' })
-		const uploadResult = await uploadAvatar(tempFilePath)
-		
-		userInfo.avatarUrl = uploadResult
-		userStore.updateAvatar(uploadResult)
-		uni.hideLoading()
-		uni.$u.toast('头像修改成功')
-	} catch (error) {
-		uni.hideLoading()
-		console.error('上传头像失败:', error)
-		uni.$u.toast('上传失败，请重试')
-	}
+  try {
+    const chooseResult = await new Promise<ChooseImageResult>((resolve, reject) => {
+      uni.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: res => resolve(res as ChooseImageResult),
+        fail: reject,
+      })
+    })
+
+    const tempFilePath = chooseResult.tempFilePaths[0]
+    if (!tempFilePath) return
+
+    uni.showLoading({ title: '上传中...' })
+    const uploadResult = await uploadAvatar(tempFilePath)
+    userInfo.avatarUrl = uploadResult
+    userStore.updateAvatar(uploadResult)
+    showToast('头像修改成功', 'success')
+  } catch (error) {
+    console.error('上传头像失败:', error)
+    showToast('上传失败，请重试')
+  } finally {
+    uni.hideLoading()
+  }
 }
 
-const uploadAvatar = async (filePath) => {
-	console.log('上传文件路径:', filePath)
-	return new Promise((resolve, reject) => {
-		uni.uploadFile({
-			url: `${baseUrl}/app/user/updateUserAvatar`,
-			filePath: filePath,
-			name: 'avatarFile',
-			header: {
-				'token': userStore.userInfo.token,
-        'uid':userStore.userInfo.userId
-			},
-			success: (uploadRes) => {
-				try {
-					const data = JSON.parse(uploadRes.data)
-					if (data.code === 200 || data.success) {
-						resolve(data.data || data.url)
-					} else {
-						reject(new Error(data.message || '上传失败'))
-					}
-				} catch (err) {
-					reject(err)
-				}
-			},
-			fail: reject
-		})
-	})
+const uploadAvatar = async (filePath: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    uni.uploadFile({
+      url: `${baseUrl}/app/user/updateUserAvatar`,
+      filePath,
+      name: 'avatarFile',
+      header: {
+        token: userStore.userInfo.token,
+        uid: userStore.userInfo.userId,
+      },
+      success: uploadRes => {
+        try {
+          const data = JSON.parse(uploadRes.data) as UploadAvatarResponse
+          if (data.code === 200 || data.success) {
+            resolve(data.data || data.url || '')
+          } else {
+            reject(new Error(data.message || '上传失败'))
+          }
+        } catch (err) {
+          reject(err)
+        }
+      },
+      fail: reject,
+    })
+  })
 }
 
 const handleLogout = async () => {
-	uni.showModal({
-		title: '提示',
-		content: '确定要退出登录吗？',
-		success: async (res) => {
-			if (res.confirm) {
-				try {
-					await userApi.logout()
-				} catch (error) {
-					console.error('退出登录失败:', error)
-				}
-				userStore.logout()
-				uni.$u.toast('已退出登录');
-        uni.$grouter.reLaunch("login");
-			}
-		}
-	})
+  const result = await uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+  })
+
+  if (!result.confirm) return
+
+  try {
+    await userApi.logout()
+  } catch (error) {
+    console.error('退出登录失败:', error)
+  }
+
+  userStore.logout()
+  showToast('已退出登录')
+  uni.$grouter.reLaunch('login')
 }
 </script>
 
 <style lang="scss" scoped>
 .page {
-	min-height: 100vh;
-	background: #f5f7ff;
+  min-height: 100vh;
+  padding-bottom: 60rpx;
+  background: $uni-bg-color-page;
 }
 
-.header-section {
-	background: linear-gradient(135deg, #5199ff, #7e8cfa);
-	padding: 60rpx 40rpx 80rpx;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+.profile-hero {
+  position: relative;
+  padding: 28rpx 24rpx 0;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 260rpx;
+  background: linear-gradient(135deg, $uni-color-success 0%, $uni-color-primary 100%);
+}
+
+.profile-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: 98rpx;
+  padding: 30rpx 28rpx;
+  background: $uni-bg-color;
+  border: 1rpx solid $uni-border-color-light;
+  border-radius: 18rpx;
+  box-shadow: 0 12rpx 34rpx rgba($uni-text-color, 0.08);
 }
 
 .avatar-wrapper {
-	position: relative;
-	width: 160rpx;
-	height: 160rpx;
-	margin-bottom: 24rpx;
-	padding: 0;
-	background: transparent;
-	border: none;
-	
-	&::after {
-		border: none;
-	}
+  position: relative;
+  width: 136rpx;
+  height: 136rpx;
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  background: transparent;
+  border: none;
+
+  &::after {
+    border: none;
+  }
 }
 
 .avatar-img {
-	width: 160rpx;
-	height: 160rpx;
-	border-radius: 50%;
-	border: 6rpx solid rgba(255, 255, 255, 0.5);
-	box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.15);
+  display: block;
+  width: 136rpx;
+  height: 136rpx;
+  background: $uni-bg-color-grey;
+  border: 6rpx solid $uni-color-success-light;
+  border-radius: 50%;
+  box-sizing: border-box;
 }
 
 .avatar-edit-icon {
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	width: 50rpx;
-	height: 50rpx;
-	background: #5199ff;
-	border-radius: 50%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border: 3rpx solid #fff;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46rpx;
+  height: 46rpx;
+  background: $uni-color-success;
+  border: 3rpx solid $uni-bg-color;
+  border-radius: 50%;
+}
+
+.profile-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: 92rpx;
 }
 
 .nickname {
-	font-size: 36rpx;
-	font-weight: 600;
-	color: #fff;
+  color: $uni-text-color;
+  font-size: 36rpx;
+  font-weight: 800;
+  line-height: 46rpx;
+}
+
+.profile-subtitle {
+  display: block;
+  margin-top: 10rpx;
+  color: $uni-text-color-grey;
+  font-size: 25rpx;
+  line-height: 34rpx;
+}
+
+.login-badge {
+  position: absolute;
+  top: 30rpx;
+  right: 28rpx;
+  padding: 7rpx 16rpx;
+  color: $uni-text-color-grey;
+  font-size: 22rpx;
+  line-height: 28rpx;
+  background: $uni-bg-color-grey;
+  border-radius: 999rpx;
+
+  &.active {
+    color: $uni-color-success;
+    background: $uni-color-success-light;
+  }
+}
+
+.content {
+  padding: 22rpx 24rpx 0;
+}
+
+.section-card {
+  background: $uni-bg-color;
+  border: 1rpx solid $uni-border-color-light;
+  border-radius: 18rpx;
+  box-shadow: 0 8rpx 24rpx rgba($uni-text-color, 0.04);
 }
 
 .info-section {
-	margin: -40rpx 30rpx 0;
-	background: #fff;
-	border-radius: 20rpx;
-	box-shadow: 0 8rpx 25rpx rgba(81, 153, 255, 0.1);
-	overflow: hidden;
+  overflow: hidden;
+}
+
+.section-title {
+  padding: 26rpx 24rpx 8rpx;
+  color: $uni-text-color;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 40rpx;
 }
 
 .info-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  min-height: 96rpx;
+  padding: 0 24rpx;
 
-	&:last-child {
-		border-bottom: none;
-	}
+  &.clickable:active {
+    background: $uni-bg-color-hover;
+  }
+}
+
+.info-left,
+.info-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .info-left {
-	display: flex;
-	align-items: center;
-}
-
-.info-label {
-	font-size: 30rpx;
-	color: #333;
-	margin-left: 16rpx;
+  flex-shrink: 0;
+  gap: 16rpx;
 }
 
 .info-right {
-	display: flex;
-	align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  gap: 8rpx;
+  border-bottom: 1rpx solid $uni-border-color-light;
+  align-self: stretch;
+}
+
+.info-item:last-child .info-right {
+  border-bottom: none;
+}
+
+.info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 18rpx;
+
+  &.primary {
+    background: $uni-color-primary-light;
+  }
+
+  &.success {
+    background: $uni-color-success-light;
+  }
+
+  &.warning {
+    background: $uni-color-warning-light;
+  }
+
+  &.muted {
+    background: $uni-bg-color-grey;
+  }
+}
+
+.info-label {
+  color: $uni-text-color;
+  font-size: 29rpx;
+  font-weight: 600;
 }
 
 .info-value {
-	font-size: 28rpx;
-	color: #999;
-	margin-right: 8rpx;
+  max-width: 360rpx;
+  color: $uni-text-color-grey;
+  font-size: 28rpx;
+  text-align: right;
 }
 
 .action-section {
-	margin: 60rpx 30rpx;
+  margin-top: 28rpx;
 }
 
 .logout-btn {
-	width: 100%;
-	height: 90rpx;
-	line-height: 90rpx;
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #fff;
-	background: #fff;
-	border-radius: 45rpx;
-	border: none;
-	box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.08);
-	color: #ff4d4f;
+  width: 100%;
+  height: 82rpx;
+  color: $uni-color-error;
+  font-size: 29rpx;
+  line-height: 82rpx;
+  background: $uni-bg-color;
+  border: 1rpx solid $uni-color-error-light;
+  border-radius: 999rpx;
 
-	&:active {
-		transform: translateY(4rpx);
-	}
+  &::after {
+    border: none;
+  }
 }
 
-.nickname-modal {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	z-index: 100;
-	padding: 40rpx;
+.edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  background: $uni-bg-color-mask;
 }
 
 .modal-content {
-	width: 100%;
-	max-width: 600rpx;
-	background: #fff;
-	border-radius: 24rpx;
-	overflow: hidden;
+  width: 100%;
+  max-width: 620rpx;
+  overflow: hidden;
+  background: $uni-bg-color;
+  border-radius: 20rpx;
 }
 
 .modal-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 30rpx;
+  border-bottom: 1rpx solid $uni-border-color-light;
 }
 
 .modal-title {
-	font-size: 34rpx;
-	font-weight: 600;
-	color: #333;
+  color: $uni-text-color;
+  font-size: 32rpx;
+  font-weight: 800;
 }
 
 .close-btn {
-	width: 60rpx;
-	height: 60rpx;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
 }
 
 .modal-body {
-	padding: 30rpx;
+  padding: 30rpx;
 }
 
-.nickname-input {
-	width: 100%;
-	height: 80rpx;
-	padding: 0 20rpx;
-	font-size: 30rpx;
-	color: #333;
-	background: #f5f7ff;
-	border-radius: 12rpx;
+.text-input {
+  width: 100%;
+  height: 82rpx;
+  padding: 0 22rpx;
+  color: $uni-text-color;
+  font-size: 29rpx;
+  background: $uni-bg-color-grey;
+  border-radius: 12rpx;
+  box-sizing: border-box;
+}
+
+:deep(.input-placeholder) {
+  color: $uni-text-color-placeholder;
+}
+
+.input-hint {
+  display: block;
+  margin-top: 14rpx;
+  color: $uni-text-color-grey;
+  font-size: 24rpx;
+  line-height: 32rpx;
 }
 
 .modal-footer {
-	padding: 20rpx 30rpx 30rpx;
+  padding: 0 30rpx 30rpx;
 }
 
 .confirm-btn {
-	width: 100%;
-	height: 80rpx;
-	line-height: 80rpx;
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #fff;
-	background: linear-gradient(135deg, #5199ff, #7e8cfa);
-	border-radius: 40rpx;
-	border: none;
+  width: 100%;
+  height: 80rpx;
+  color: $uni-text-color-inverse;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 80rpx;
+  background: $uni-color-success;
+  border: none;
+  border-radius: 40rpx;
 
-	&:active {
-		transform: translateY(4rpx);
-	}
+  &::after {
+    border: none;
+  }
 }
 
 .sex-options {
-	display: flex;
-	justify-content: space-around;
-	padding: 20rpx 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
 }
 
 .sex-option {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 160rpx;
-	height: 160rpx;
-	border-radius: 50%;
-	background: #f5f7ff;
-	justify-content: center;
-	transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 86rpx;
+  gap: 10rpx;
+  color: $uni-text-color-secondary;
+  background: $uni-bg-color-grey;
+  border: 1rpx solid $uni-border-color-light;
+  border-radius: 14rpx;
 
-	&.active {
-		background: #e8f0fe;
-		border: 2rpx solid #5199ff;
-	}
+  &.active {
+    color: $uni-color-success;
+    background: $uni-color-success-light;
+    border-color: $uni-color-success;
+  }
+}
+
+.sex-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30rpx;
+  height: 30rpx;
+  background: $uni-color-success;
+  border-radius: 50%;
 }
 
 .sex-text {
-	font-size: 28rpx;
-	color: #666;
-	margin-top: 12rpx;
-
-	.active & {
-		color: #5199ff;
-		font-weight: 600;
-	}
+  font-size: 28rpx;
+  font-weight: 600;
 }
 </style>

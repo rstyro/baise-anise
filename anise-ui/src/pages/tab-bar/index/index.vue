@@ -1,8 +1,39 @@
 <template>
   <view class="page">
-    <u-swiper v-if="bannerList.length" :list="bannerList" name="imageUrl" indicator indicatorActiveColor="#4caf50" radius="0" height="320" />
+    <view class="banner-section" v-if="bannerList.length">
+      <u-swiper
+        :list="bannerList"
+        name="imageUrl"
+        indicator
+        indicatorActiveColor="#52c41a"
+        radius="12"
+        height="350"
+      />
+    </view>
+
+    <view class="search-section">
+      <u-search
+        v-model="keyword"
+        placeholder="搜索八角、花椒、水果..."
+        shape="round"
+        bg-color="#ffffff"
+        :show-action="keyword.length > 0"
+        action-text="搜索"
+        @search="onSearch"
+        @custom="onSearch"
+        @clear="onSearchClear"
+      />
+    </view>
 
     <view class="category-section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">商品分类</text>
+          <text class="section-subtitle">{{ activeCategoryName }}</text>
+        </view>
+        <view class="section-count" v-if="categoryList.length > 1">{{ categoryList.length - 1 }} 类</view>
+      </view>
+
       <scroll-view scroll-x class="cat-scroll" :show-scrollbar="false">
         <view class="cat-row">
           <view
@@ -22,72 +53,86 @@
               <u-icon
                 v-else
                 :name="cat.icon"
-                size="28"
-                :color="activeCatId === cat.id ? '#fff' : '#7B9E85'"
+                size="30"
+                :color="activeCatId === cat.id ? '#ffffff' : '#52c41a'"
               />
             </view>
             <text class="cat-label" :class="{ active: activeCatId === cat.id }">{{ cat.categoryName }}</text>
-            <view v-if="activeCatId === cat.id" class="cat-bar" />
           </view>
         </view>
       </scroll-view>
     </view>
 
-    <view class="search-bar">
-      <u-search
-        v-model="keyword"
-        placeholder="搜索八角、花椒、水果..."
-        shape="round"
-        bg-color="#f5f9f5"
-        :show-action="keyword.length > 0"
-        action-text="搜索"
-        @search="onSearch"
-        @custom="onSearch"
-        @clear="onSearchClear"
-      />
-    </view>
-
-    <u-waterfall ref="waterfallRef" v-model="products" idKey="id" :addTime="100">
-      <template #left="{ leftList }">
-        <view class="wf-card" v-for="item in leftList" :key="item.id" @click="goDetail(item.id)">
-          <image :src="getImageUrl(item.mainImage)" class="wf-img" mode="widthFix" />
-          <view class="wf-body">
-            <view class="wf-name">{{ item.productName }}</view>
-            <view class="wf-tags">
-              <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
-              <u-tag v-for="attr in getDisplayAttrs(item)" :key="attr.attrId" :text="attr.attrValue" type="info" size="mini" plain />
-            </view>
-            <view class="wf-price-row">
-              <text class="wf-price">¥{{ item.minPrice }}</text>
-              <text class="wf-original" v-if="item.originalPrice">¥{{ item.originalPrice }}</text>
-            </view>
-            <text class="wf-sales">已售 {{ item.sales }}</text>
-          </view>
+    <view class="product-section">
+      <view class="section-head product-head">
+        <view>
+          <text class="section-title">{{ keyword ? '搜索结果' : '精选商品' }}</text>
+          <text class="section-subtitle">{{ productSectionDesc }}</text>
         </view>
-      </template>
-      <template #right="{ rightList }">
-        <view class="wf-card" v-for="item in rightList" :key="item.id" @click="goDetail(item.id)">
-          <image :src="getImageUrl(item.mainImage)" class="wf-img" mode="widthFix" />
-          <view class="wf-body">
-            <view class="wf-name">{{ item.productName }}</view>
-            <view class="wf-tags">
-              <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
-              <u-tag v-for="attr in getDisplayAttrs(item)" :key="attr.attrId" :text="attr.attrValue" type="info" size="mini" plain />
+      </view>
+
+      <u-waterfall ref="waterfallRef" v-model="products" idKey="id" :addTime="100">
+        <template #left="{ leftList }">
+          <view class="wf-card" v-for="item in leftList" :key="item.id" @click="goDetail(item.id)">
+            <image :src="getImageUrl(item.mainImage)" class="wf-img" mode="aspectFill" />
+            <view class="wf-body">
+              <view class="wf-name">{{ item.productName }}</view>
+              <view class="wf-tags">
+                <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
+                <u-tag
+                  v-for="attr in getDisplayAttrs(item)"
+                  :key="attr.attrId"
+                  :text="attr.attrValue"
+                  type="info"
+                  size="mini"
+                  plain
+                />
+              </view>
+              <view class="wf-foot">
+                <view class="wf-price-row">
+                  <text class="wf-price">¥{{ item.minPrice }}</text>
+                  <text class="wf-original" v-if="item.originalPrice">¥{{ item.originalPrice }}</text>
+                </view>
+                <text class="wf-sales">已售 {{ item.sales || 0 }}</text>
+              </view>
             </view>
-            <view class="wf-price-row">
-              <text class="wf-price">¥{{ item.minPrice }}</text>
-              <text class="wf-original" v-if="item.originalPrice">¥{{ item.originalPrice }}</text>
-            </view>
-            <text class="wf-sales">已售 {{ item.sales }}</text>
           </view>
-        </view>
-      </template>
-    </u-waterfall>
+        </template>
+        <template #right="{ rightList }">
+          <view class="wf-card" v-for="item in rightList" :key="item.id" @click="goDetail(item.id)">
+            <image :src="getImageUrl(item.mainImage)" class="wf-img" mode="aspectFill" />
+            <view class="wf-body">
+              <view class="wf-name">{{ item.productName }}</view>
+              <view class="wf-tags">
+                <u-tag v-if="getSulfurFreeAttr(item)" text="无硫" type="success" size="mini" />
+                <u-tag
+                  v-for="attr in getDisplayAttrs(item)"
+                  :key="attr.attrId"
+                  :text="attr.attrValue"
+                  type="info"
+                  size="mini"
+                  plain
+                />
+              </view>
+              <view class="wf-foot">
+                <view class="wf-price-row">
+                  <text class="wf-price">¥{{ item.minPrice }}</text>
+                  <text class="wf-original" v-if="item.originalPrice">¥{{ item.originalPrice }}</text>
+                </view>
+                <text class="wf-sales">已售 {{ item.sales || 0 }}</text>
+              </view>
+            </view>
+          </view>
+        </template>
+      </u-waterfall>
 
-    <u-empty v-if="!loading && products.length === 0" text="暂无商品" mode="list" marginTop="120" />
+      <view v-if="!loading && products.length === 0" class="empty-wrap">
+        <u-empty text="暂无商品" mode="list" marginTop="80" />
+      </view>
 
-    <view class="load-more" v-if="products.length > 0">
-      <u-loadmore :status="loadStatus" />
+      <view class="load-more" v-if="products.length > 0">
+        <u-loadmore :status="loadStatus" />
+      </view>
     </view>
   </view>
 </template>
@@ -96,23 +141,38 @@
 import { ref, computed, onMounted } from 'vue'
 import { onReachBottom, onPullDownRefresh, onShow } from '@dcloudio/uni-app'
 import { productApi } from '@/api/productApi'
+import type { ProductItem, ProductListParams } from '@/api/types/product'
 import { getImageUrl } from '@/utils/image'
 
-const bannerList = ref([])
+interface BannerItem {
+  imageUrl: string
+  [key: string]: any
+}
+
+interface CategoryItem {
+  id: number
+  categoryName: string
+  categoryIcon?: string
+  icon?: string
+  _imgErr?: boolean
+  [key: string]: any
+}
+
+const bannerList = ref<BannerItem[]>([])
 
 const loadBanners = async () => {
   try {
     const list = await productApi.bannerList() || []
-    bannerList.value = list.map(b => ({ ...b, imageUrl: getImageUrl(b.imageUrl) }))
+    bannerList.value = list.map((b: BannerItem) => ({ ...b, imageUrl: getImageUrl(b.imageUrl) }))
   } catch (e) { console.error('Banner加载失败', e) }
 }
 
-const categories = ref([])
+const categories = ref<CategoryItem[]>([])
 const activeCatId = ref(0)
 
 const keyword = ref('')
 
-const products = ref([])
+const products = ref<ProductItem[]>([])
 const waterfallRef = ref()
 const currentPage = ref(1)
 const totalPages = ref(0)
@@ -120,13 +180,22 @@ const loading = ref(false)
 const loadStatus = ref('loadmore')
 const PAGE_SIZE = 10
 
-const categoryList = computed(() => {
-  const iconMap = { '八角干货': 'star-fill', '花椒香料': 'fire', '时令水果': 'gift' }
+const categoryList = computed<CategoryItem[]>(() => {
+  const iconMap: Record<string, string> = { '八角干货': 'star-fill', '花椒香料': 'fire', '时令水果': 'gift' }
   const list = categories.value.map((c) => ({
     ...c,
     icon: iconMap[c.categoryName] || 'grid'
   }))
   return [{ id: 0, categoryName: '全部', icon: 'home' }, ...list]
+})
+
+const activeCategoryName = computed(() => {
+  return categoryList.value.find((item) => item.id === activeCatId.value)?.categoryName || '全部'
+})
+
+const productSectionDesc = computed(() => {
+  if (keyword.value) return `关键词：${keyword.value}`
+  return activeCatId.value > 0 ? activeCategoryName.value : '为你推荐'
 })
 
 const loadCategories = async () => {
@@ -135,13 +204,13 @@ const loadCategories = async () => {
 
 const loadProducts = async (isRefresh = false) => {
   if (loading.value) return
-  if (!isRefresh && totalPages.value > 0 && currentPage.value >= totalPages.value ) return
+  if (!isRefresh && totalPages.value > 0 && currentPage.value > totalPages.value) return
 
   loading.value = true
   loadStatus.value = isRefresh ? 'loadmore' : 'loading'
 
   try {
-    const params: any = {
+    const params: ProductListParams = {
       pageNum: currentPage.value,
       pageSize: PAGE_SIZE,
     }
@@ -164,15 +233,15 @@ const loadProducts = async (isRefresh = false) => {
   }
 }
 
-const getSulfurFreeAttr = (item) => {
+const getSulfurFreeAttr = (item: ProductItem) => {
   return item.spuAttrs?.some(attr => attr.attrName === '无硫' && attr.attrValue === '是')
 }
 
-const getDisplayAttrs = (item) => {
+const getDisplayAttrs = (item: ProductItem) => {
   return item.spuAttrs?.filter(attr => attr.attrName !== '无硫').slice(0, 2) || []
 }
 
-const switchCategory = (catId) => {
+const switchCategory = (catId: number) => {
   activeCatId.value = catId
   waterfallRef.value?.clear()
   currentPage.value = 1
@@ -192,7 +261,7 @@ const onSearchClear = () => {
   loadProducts(true)
 }
 
-const goDetail = (productId) => {
+const goDetail = (productId: number) => {
   uni.$grouter.navigateTo('productDetail', { query: { id: productId } })
 }
 
@@ -221,59 +290,215 @@ onShow(() => {
 </script>
 
 <style lang="scss" scoped>
-.page { background: #f5f9f5; min-height: 100vh; padding-bottom: 20rpx; }
+.page {
+  min-height: 100vh;
+  padding: 20rpx 0 28rpx;
+  background: $uni-bg-color-page;
+}
+
+.banner-section {
+  padding: 0 24rpx 18rpx;
+}
+
+.search-section {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  padding: 18rpx 24rpx;
+  background: rgba($uni-bg-color-page, 0.96);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24rpx 18rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+  color: $uni-text-color;
+}
+
+.section-subtitle {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  line-height: 30rpx;
+  color: $uni-text-color-grey;
+}
+
+.section-count {
+  flex-shrink: 0;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  line-height: 28rpx;
+  color: $uni-color-success;
+  background: rgba($uni-color-success, 0.1);
+}
 
 .category-section {
-  background: #fff; padding: 24rpx 0 12rpx; margin-bottom: 8rpx;
-  .cat-scroll { white-space: nowrap; }
-  .cat-row { display: inline-flex; padding: 0 16rpx; gap: 8rpx; }
-  .cat-item {
-    display: inline-flex; flex-direction: column; align-items: center;
-    width: 140rpx; flex-shrink: 0; position: relative; padding-bottom: 6rpx;
+  padding: 18rpx 0 22rpx;
+  margin-bottom: 14rpx;
+  background: $uni-bg-color;
+
+  .cat-scroll {
+    white-space: nowrap;
   }
+
+  .cat-row {
+    display: inline-flex;
+    padding: 0 18rpx;
+    gap: 12rpx;
+  }
+
+  .cat-item {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    width: 132rpx;
+    flex-shrink: 0;
+    position: relative;
+    padding: 6rpx 0;
+  }
+
   .cat-icon-wrap {
-    width: 96rpx; height: 96rpx; border-radius: 50%;
-    background: #F0FDF4; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+    width: 92rpx;
+    height: 92rpx;
+    border-radius: 28rpx;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 10rpx;
+    background: rgba($uni-color-success, 0.1);
+    border: 2rpx solid rgba($uni-color-success, 0.08);
     transition: all 0.2s ease;
-    box-shadow: 0 4rpx 12rpx rgba(21, 128, 61, 0.06);
-    .cat-img { width: 100%; height: 100%; }
+
+    .cat-img {
+      width: 100%;
+      height: 100%;
+    }
+
     &.active {
-      background: #15803D;
-      box-shadow: 0 6rpx 20rpx rgba(21, 128, 61, 0.25);
+      background: $uni-color-success;
+      border-color: $uni-color-success;
+      box-shadow: 0 10rpx 22rpx rgba($uni-color-success, 0.22);
     }
   }
+
   .cat-label {
-    font-size: 24rpx; color: #6B7280; white-space: nowrap;
+    max-width: 120rpx;
+    font-size: 24rpx;
+    line-height: 30rpx;
+    color: $uni-text-color-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transition: all 0.2s ease;
-    &.active { color: #15803D; font-weight: 600; }
-  }
-  .cat-bar {
-    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 32rpx; height: 4rpx; border-radius: 2rpx; background: #15803D;
+
+    &.active {
+      color: $uni-color-success;
+      font-weight: 700;
+    }
   }
 }
 
-.search-bar { padding: 12rpx 20rpx; background: #fff; margin-bottom: 8rpx; }
+.product-section {
+  padding: 10rpx 18rpx 0;
+}
+
+.product-head {
+  padding-right: 6rpx;
+  padding-left: 6rpx;
+}
 
 .wf-card {
-  background: #fff; border-radius: 16rpx; overflow: hidden; margin: 6rpx;
-  box-shadow: 0 2rpx 12rpx rgba(76, 175, 80, 0.06);
-  .wf-img { width: 100%; display: block; background: #e8f5e9; }
-  .wf-body { padding: 16rpx 20rpx 20rpx; }
-  .wf-name {
-    font-size: 28rpx; font-weight: 600; color: #2e3b2e; line-height: 1.4;
-    overflow: hidden; text-overflow: ellipsis;
-    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-    margin-bottom: 8rpx;
+  margin: 8rpx;
+  overflow: hidden;
+  border-radius: 16rpx;
+  background: $uni-bg-color;
+  box-shadow: 0 8rpx 24rpx rgba($uni-text-color, 0.06);
+
+  .wf-img {
+    display: block;
+    width: 100%;
+    height: 320rpx;
+    background: rgba($uni-color-success, 0.08);
   }
-  .wf-tags { display: flex; flex-wrap: wrap; gap: 6rpx; margin-bottom: 10rpx; }
-  .wf-price-row { display: flex; align-items: baseline; gap: 8rpx; margin-bottom: 6rpx; }
-  .wf-price { font-size: 32rpx; font-weight: 700; color: #ff4d4f; }
-  .wf-original { font-size: 22rpx; color: #999; text-decoration: line-through; }
-  .wf-sales { font-size: 22rpx; color: #999; }
+
+  .wf-body {
+    padding: 18rpx 18rpx 20rpx;
+  }
+
+  .wf-name {
+    min-height: 78rpx;
+    margin-bottom: 12rpx;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 28rpx;
+    font-weight: 600;
+    line-height: 39rpx;
+    color: $uni-text-color;
+  }
+
+  .wf-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8rpx;
+    min-height: 36rpx;
+    margin-bottom: 14rpx;
+  }
+
+  .wf-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 8rpx;
+  }
+
+  .wf-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8rpx;
+    min-width: 0;
+  }
+
+  .wf-price {
+    font-size: 34rpx;
+    font-weight: 800;
+    line-height: 40rpx;
+    color: $uni-color-error;
+  }
+
+  .wf-original {
+    max-width: 120rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 22rpx;
+    line-height: 28rpx;
+    color: $uni-text-color-grey;
+    text-decoration: line-through;
+  }
+
+  .wf-sales {
+    font-size: 22rpx;
+    line-height: 28rpx;
+    color: $uni-text-color-grey;
+  }
 }
 
-.load-more { padding: 20rpx 0; }
+.empty-wrap {
+  padding: 20rpx 0 80rpx;
+}
+
+.load-more {
+  padding: 24rpx 0 12rpx;
+}
 </style>

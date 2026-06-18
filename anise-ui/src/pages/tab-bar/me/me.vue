@@ -1,99 +1,127 @@
 <template>
   <view class="page">
-    <!-- 顶部渐变背景 -->
-    <view class="top-banner" />
+    <view class="profile-hero">
+      <view class="hero-bg" />
 
-    <!-- 用户信息卡片 -->
-    <view class="user-card">
-      <view class="card-content">
-        <!-- #ifdef MP-WEIXIN -->
-        <button class="avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
-          <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
-        </button>
-        <!-- #endif -->
-        <!-- #ifndef MP-WEIXIN -->
-        <view class="user-avatar-wrapper" @click="chooseAvatarForH5">
-          <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
-        </view>
-        <!-- #endif -->
-        <view class="user-info">
-          <view class="user-name" @click="userStore.isLoggedIn ? toPage('userInfo') : toLogin()">
-            {{ userStore.isLoggedIn ? (userStore.userInfo.nickname || '匿名') : '点击登录' }}
+      <view class="user-card">
+        <view class="card-content">
+          <!-- #ifdef MP-WEIXIN -->
+          <button class="avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
+            <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
+          </button>
+          <!-- #endif -->
+          <!-- #ifndef MP-WEIXIN -->
+          <view class="user-avatar-wrapper" @click="chooseAvatarForH5">
+            <image :src="getImageUrl(userStore.userInfo.avatarUrl)" class="user-avatar" mode="aspectFill" />
           </view>
-          <view class="user-phone" v-if="userStore.isLoggedIn && userStore.userInfo.phone">
-            {{ userStore.userInfo.phone }}
+          <!-- #endif -->
+
+          <view class="user-info">
+            <view class="user-name-row" @click="userStore.isLoggedIn ? toPage('userInfo') : toLogin()">
+              <text class="user-name">{{ displayName }}</text>
+              <u-icon name="arrow-right" size="24" color="#bfbfbf" />
+            </view>
+            <view class="user-phone" v-if="userStore.isLoggedIn && userStore.userInfo.phone">
+              {{ userStore.userInfo.phone }}
+            </view>
+            <view class="user-phone" v-else>
+              {{ userStore.isLoggedIn ? '资料未完善' : '未登录' }}
+            </view>
           </view>
-          
-        </view>
-      </view>
 
-      <!-- 订单统计 -->
-      <view class="stats-bar">
-        <view class="stat-item" @click="goOrder(0)">
-          <text class="stat-number">{{ orderStats.total }}</text>
-          <text class="stat-label">全部</text>
+          <view class="login-badge" :class="{ logged: userStore.isLoggedIn }">
+            {{ userStore.isLoggedIn ? '已登录' : '未登录' }}
+          </view>
         </view>
-        <view class="stat-divider" />
-        <view class="stat-item" @click="goOrder(1)">
-          <text class="stat-number">{{ orderStats.pendingPayment }}</text>
-          <text class="stat-label">待支付</text>
-        </view>
-        <view class="stat-divider" />
-        <view class="stat-item" @click="goOrder(2)">
-          <text class="stat-number">{{ orderStats.processing }}</text>
-          <text class="stat-label">进行中</text>
-        </view>
-        <view class="stat-divider" />
-        <view class="stat-item" @click="goOrder(4)">
-          <text class="stat-number">{{ orderStats.pendingReview }}</text>
-          <text class="stat-label">待评价</text>
+
+        <view class="quick-login" v-if="!userStore.isLoggedIn">
+          <!-- #ifdef MP-WEIXIN -->
+          <button class="login-btn avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
+            微信一键登录
+          </button>
+          <!-- #endif -->
+          <!-- #ifndef MP-WEIXIN -->
+          <button class="login-btn" @click="chooseAvatarForH5">登录账号</button>
+          <!-- #endif -->
         </view>
       </view>
     </view>
 
-    <!-- 登录/头像区域 -->
-    <view class="button-area" v-if="!userStore.isLoggedIn">
-      <!-- #ifdef MP-WEIXIN -->
-      <button class="login-btn avatar-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar" :disabled="isChoosingAvatar">
-        微信一键登录
-      </button>
-      <!-- #endif -->
-      <!-- #ifndef MP-WEIXIN -->
-      <button class="login-btn" @click="chooseAvatarForH5">登录账号</button>
-      <!-- #endif -->
-    </view>
+    <view class="content">
+      <view class="section-card order-panel">
+        <view class="section-head" @click="goOrder(0)">
+          <view>
+            <view class="section-title">我的订单</view>
+          </view>
+          <view class="section-more">
+            <text>全部订单</text>
+            <u-icon name="arrow-right" size="22" color="#bfbfbf" />
+          </view>
+        </view>
 
-    <!-- 功能菜单 -->
-    <view class="menu-card">
-      <view class="menu-item" @click="goOrder(0)">
-        <view class="menu-left"><text style="font-size:36rpx;">📋</text></view>
-        <view class="menu-center">我的订单</view>
-        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
+        <view class="stats-grid">
+          <view class="stat-item" @click="goOrder(0)">
+            <view class="stat-icon stat-all">
+              <u-icon name="order" size="32" color="#1890ff" />
+            </view>
+            <text class="stat-number">{{ orderStats.total }}</text>
+            <text class="stat-label">全部</text>
+          </view>
+          <view class="stat-item" @click="goOrder(1)">
+            <view class="stat-icon stat-pay">
+              <u-icon name="rmb-circle" size="32" color="#faad14" />
+            </view>
+            <text class="stat-number">{{ orderStats.pendingPayment }}</text>
+            <text class="stat-label">待支付</text>
+          </view>
+          <view class="stat-item" @click="goOrder(2)">
+            <view class="stat-icon stat-progress">
+              <u-icon name="car" size="32" color="#52c41a" />
+            </view>
+            <text class="stat-number">{{ orderStats.processing }}</text>
+            <text class="stat-label">进行中</text>
+          </view>
+          <view class="stat-item" @click="goOrder(4)">
+            <view class="stat-icon stat-review">
+              <u-icon name="edit-pen" size="32" color="#f5222d" />
+            </view>
+            <text class="stat-number">{{ orderStats.pendingReview }}</text>
+            <text class="stat-label">待评价</text>
+          </view>
+        </view>
       </view>
-      <view class="menu-item" @click="goAddress">
-        <view class="menu-left"><text style="font-size:36rpx;">📍</text></view>
-        <view class="menu-center">收货地址</view>
-        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
-      </view>
-    </view>
 
-    <view class="menu-card">
-      <view class="menu-item" @click="toPage('setting')">
-        <view class="menu-left"><u-icon name="setting" size="36" color="#4caf50" /></view>
-        <view class="menu-center">系统设置</view>
-        <view class="menu-right"><u-icon name="arrow-right" color="#ccc" /></view>
+      <view class="section-card menu-card">
+        <view class="menu-item" @click="goAddress">
+          <view class="menu-icon icon-address">
+            <u-icon name="map" size="30" color="#52c41a" />
+          </view>
+          <view class="menu-center">
+            <text class="menu-title">收货地址</text>
+          </view>
+          <u-icon name="arrow-right" size="24" color="#bfbfbf" />
+        </view>
+        <view class="menu-divider" />
+        <view class="menu-item" @click="toPage('setting')">
+          <view class="menu-icon icon-setting">
+            <u-icon name="setting" size="30" color="#1890ff" />
+          </view>
+          <view class="menu-center">
+            <text class="menu-title">系统设置</text>
+          </view>
+          <u-icon name="arrow-right" size="24" color="#bfbfbf" />
+        </view>
       </view>
-    </view>
 
-    <!-- 退出登录 -->
-    <view class="button-area" v-if="userStore.isLoggedIn">
-      <button class="logout-btn" @click="handleLogout">退出登录</button>
+      <view class="button-area" v-if="userStore.isLoggedIn">
+        <button class="logout-btn" @click="handleLogout">退出登录</button>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { onShow } from '@dcloudio/uni-app'
 import { getImageUrl } from '@/utils/image'
@@ -109,13 +137,17 @@ const orderStats = ref({
   total: 0
 })
 
+const displayName = computed(() => {
+  return userStore.isLoggedIn ? (userStore.userInfo.nickname || '匿名用户') : '点击登录'
+})
+
 const loadOrderStats = async () => {
   try {
     const res = await orderApi.count()
     orderStats.value = {
       pendingPayment: res.pendingPayment || 0,
       processing: (res.pendingDelivery || 0) + (res.pendingReceive || 0),
-      pendingReview: res.completed || 0,
+      pendingReview: (res as any).completed || 0,
       total: res.total || 0
     }
   } catch (e) {
@@ -129,7 +161,7 @@ const loadOrderStats = async () => {
   }
 }
 
-const toPage = (pageName) => {
+const toPage = (pageName: string) => {
   uni.$grouter.navigateTo(pageName)
 }
 
@@ -137,7 +169,7 @@ const toLogin = () => {
   uni.$grouter.navigateTo('login')
 }
 
-const goOrder = (status) => {
+const goOrder = (status: number) => {
   uni.$grouter.navigateTo('orderList', { query: { status } })
 }
 
@@ -146,7 +178,7 @@ const goAddress = () => {
 }
 
 // 微信小程序 - 选择头像
-const onChooseAvatar = async (e) => {
+const onChooseAvatar = async (e: { detail?: { avatarUrl?: string } }) => {
   try {
     isChoosingAvatar.value = true
     if (e.detail?.avatarUrl) {
@@ -168,7 +200,7 @@ const onChooseAvatar = async (e) => {
 // H5专用头像选择
 const chooseAvatarForH5 = () => {
   if (!userStore.isLoggedIn) {
-  uni.$grouter.navigateTo('login')
+    uni.$grouter.navigateTo('login')
     return
   }
   toPage('userInfo')
@@ -178,7 +210,7 @@ const handleLogout = () => {
   uni.showModal({
     title: '确认退出',
     content: '确定要退出当前账号吗？',
-    success: (res) => {
+    success: (res: UniApp.ShowModalRes) => {
       if (res.confirm) {
         userStore.logout()
         uni.showToast({ title: '已退出', icon: 'none' })
@@ -197,70 +229,303 @@ onShow(() => {
 </script>
 
 <style lang="scss" scoped>
-.page { background: #f5f9f5; min-height: 100vh; padding-bottom: 120rpx; }
+.page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  background: $uni-bg-color-page;
+}
 
-.top-banner {
-  height: 240rpx; background: linear-gradient(135deg, #4caf50, #81c784);
+.profile-hero {
+  position: relative;
+  padding: 28rpx 24rpx 0;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 260rpx;
+  background: linear-gradient(135deg, $uni-color-success 0%, $uni-color-primary 100%);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  padding: 22rpx 24rpx 0;
 }
 
 /* 微信头像按钮 — 去掉默认button样式 */
 .avatar-btn {
-  padding: 0; margin: 0; background: transparent; border: none; line-height: 1;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  line-height: 1;
 }
-.avatar-btn::after { border: none; }
+.avatar-btn::after {
+  border: none;
+}
 
 .user-card {
-  position: relative; margin: -80rpx 25rpx 30rpx;
-  background: #fff; border-radius: 24rpx;
-  box-shadow: 0 10rpx 30rpx rgba(76, 175, 80, 0.12); overflow: hidden;
-  .card-content { padding: 40rpx 30rpx 30rpx; display: flex; align-items: center; }
-  .user-avatar-wrapper { margin-right: 24rpx; }
-  .user-avatar {
-    width: 130rpx; height: 130rpx; border-radius: 50%;
-    border: 4rpx solid #e8f5e9; background: #f5f5f5;
-    display: block;
-  }
-  .user-info { flex: 1; }
-  .user-name { font-size: 36rpx; font-weight: 600; color: #2e3b2e; margin-bottom: 6rpx; }
-  .user-phone { font-size: 26rpx; color: #999; margin-bottom: 4rpx; }
-  .user-tagline { font-size: 24rpx; color: #999; }
+  position: relative;
+  z-index: 2;
+  margin-top: 100rpx;
+  border-radius: 18rpx;
+  overflow: hidden;
+  background: $uni-bg-color;
+  box-shadow: 0 12rpx 34rpx rgba($uni-text-color, 0.08);
+}
 
-  .stats-bar {
-    display: flex; height: 90rpx; background: #f9fdf9; border-top: 1rpx solid #e8f5e9;
-    .stat-item {
-      flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      .stat-number { font-size: 32rpx; font-weight: 700; color: #4caf50; }
-      .stat-label { font-size: 22rpx; color: #999; margin-top: 4rpx; }
-    }
-    .stat-divider { width: 1px; height: 50rpx; background: #e8f5e9; margin: auto 0; }
-  }
+.card-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 34rpx 28rpx 28rpx;
+}
+
+.user-avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  display: block;
+  width: 132rpx;
+  height: 132rpx;
+  border: 6rpx solid $uni-color-success-light;
+  border-radius: 50%;
+  background: $uni-bg-color-grey;
+  box-sizing: border-box;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  padding-right: 92rpx;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.user-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 36rpx;
+  font-weight: 700;
+  line-height: 46rpx;
+  color: $uni-text-color;
+}
+
+.user-phone {
+  margin-top: 10rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 25rpx;
+  line-height: 34rpx;
+  color: $uni-text-color-grey;
+}
+
+.login-badge {
+  position: absolute;
+  top: 30rpx;
+  right: 28rpx;
+  padding: 7rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  line-height: 28rpx;
+  color: $uni-text-color-grey;
+  background: $uni-bg-color-grey;
+}
+
+.login-badge.logged {
+  color: $uni-color-success;
+  background: $uni-color-success-light;
+}
+
+.quick-login {
+  padding: 0 28rpx 28rpx;
+}
+
+.login-btn {
+  height: 82rpx;
+  border: none;
+  border-radius: 999rpx;
+  background: $uni-color-success;
+  box-shadow: 0 8rpx 20rpx rgba($uni-color-success, 0.22);
+  color: $uni-text-color-inverse;
+  text-align: center;
+  font-size: 29rpx;
+  line-height: 82rpx;
+}
+
+.login-btn::after {
+  border: none;
+}
+
+.section-card {
+  border-radius: 18rpx;
+  background: $uni-bg-color;
+  box-shadow: 0 8rpx 24rpx rgba($uni-text-color, 0.05);
+}
+
+.order-panel {
+  padding: 26rpx 24rpx 24rpx;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.section-title {
+  font-size: 31rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+  color: $uni-text-color;
+}
+
+.section-more {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 23rpx;
+  line-height: 32rpx;
+  color: $uni-text-color-grey;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 28rpx;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 18rpx;
+}
+
+.stat-all {
+  background: $uni-color-primary-light;
+}
+
+.stat-pay {
+  background: $uni-color-warning-light;
+}
+
+.stat-progress {
+  background: $uni-color-success-light;
+}
+
+.stat-review {
+  background: $uni-color-error-light;
+}
+
+.stat-number {
+  margin-top: 12rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 38rpx;
+  color: $uni-text-color;
+}
+
+.stat-label {
+  margin-top: 4rpx;
+  font-size: 23rpx;
+  line-height: 30rpx;
+  color: $uni-text-color-grey;
 }
 
 .menu-card {
-  margin: 0 25rpx 30rpx; background: #fff; border-radius: 20rpx;
-  overflow: hidden; box-shadow: 0 8rpx 25rpx rgba(76,175,80,0.06);
-  .menu-item {
-    display: flex; height: 96rpx; align-items: center; padding: 0 30rpx;
-    &:active { background: #f9fdf9; }
-    .menu-left { width: 70rpx; }
-    .menu-center { flex: 1; font-size: 30rpx; color: #333; }
-    .menu-right { width: 50rpx; text-align: right; }
-  }
+  margin-top: 22rpx;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  min-height: 96rpx;
+  padding: 0 24rpx;
+}
+
+.menu-item:active {
+  background: $uni-bg-color-hover;
+}
+
+.menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 62rpx;
+  height: 62rpx;
+  border-radius: 18rpx;
+}
+
+.icon-address {
+  background: $uni-color-success-light;
+}
+
+.icon-setting {
+  background: $uni-color-primary-light;
+}
+
+.menu-center {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menu-title {
+  font-size: 29rpx;
+  font-weight: 600;
+  line-height: 38rpx;
+  color: $uni-text-color;
+}
+
+.menu-divider {
+  height: 1rpx;
+  margin-left: 106rpx;
+  background: $uni-border-color-light;
 }
 
 .button-area {
-  margin: 0 25rpx 30rpx;
-  .login-btn {
-    height: 90rpx; line-height: 90rpx; font-size: 30rpx; border-radius: 50rpx;
-    background: linear-gradient(to right, #4caf50, #81c784); color: #fff;
-    border: none; box-shadow: 0 8rpx 20rpx rgba(76, 175, 80, 0.2);
-    text-align: center;
-  }
-  .login-btn::after { border: none; }
+  margin-top: 28rpx;
+
   .logout-btn {
-    height: 90rpx; line-height: 90rpx; font-size: 30rpx; border-radius: 50rpx;
-    background: linear-gradient(to right, #ff8f00, #ffb74d); color: #fff;
-    border: none; box-shadow: 0 10rpx 20rpx rgba(255, 143, 0, 0.2);
+    height: 82rpx;
+    border: 1rpx solid $uni-color-error-light;
+    border-radius: 999rpx;
+    background: $uni-bg-color;
+    color: $uni-color-error;
+    font-size: 29rpx;
+    line-height: 82rpx;
+  }
+
+  .logout-btn::after {
+    border: none;
   }
 }
+
 </style>

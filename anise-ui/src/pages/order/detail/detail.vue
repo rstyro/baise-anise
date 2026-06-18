@@ -1,172 +1,145 @@
 <template>
   <view class="page">
-    <!-- 状态头 -->
-    <view class="status-bar" :style="{ background: statusBg(order.status) }">
-      <view class="status-icon">
-        <u-icon
-          v-if="order.status === 1"
-          name="clock"
-          size="44"
-          color="#fff"
-        />
-        <u-icon
-          v-else-if="order.status === 2"
-          name="car"
-          size="44"
-          color="#fff"
-        />
-        <u-icon
-          v-else-if="order.status === 3"
-          name="car-fill"
-          size="44"
-          color="#fff"
-        />
-        <u-icon
-          v-else-if="order.status === 4"
-          name="checkmark-circle"
-          size="44"
-          color="#fff"
-        />
-        <u-icon
-          v-else-if="order.status === 0"
-          name="close-circle"
-          size="44"
-          color="#fff"
-        />
-        <u-icon
-          v-else
-          name="info-circle"
-          size="44"
-          color="#fff"
-        />
-      </view>
-      <view class="status-text">{{ statusLabel(order.status) }}</view>
-      <view class="status-desc" v-if="statusDesc(order.status)">{{ statusDesc(order.status) }}</view>
-    </view>
-
-    <!-- 收货地址 -->
-    <view class="section addr-section" v-if="order.address">
-      <view class="section-title">
-        <u-icon name="map" size="20" color="#4caf50" />
-        <text>收货信息</text>
-      </view>
-      <view class="addr-content">
-        <view class="addr-top">
-          <text class="addr-name">{{ order.address.realName }}</text>
-          <text class="addr-phone">{{ order.address.phone }}</text>
+    <view class="status-panel" :class="currentStatusMeta.className">
+      <view class="status-main">
+        <view class="status-icon">
+          <u-icon :name="currentStatusMeta.icon" size="38" :color="THEME_TEXT_INVERSE" />
         </view>
-        <text class="addr-detail">{{ order.address.province }}{{ order.address.city }}{{ order.address.district }} {{ order.address.detailAddress }}</text>
-      </view>
-    </view>
-
-    <!-- 商品列表 -->
-    <view class="section">
-      <view class="section-title">
-        <u-icon name="shop" size="20" color="#4caf50" />
-        <text>百色田阳自家八角种植园</text>
-      </view>
-      <view class="goods-item" v-for="item in order.items" :key="item.skuId || item.productId" @click="goProduct(item.productId)">
-        <image
-          :src="getImageUrl(item.productImage)"
-          class="goods-img"
-          mode="aspectFill"
-        />
-        <view class="goods-info">
-          <view class="goods-name u-line-2">{{ item.productName }}</view>
-          <view class="goods-spec" v-if="item.skuSpecs">{{ formatSkuSpecs(item.skuSpecs) }}</view>
-        </view>
-        <view class="goods-right">
-          <text class="goods-price">¥{{ item.price }}</text>
-          <text class="goods-qty">×{{ item.quantity }}</text>
+        <view class="status-copy">
+          <text class="status-text">{{ currentStatusMeta.label }}</text>
+          <text v-if="currentStatusMeta.desc" class="status-desc">{{ currentStatusMeta.desc }}</text>
         </view>
       </view>
-    </view>
-
-    <!-- 价格明细 -->
-    <view class="section">
-      <view class="price-row">
-        <text>商品合计</text>
-        <text>¥{{ totalAmount }}</text>
-      </view>
-      <view class="price-row">
-        <text>运费</text>
-        <text style="color:#4caf50;">免运费</text>
-      </view>
-      <view class="price-row bold">
-        <text>实付款</text>
-        <text class="pay-amount">¥{{ order.payAmount || order.totalAmount }}</text>
+      <view v-if="order.orderNo" class="status-order">
+        <text class="status-order-label">订单编号</text>
+        <text class="status-order-no u-line-1">{{ order.orderNo }}</text>
       </view>
     </view>
 
-    <!-- 订单信息 -->
-    <view class="section">
-      <view class="section-title">
-        <u-icon name="order" size="20" color="#999" />
-        <text>订单信息</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">订单编号</text>
-        <view class="info-value">
-          <text>{{ order.orderNo }}</text>
-          <text class="copy-btn" @click="copyOrderNo">复制</text>
+    <view class="content">
+      <view v-if="order.address" class="address-card section-card">
+        <view class="section-head">
+          <view class="section-title">
+            <view class="section-icon success">
+              <u-icon name="map" size="18" :color="THEME_SUCCESS" />
+            </view>
+            <text>收货信息</text>
+          </view>
+        </view>
+        <view class="address-content">
+          <view class="addr-top">
+            <text class="addr-name">{{ order.address.realName }}</text>
+            <text class="addr-phone">{{ order.address.phone }}</text>
+          </view>
+          <text class="addr-detail">
+            {{ order.address.province }}{{ order.address.city }}{{ order.address.district }} {{ order.address.detailAddress }}
+          </text>
         </view>
       </view>
-      <view class="info-row">
-        <text class="info-label">创建时间</text>
-        <text class="info-value">{{ order.createTime }}</text>
+
+      <view class="goods-section section-card">
+        <view class="shop-header">
+          <view class="shop-title">
+            <view class="section-icon success">
+              <u-icon name="shop" size="18" :color="THEME_SUCCESS" />
+            </view>
+            <text class="shop-name u-line-1">{{ order.merchantName || '百色田阳自家八角种植园' }}</text>
+          </view>
+          <text class="shop-count">{{ order.items.length }}件商品</text>
+        </view>
+
+        <view
+          v-for="item in order.items"
+          :key="item.skuId || item.productId"
+          class="goods-item"
+          @click="goProduct(item.productId)"
+        >
+          <image :src="getImageUrl(item.productImage)" class="goods-img" mode="aspectFill" />
+          <view class="goods-info">
+            <view class="goods-name u-line-2">{{ item.productName }}</view>
+            <view v-if="item.skuSpecs" class="goods-spec u-line-1">{{ formatSkuSpecs(item.skuSpecs) }}</view>
+          </view>
+          <view class="goods-right">
+            <text class="goods-price">¥{{ formatAmount(item.price) }}</text>
+            <text class="goods-qty">x{{ item.quantity }}</text>
+          </view>
+        </view>
       </view>
-      <view class="info-row" v-if="order.payTime">
-        <text class="info-label">支付时间</text>
-        <text class="info-value">{{ order.payTime }}</text>
+
+      <view class="amount-section section-card">
+        <view class="amount-row">
+          <text>商品合计</text>
+          <text>¥{{ totalAmount }}</text>
+        </view>
+        <view class="amount-row">
+          <text>运费</text>
+          <text class="free-fee">免运费</text>
+        </view>
+        <view class="amount-row total-row">
+          <text>实付款</text>
+          <text class="pay-amount">¥{{ payAmount }}</text>
+        </view>
       </view>
-      <view class="info-row" v-if="order.deliveryTime">
-        <text class="info-label">发货时间</text>
-        <text class="info-value">{{ order.deliveryTime }}</text>
-      </view>
-      <view class="info-row" v-if="order.receiveTime">
-        <text class="info-label">收货时间</text>
-        <text class="info-value">{{ order.receiveTime }}</text>
-      </view>
-      <view class="info-row" v-if="order.remark">
-        <text class="info-label">买家备注</text>
-        <text class="info-value">{{ order.remark }}</text>
+
+      <view class="info-section section-card">
+        <view class="section-head">
+          <view class="section-title">
+            <view class="section-icon muted">
+              <u-icon name="order" size="18" :color="THEME_TEXT_GREY" />
+            </view>
+            <text>订单信息</text>
+          </view>
+        </view>
+        <view class="info-row">
+          <text class="info-label">订单编号</text>
+          <view class="info-value order-no">
+            <text class="u-line-1">{{ order.orderNo || '-' }}</text>
+            <text v-if="order.orderNo" class="copy-btn" @click.stop="copyOrderNo">复制</text>
+          </view>
+        </view>
+        <view class="info-row">
+          <text class="info-label">创建时间</text>
+          <text class="info-value">{{ order.createTime || '-' }}</text>
+        </view>
+        <view v-if="order.payTime" class="info-row">
+          <text class="info-label">支付时间</text>
+          <text class="info-value">{{ order.payTime }}</text>
+        </view>
+        <view v-if="order.deliveryTime" class="info-row">
+          <text class="info-label">发货时间</text>
+          <text class="info-value">{{ order.deliveryTime }}</text>
+        </view>
+        <view v-if="order.receiveTime" class="info-row">
+          <text class="info-label">收货时间</text>
+          <text class="info-value">{{ order.receiveTime }}</text>
+        </view>
+        <view v-if="order.remark" class="info-row">
+          <text class="info-label">买家备注</text>
+          <text class="info-value remark-value">{{ order.remark }}</text>
+        </view>
       </view>
     </view>
 
-    <!-- 底部留白 -->
-    <view style="height: 140rpx;" />
-
-    <!-- 底部操作栏 -->
     <view class="bottom-bar">
-      <!-- 待付款 -->
       <template v-if="order.status === 1">
-        <view class="btn cancel" @click="cancelOrder">取消订单</view>
-        <view class="btn pay" @click="goPay">去付款</view>
+        <view class="action-btn outline" @click="cancelOrder">取消订单</view>
+        <view class="action-btn primary" @click="goPay">去付款</view>
       </template>
-      <!-- 待发货 -->
-      <view
-        v-else-if="order.status === 2"
-        class="btn remind"
-        @click="$u.toast('已提醒发货')"
-      >
+      <view v-else-if="order.status === 2" class="action-btn primary" @click="showToast('已提醒发货')">
         提醒发货
       </view>
-      <!-- 已发货 -->
       <template v-else-if="order.status === 3">
-        <view class="btn outline" @click="$u.toast('查看物流')">查看物流</view>
-        <view class="btn primary" @click="confirmReceive">确认收货</view>
+        <view class="action-btn outline" @click="showToast('查看物流')">查看物流</view>
+        <view class="action-btn primary" @click="confirmReceive">确认收货</view>
       </template>
-      <!-- 已完成 -->
       <template v-else-if="order.status === 4">
-        <view class="btn outline" @click="goAfterSale">申请售后</view>
-        <view class="btn primary" @click="buyAgain">再次购买</view>
+        <view class="action-btn outline" @click="goAfterSale">申请售后</view>
+        <view class="action-btn primary" @click="buyAgain">再次购买</view>
       </template>
-      <!-- 售后中 -->
       <template v-else-if="order.status === 5">
-        <view class="btn outline" @click="viewAfterSale">查看售后进度</view>
+        <view class="action-btn outline" @click="viewAfterSale">查看售后进度</view>
       </template>
-      <!-- 已取消 -->
-      <view v-else-if="order.status === 0" class="btn outline" @click="buyAgain">
+      <view v-else-if="order.status === 0" class="action-btn outline" @click="buyAgain">
         再次购买
       </view>
     </view>
@@ -174,337 +147,619 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { orderApi, payApi, aftersaleApi } from '@/api/businessApi'
+import { aftersaleApi, orderApi, payApi } from '@/api/businessApi'
 import { getImageUrl } from '@/utils/image'
+import { THEME_SUCCESS, THEME_TEXT_GREY, THEME_TEXT_INVERSE } from '@/styles/theme'
 
-const order = ref({
-  items: [],
+type OrderStatus = 0 | 1 | 2 | 3 | 4 | 5
+
+interface OrderAddress {
+  realName: string
+  phone: string
+  province: string
+  city: string
+  district: string
+  detailAddress: string
+}
+
+interface OrderGoodsItem {
+  skuId?: number
+  productId: number
+  productImage: string
+  productName: string
+  skuSpecs?: string
+  price: number | string
+  quantity: number
+}
+
+interface OrderDetail {
+  id?: number
+  status?: OrderStatus
+  orderNo?: string
+  createTime?: string
+  payTime?: string
+  deliveryTime?: string
+  receiveTime?: string
+  remark?: string
+  payAmount?: number | string
+  totalAmount?: number | string
+  merchantName?: string
+  address: OrderAddress | null
+  items: OrderGoodsItem[]
+}
+
+interface AfterSaleRecord {
+  orderId: number
+  afterSaleNo?: string
+  status?: number
+  handleRemark?: string
+}
+
+interface StatusMeta {
+  label: string
+  desc: string
+  icon: string
+  className: string
+}
+
+const createEmptyOrder = (): OrderDetail => ({
   address: null,
+  items: [],
 })
 
-onLoad(async (options) => {
-  const id = Number(options.id)
-  if (!id) {
-    uni.showToast({ title: '订单不存在', icon: 'none' })
-    setTimeout(() => uni.navigateBack(), 1000)
-    return
-  }
-  try {
-    const res = await orderApi.detail(id)
-    order.value = res
-  } catch (e) {
-    uni.showToast({ title: '加载失败', icon: 'none' })
-  }
+const order = ref<OrderDetail>(createEmptyOrder())
+
+const statusMap: Record<OrderStatus, StatusMeta> = {
+  0: { label: '已取消', desc: '该订单已取消', icon: 'close-circle', className: 'status-cancelled' },
+  1: { label: '待支付', desc: '请在30分钟内完成支付，超时自动取消', icon: 'clock', className: 'status-wait-pay' },
+  2: { label: '待发货', desc: '商家正在备货中', icon: 'car', className: 'status-wait-delivery' },
+  3: { label: '已发货', desc: '商品已在路上，请耐心等待', icon: 'car-fill', className: 'status-delivering' },
+  4: { label: '已完成', desc: '感谢您的购买，欢迎再次光临', icon: 'checkmark-circle', className: 'status-completed' },
+  5: { label: '售后中', desc: '售后服务正在处理中', icon: 'info-circle', className: 'status-aftersale' },
+}
+
+const unknownStatus: StatusMeta = {
+  label: '未知状态',
+  desc: '',
+  icon: 'info-circle',
+  className: 'status-unknown',
+}
+
+const currentStatusMeta = computed(() => {
+  const status = order.value.status
+  return status === undefined ? unknownStatus : statusMap[status] || unknownStatus
 })
 
-// ========== 工具方法 ==========
-// 解析 skuSpecs JSON，提取 value 用逗号隔开
+const formatAmount = (value?: number | string): string => {
+  const amount = Number(value || 0)
+  return Number.isNaN(amount) ? '0.00' : amount.toFixed(2)
+}
+
+const totalAmount = computed(() => {
+  const sum = order.value.items.reduce((total, item) => {
+    return total + Number(item.price || 0) * Number(item.quantity || 1)
+  }, 0)
+  return formatAmount(sum)
+})
+
+const payAmount = computed(() => {
+  return formatAmount(order.value.payAmount ?? order.value.totalAmount ?? totalAmount.value)
+})
+
+const showToast = (title: string, icon: 'none' | 'success' = 'none') => {
+  uni.showToast({ title, icon })
+}
+
+const getOrderId = (): number => order.value.id || 0
+
+const formatCurrentTime = (): string => {
+  return new Date().toISOString().replace('T', ' ').substring(0, 19)
+}
+
+// 解析 skuSpecs JSON，提取规格值并用逗号拼接。
 const formatSkuSpecs = (skuSpecs: string): string => {
   if (!skuSpecs || skuSpecs === '{}') return ''
   try {
-    const obj = JSON.parse(skuSpecs)
-    const values = Object.values(obj).filter((v: any) => v !== null && v !== undefined && v !== '')
+    const obj = JSON.parse(skuSpecs) as Record<string, unknown>
+    const values = Object.values(obj).filter((value): value is string | number => {
+      return value !== null && value !== undefined && value !== ''
+    })
     return values.join(', ')
   } catch (e) {
     return skuSpecs
   }
 }
 
-// ========== 计算属性 ==========
-const totalAmount = computed(() => {
-  if (!order.value.items || !order.value.items.length) return '0.00'
-  return order.value.items
-    .reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0)
-    .toFixed(2)
+const loadDetail = async (id: number) => {
+  const res = await orderApi.detail(id) as OrderDetail
+  order.value = {
+    ...createEmptyOrder(),
+    ...res,
+    address: res.address || null,
+    items: res.items || [],
+  }
+}
+
+onLoad(async (options?: { id?: string | number }) => {
+  const id = Number(options?.id)
+  if (!id) {
+    showToast('订单不存在')
+    setTimeout(() => uni.navigateBack(), 1000)
+    return
+  }
+
+  try {
+    await loadDetail(id)
+  } catch (e) {
+    showToast('加载失败')
+  }
 })
 
-// ========== 状态显示 ==========
-const statusLabel = (s) =>
-  ({ 0: '已取消', 1: '待支付', 2: '待发货', 3: '已发货', 4: '已完成', 5: '售后中' }[s] || '未知')
-const statusBg = (s) =>
-  ({ 0: '#bbb', 1: '#f29100', 2: '#4caf50', 3: '#2979ff', 4: '#999', 5: '#ff4d4f' }[s] || '#999')
-const statusDesc = (s) =>
-  ({ 1: `请在30分钟内完成支付，超时自动取消`, 2: '商家正在备货中', 3: '商品已在路上，请耐心等待', 4: '感谢您的购买，欢迎再次光临', 0: '该订单已取消' }[s] || '')
-
-// ========== 操作 ==========
 const goProduct = (productId: number) => {
   if (!productId) return
   uni.$grouter.navigateTo('productDetail', { query: { id: productId } })
 }
+
 const copyOrderNo = () => {
-  uni.setClipboardData({ data: order.value.orderNo, success: () => uni.$u.toast('已复制') })
+  if (!order.value.orderNo) return
+  uni.setClipboardData({
+    data: order.value.orderNo,
+    success: () => showToast('已复制', 'success'),
+  })
 }
 
 const cancelOrder = async () => {
-  const r = await uni.showModal({ title: '取消订单', content: '确定取消该订单吗？' })
-  if (r.confirm) {
-    try {
-      await orderApi.cancel(order.value.id)
-      uni.$u.toast('已取消')
-      order.value.status = 0
-    } catch (e) {
-      uni.$u.toast('取消失败')
-    }
+  const orderId = getOrderId()
+  if (!orderId) return
+
+  const result = await uni.showModal({ title: '取消订单', content: '确定取消该订单吗？' })
+  if (!result.confirm) return
+
+  try {
+    await orderApi.cancel(orderId)
+    showToast('已取消', 'success')
+    order.value.status = 0
+  } catch (e) {
+    showToast('取消失败')
   }
 }
 
 const goPay = async () => {
+  const orderId = getOrderId()
+  if (!orderId) return
+
   try {
-    await payApi.mockPaySuccess(order.value.id)
-    uni.$u.toast('支付成功')
+    await payApi.mockPaySuccess(orderId)
+    showToast('支付成功', 'success')
     order.value.status = 2
-    order.value.payTime = new Date().toISOString().replace('T', ' ').substring(0, 19)
+    order.value.payTime = formatCurrentTime()
   } catch {
-    uni.$u.toast('支付失败')
+    showToast('支付失败')
   }
 }
 
 const confirmReceive = async () => {
-  const r = await uni.showModal({ title: '确认收货', content: '确定已收到商品吗？' })
-  if (r.confirm) {
-    try {
-      await orderApi.confirmReceive(order.value.id)
-      uni.$u.toast('已确认收货')
-      order.value.status = 4
-      order.value.receiveTime = new Date().toISOString().replace('T', ' ').substring(0, 19)
-    } catch {
-      uni.$u.toast('操作失败')
-    }
+  const orderId = getOrderId()
+  if (!orderId) return
+
+  const result = await uni.showModal({ title: '确认收货', content: '确定已收到商品吗？' })
+  if (!result.confirm) return
+
+  try {
+    await orderApi.confirmReceive(orderId)
+    showToast('已确认收货', 'success')
+    order.value.status = 4
+    order.value.receiveTime = formatCurrentTime()
+  } catch {
+    showToast('操作失败')
   }
 }
 
 const buyAgain = () => {
-  uni.$u.toast('已加入购物车')
+  showToast('已加入购物车', 'success')
   setTimeout(() => uni.$grouter.switchTab('cart'), 800)
 }
 
 const goAfterSale = () => {
-  uni.$grouter.navigateTo('orderDetail', { query: { id: order.value.id, mode: 'aftersale' } })
+  const orderId = getOrderId()
+  if (!orderId) return
+  uni.$grouter.navigateTo('orderDetail', { query: { id: orderId, mode: 'aftersale' } })
 }
 
 const viewAfterSale = async () => {
+  const orderId = getOrderId()
+  if (!orderId) return
+
   try {
-    const list = await aftersaleApi.list()
-    const item = (list || []).find((a) => a.orderId === order.value.id)
+    const list = await aftersaleApi.list() as AfterSaleRecord[]
+    const item = (list || []).find(record => record.orderId === orderId)
     if (item) {
+      const statusLabelMap: Record<number, string> = {
+        0: '待处理',
+        1: '已同意',
+        2: '已拒绝',
+        3: '已完成',
+      }
       uni.showModal({
         title: '售后状态',
-        content: `售后编号：${item.afterSaleNo}\n状态：${
-          { 0: '待处理', 1: '已同意', 2: '已拒绝', 3: '已完成' }[item.status] || '未知'
-        }\n处理备注：${item.handleRemark || '暂无'}`,
+        content: `售后编号：${item.afterSaleNo || '-'}\n状态：${statusLabelMap[item.status || 0] || '未知'}\n处理备注：${item.handleRemark || '暂无'}`,
         showCancel: false,
       })
     } else {
-      uni.$u.toast('暂无售后记录')
+      showToast('暂无售后记录')
     }
   } catch {
-    uni.$u.toast('查询失败')
+    showToast('查询失败')
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .page {
-  background: #f5f9f5;
   min-height: 100vh;
+  padding-bottom: 132rpx;
+  background: $uni-bg-color-page;
 }
 
-// ========== 状态头 ==========
-.status-bar {
-  padding: 60rpx 32rpx 36rpx;
-  color: #fff;
-  .status-icon {
-    text-align: center;
-    margin-bottom: 12rpx;
-  }
-  .status-text {
-    font-size: 36rpx;
-    font-weight: 700;
-    text-align: center;
-  }
-  .status-desc {
-    font-size: 24rpx;
-    text-align: center;
-    margin-top: 8rpx;
-    opacity: 0.85;
-  }
+.status-panel {
+  padding: 58rpx 28rpx 30rpx;
+  color: $uni-text-color-inverse;
 }
 
-// ========== 通用区块 ==========
-.section {
-  background: #fff;
-  margin: 12rpx 16rpx;
-  border-radius: 16rpx;
-  padding: 24rpx;
-}
-
-.section-title {
+.status-main {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #2e3b2e;
-  padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #f0f0f0;
-  margin-bottom: 16rpx;
+  gap: 20rpx;
 }
 
-// ========== 地址 ==========
-.addr-section {
-  .addr-content {
-    .addr-top {
-      display: flex;
-      gap: 16rpx;
-      margin-bottom: 6rpx;
-    }
-    .addr-name {
-      font-size: 30rpx;
-      font-weight: 600;
-    }
-    .addr-phone {
-      font-size: 28rpx;
-      color: #666;
-    }
-    .addr-detail {
-      font-size: 26rpx;
-      color: #999;
-    }
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  flex-shrink: 0;
+  border: 1rpx solid rgba(255, 255, 255, 0.36);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.status-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.status-text {
+  font-size: 38rpx;
+  font-weight: 800;
+  line-height: 48rpx;
+}
+
+.status-desc {
+  font-size: 25rpx;
+  line-height: 34rpx;
+  opacity: 0.9;
+}
+
+.status-order {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 26rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.status-order-label {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  opacity: 0.82;
+}
+
+.status-order-no {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  text-align: right;
+}
+
+.status-wait-pay,
+.status-wait-delivery {
+  background: $uni-color-warning;
+}
+
+.status-delivering {
+  background: $uni-color-primary;
+}
+
+.status-completed {
+  background: $uni-color-success;
+}
+
+.status-aftersale {
+  background: $uni-color-error;
+}
+
+.status-cancelled,
+.status-unknown {
+  background: $uni-text-color-grey;
+}
+
+.content {
+  padding: 20rpx;
+}
+
+.section-card {
+  margin-bottom: 20rpx;
+  padding: 24rpx;
+  background: $uni-bg-color;
+  border: 1rpx solid $uni-border-color-light;
+  border-radius: 18rpx;
+  box-shadow: 0 8rpx 24rpx rgba(31, 31, 31, 0.04);
+}
+
+.section-head {
+  padding-bottom: 18rpx;
+  border-bottom: 1rpx solid $uni-border-color-light;
+}
+
+.section-title,
+.shop-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12rpx;
+  color: $uni-text-color;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42rpx;
+  height: 42rpx;
+  flex-shrink: 0;
+  border-radius: 50%;
+
+  &.success {
+    background: $uni-color-success-light;
+  }
+
+  &.muted {
+    background: $uni-bg-color-grey;
   }
 }
 
-// ========== 商品列表 ==========
+.address-content {
+  padding-top: 18rpx;
+}
+
+.addr-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-bottom: 8rpx;
+}
+
+.addr-name {
+  color: $uni-text-color;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.addr-phone {
+  color: $uni-text-color-secondary;
+  font-size: 28rpx;
+}
+
+.addr-detail {
+  color: $uni-text-color-secondary;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding-bottom: 18rpx;
+  border-bottom: 1rpx solid $uni-border-color-light;
+}
+
+.shop-name {
+  color: $uni-text-color;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.shop-count {
+  flex-shrink: 0;
+  color: $uni-text-color-grey;
+  font-size: 24rpx;
+}
+
 .goods-item {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 12rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid $uni-border-color-light;
+
   &:last-child {
+    padding-bottom: 0;
     border-bottom: none;
   }
 }
+
 .goods-img {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 10rpx;
-  background: #e8f5e9;
+  width: 116rpx;
+  height: 116rpx;
   flex-shrink: 0;
+  background: $uni-bg-color-grey;
+  border-radius: 14rpx;
 }
+
 .goods-info {
   flex: 1;
-  .goods-name {
-    font-size: 28rpx;
-    font-weight: 500;
-  }
-  .goods-spec {
-    font-size: 24rpx;
-    color: #999;
-    margin-top: 4rpx;
-  }
-}
-.goods-right {
-  text-align: right;
-  flex-shrink: 0;
-  .goods-price {
-    font-size: 28rpx;
-    font-weight: 600;
-    display: block;
-  }
-  .goods-qty {
-    font-size: 24rpx;
-    color: #999;
-    margin-top: 4rpx;
-    display: block;
-  }
+  min-width: 0;
 }
 
-// ========== 价格明细 ==========
-.price-row {
-  display: flex;
-  justify-content: space-between;
+.goods-name {
+  color: $uni-text-color;
   font-size: 28rpx;
-  color: #333;
-  padding: 8rpx 0;
-  &.bold {
-    font-weight: 700;
-    font-size: 30rpx;
-    padding-top: 12rpx;
-    border-top: 1rpx solid #f0f0f0;
-    margin-top: 4rpx;
-  }
-}
-.pay-amount {
-  color: #ff4d4f;
-  font-size: 36rpx;
+  font-weight: 600;
+  line-height: 38rpx;
 }
 
-// ========== 订单信息 ==========
+.goods-spec {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 10rpx;
+  padding: 4rpx 10rpx;
+  color: $uni-text-color-grey;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  background: $uni-bg-color-grey;
+  border-radius: 8rpx;
+}
+
+.goods-right {
+  display: flex;
+  align-items: flex-end;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.goods-price {
+  color: $uni-text-color;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.goods-qty {
+  color: $uni-text-color-grey;
+  font-size: 24rpx;
+}
+
+.amount-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  color: $uni-text-color-secondary;
+  font-size: 28rpx;
+}
+
+.free-fee {
+  color: $uni-color-success;
+}
+
+.total-row {
+  margin-top: 8rpx;
+  padding-top: 20rpx;
+  color: $uni-text-color;
+  font-weight: 700;
+  border-top: 1rpx solid $uni-border-color-light;
+}
+
+.pay-amount {
+  color: $uni-color-error;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 10rpx 0;
+  gap: 20rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid $uni-border-color-light;
   font-size: 26rpx;
-  .info-label {
-    color: #999;
-    flex-shrink: 0;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
   }
-  .info-value {
-    color: #333;
-    text-align: right;
-  }
-}
-.copy-btn {
-  color: #4caf50;
-  margin-left: 12rpx;
-  font-size: 24rpx;
-  padding: 2rpx 12rpx;
-  border: 1rpx solid #4caf50;
-  border-radius: 6rpx;
 }
 
-// ========== 底部操作栏 ==========
+.info-label {
+  flex-shrink: 0;
+  color: $uni-text-color-grey;
+}
+
+.info-value {
+  min-width: 0;
+  color: $uni-text-color-secondary;
+  text-align: right;
+}
+
+.order-no {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  padding: 3rpx 12rpx;
+  color: $uni-color-success;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  border: 1rpx solid $uni-color-success;
+  border-radius: 8rpx;
+}
+
+.remark-value {
+  line-height: 36rpx;
+}
+
 .bottom-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
   right: 0;
-  background: #fff;
+  bottom: var(--window-bottom, 0);
+  left: 0;
+  z-index: 99;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
   gap: 16rpx;
-  padding: 16rpx 24rpx;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.04);
+  min-height: 112rpx;
+  padding: 0 24rpx;
+  background: $uni-bg-color;
+  box-shadow: 0 -8rpx 24rpx rgba(31, 31, 31, 0.08);
 }
-.btn {
-  line-height: 64rpx;
-  padding: 0 36rpx;
-  border-radius: 32rpx;
+
+.action-btn {
+  min-width: 176rpx;
+  height: 68rpx;
+  padding: 0 28rpx;
+  border-radius: 34rpx;
   font-size: 28rpx;
+  font-weight: 700;
+  line-height: 68rpx;
   text-align: center;
 }
-.btn.outline {
-  border: 2rpx solid #ccc;
-  color: #666;
+
+.action-btn.outline {
+  color: $uni-text-color-secondary;
+  border: 1rpx solid $uni-border-color;
+  background: $uni-bg-color;
 }
-.btn.cancel {
-  border: 2rpx solid #ccc;
-  color: #666;
-}
-.btn.pay {
-  background: linear-gradient(135deg, #f29100, #ffb74d);
-  color: #fff;
-}
-.btn.remind {
-  background: linear-gradient(135deg, #f29100, #ffb74d);
-  color: #fff;
-}
-.btn.primary {
-  background: linear-gradient(135deg, #f29100, #ffb74d);
-  color: #fff;
+
+.action-btn.primary {
+  color: $uni-text-color-inverse;
+  background: $uni-color-success;
 }
 </style>

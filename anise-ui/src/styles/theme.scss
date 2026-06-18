@@ -1,1 +1,19 @@
 @import "@/styles/themes/theme-default.scss";
+
+page,
+body {
+  --theme-primary: #{$uni-color-primary};
+  --theme-primary-light: #{$uni-color-primary-light};
+  --theme-success: #{$uni-color-success};
+  --theme-success-light: #{$uni-color-success-light};
+  --theme-warning: #{$uni-color-warning};
+  --theme-warning-light: #{$uni-color-warning-light};
+  --theme-error: #{$uni-color-error};
+  --theme-error-light: #{$uni-color-error-light};
+  --theme-text: #{$uni-text-color};
+  --theme-text-secondary: #{$uni-text-color-secondary};
+  --theme-text-inverse: #{$uni-text-color-inverse};
+  --theme-text-grey: #{$uni-text-color-grey};
+  --theme-text-disabled: #{$uni-text-color-disable};
+  --theme-bg-grey: #{$uni-bg-color-grey};
+}

@@ -1,125 +1,124 @@
 <template>
   <view class="page">
     <view class="wrap">
-    <!-- Tab切换 -->
-    <view class="u-tabs-box">
-      <u-tabs-swiper
-        activeColor="#f29100"
-        ref="tabs"
-        :list="tabList"
-        :current="current"
-        @change="change"
-        :is-scroll="false"
-        swiperWidth="750"
-      />
-    </view>
+      <view class="tabs-wrap">
+        <u-tabs-swiper
+          ref="tabs"
+          :list="tabList"
+          :current="current"
+          activeColor="#faad14"
+          inactiveColor="#595959"
+          bg-color="#ffffff"
+          :is-scroll="false"
+          swiperWidth="750"
+          @change="change"
+        />
+      </view>
 
-    <!-- Swiper内容区 -->
-    <swiper
-      class="swiper-box"
-      :current="swiperCurrent"
-      @transition="transition"
-      @animationfinish="animationfinish"
-    >
-      <swiper-item
-        class="swiper-item"
-        v-for="(tab, tabIdx) in tabList"
-        :key="tabIdx"
+      <swiper
+        class="swiper-box"
+        :current="swiperCurrent"
+        @transition="transition"
+        @animationfinish="animationfinish"
       >
-        <scroll-view
-          scroll-y
-          style="height: 100%; width: 100%"
-          @scrolltolower="reachBottom"
+        <swiper-item
+          class="swiper-item"
+          v-for="(tab, tabIdx) in tabList"
+          :key="tabIdx"
         >
-          <view class="page-box">
-            <!-- 订单卡片 -->
-            <view
-              class="order"
-              v-for="order in orderList[tabIdx]"
-              :key="order.id"
-              @click="goDetail(order)"
-            >
-              <!-- 按商铺分组显示商品 -->
-              <view v-for="group in groupGoodsByMerchant(order.goodsList)" :key="group.merchantId" class="merchant-group">
-                <view class="top">
-                  <view class="left">
-                    <u-icon name="home" :size="30" color="rgb(94,94,94)" />
-                    <view class="store">{{ group.merchantName }}</view>
-                    <u-icon name="arrow-right" color="rgb(203,203,203)" :size="26" />
+          <scroll-view
+            scroll-y
+            class="order-scroll"
+            @scrolltolower="reachBottom"
+          >
+            <view class="page-box">
+              <view
+                class="order-card"
+                v-for="order in orderList[tabIdx]"
+                :key="order.id"
+                @click="goDetail(order)"
+              >
+                <view class="order-head">
+                  <view class="order-shop">
+                    <u-icon name="home" size="28" color="#52c41a" />
+                    <text class="shop-name">{{ order.store }}</text>
+                    <u-icon name="arrow-right" size="22" color="#bfbfbf" />
                   </view>
-                  <view class="right" :style="{ color: statusColor(order.status) }">
+                  <view class="status-pill" :style="{ color: statusColor(order.status), backgroundColor: statusBgColor(order.status) }">
                     {{ order.deal }}
                   </view>
                 </view>
 
-                <!-- 商品列表 -->
-                <view class="item" v-for="item in group.items" :key="item.goodsUrl + item.title">
-                  <view class="left">
-                    <image :src="getImageUrl(item.goodsUrl)" mode="aspectFill" />
+                <view
+                  v-for="group in groupGoodsByMerchant(order.goodsList)"
+                  :key="group.merchantId"
+                  class="merchant-group"
+                >
+                  <view class="merchant-name" v-if="group.merchantName !== order.store">
+                    <u-icon name="shop" size="22" color="#8c8c8c" />
+                    <text>{{ group.merchantName }}</text>
                   </view>
-                  <view class="content">
-                    <view class="title u-line-2">{{ item.title }}</view>
-                    <view class="type">{{ item.type }}</view>
-                  </view>
-                  <view class="right">
-                    <view class="price">
-                      ￥{{ priceInt(item.price) }}
-                      <text class="decimal">.{{ priceDecimal(item.price) }}</text>
+
+                  <view class="goods-item" v-for="item in group.items" :key="item.goodsUrl + item.title">
+                    <image :src="getImageUrl(item.goodsUrl)" class="goods-img" mode="aspectFill" />
+                    <view class="goods-info">
+                      <view class="goods-title u-line-2">{{ item.title }}</view>
+                      <view class="goods-spec" v-if="item.type">{{ item.type }}</view>
                     </view>
-                    <view class="number">x{{ item.number }}</view>
+                    <view class="goods-side">
+                      <view class="goods-price">
+                        ¥{{ priceInt(item.price) }}<text class="decimal">.{{ priceDecimal(item.price) }}</text>
+                      </view>
+                      <view class="goods-num">x{{ item.number }}</view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="order-summary">
+                  <text class="summary-text">共 {{ totalNum(order.goodsList) }} 件</text>
+                  <text class="summary-label">合计</text>
+                  <text class="summary-price">
+                    ¥{{ priceInt(totalPrice(order.goodsList)) }}<text class="decimal">.{{ priceDecimal(totalPrice(order.goodsList)) }}</text>
+                  </text>
+                </view>
+
+                <view class="order-actions">
+                  <view class="more-action">
+                    <u-icon name="more-dot-fill" color="#bfbfbf" size="30" />
+                  </view>
+                  <view class="action-group">
+                    <template v-if="order.status === 1">
+                      <view class="btn btn-plain" @click.stop="cancelOrder(order)">取消订单</view>
+                      <view class="btn btn-primary" @click.stop="goPay(order)">去付款</view>
+                    </template>
+                    <view v-else-if="order.status === 2" class="btn btn-primary" @click.stop="remindDelivery">
+                      提醒发货
+                    </view>
+                    <template v-else-if="order.status === 3">
+                      <view class="btn btn-plain" @click.stop="viewLogistics">查看物流</view>
+                      <view class="btn btn-primary" @click.stop="confirmReceive(order)">确认收货</view>
+                    </template>
+                    <template v-else-if="order.status === 4">
+                      <view class="btn btn-plain" @click.stop="evaluateOrder">评价</view>
+                      <view class="btn btn-primary" @click.stop="buyAgain">再次购买</view>
+                    </template>
                   </view>
                 </view>
               </view>
 
-              <!-- 合计 -->
-              <view class="total">
-                共{{ totalNum(order.goodsList) }}件商品 合计:
-                <text class="total-price">
-                  ￥{{ priceInt(totalPrice(order.goodsList)) }}.
-                  <text class="decimal">{{ priceDecimal(totalPrice(order.goodsList)) }}</text>
-                </text>
+              <view class="empty-state" v-if="!orderList[tabIdx] || orderList[tabIdx].length === 0">
+                <u-empty text="您还没有相关订单" mode="order" marginTop="120" />
+                <view class="empty-tip">可以去看看有哪些想买的</view>
+                <view class="go-btn" @click="goShop">随便逛逛</view>
               </view>
 
-              <!-- 底部操作 -->
-              <view class="bottom">
-                <view class="more"><u-icon name="more-dot-fill" color="rgb(203,203,203)" /></view>
-                <!-- 待付款 -->
-                <template v-if="order.status === 1">
-                  <view class="cancel btn" @click.stop="cancelOrder(order)">取消订单</view>
-                  <view class="pay btn" @click.stop="goPay(order)">去付款</view>
-                </template>
-                <!-- 待发货 -->
-                <view v-else-if="order.status === 2" class="remind btn" @click.stop="$u.toast('已提醒发货')">
-                  提醒发货
-                </view>
-                <!-- 已发货 -->
-                <template v-else-if="order.status === 3">
-                  <view class="logistics btn" @click.stop="$u.toast('查看物流')">查看物流</view>
-                  <view class="confirm btn" @click.stop="confirmReceive(order)">确认收货</view>
-                </template>
-                <!-- 已完成 -->
-                <template v-else-if="order.status === 4">
-                  <view class="evaluate btn" @click.stop="$u.toast('评价')">评价</view>
-                  <view class="buy-again btn" @click.stop="$u.toast('再次购买')">再次购买</view>
-                </template>
+              <view class="load-more" v-if="orderList[tabIdx] && orderList[tabIdx].length > 0">
+                <u-loadmore :status="loadStatus[tabIdx]" />
               </view>
             </view>
-
-            <!-- 空状态 -->
-            <view class="centre" v-if="!orderList[tabIdx] || orderList[tabIdx].length === 0">
-              <image src="/static/images/order/taobao-order.png" mode="" />
-              <view class="explain">
-                您还没有相关的订单
-                <view class="tips">可以去看看有那些想买的</view>
-              </view>
-              <view class="go-btn" @click="goShop">随便逛逛</view>
-            </view>
-
-            <u-loadmore v-if="orderList[tabIdx] && orderList[tabIdx].length > 0" :status="loadStatus[tabIdx]"  />
-          </view>
-        </scroll-view>
-      </swiper-item>
-    </swiper>
+          </scroll-view>
+        </swiper-item>
+      </swiper>
     </view>
   </view>
 </template>
@@ -191,7 +190,7 @@ const total = ref<number[]>([0, 0, 0, 0])
 const orderList = ref<OrderItem[][]>([[], [], [], []])
 
 // tab索引对应查询的状态：0-全部, 1-待支付(1), 2-进行中(2,3), 3-待评价(4)
-const tabStatusMap = {
+const tabStatusMap: Record<number, number> = {
   0: 0,     // 全部
   1: 1,     // 待支付
   2: -1,    // 进行中（特殊标记，包含多种状态）
@@ -328,8 +327,10 @@ function mockOrders(tabIdx: number): OrderItem[] {
 // ========== 状态标签 ==========
 const statusLabel: Record<number, string> = { 0: '已取消', 1: '待支付', 2: '待发货', 3: '已发货', 4: '已完成', 5: '售后中', 6: '退款中', 7: '已退款' }
 const statusColors: Record<number, string> = { 0: '#999', 1: '#f29100', 2: '#4caf50', 3: '#2979ff', 4: '#999', 5: '#ff4d4f', 6: '#ff9800', 7: '#e91e63' }
+const statusBgColors: Record<number, string> = { 0: '#f5f5f5', 1: '#fffbe6', 2: '#f6ffed', 3: '#e6f7ff', 4: '#f5f5f5', 5: '#fff2f0', 6: '#fff7e6', 7: '#fff0f6' }
 function dealLabel(status: number) { return statusLabel[status] || '未知' }
 function statusColor(status: number) { return statusColors[status] || '#999' }
+function statusBgColor(status: number) { return statusBgColors[status] || '#f5f5f5' }
 
 // ========== 价格工具 ==========
 function priceInt(val: string): string {
@@ -410,151 +411,273 @@ const confirmReceive = async (order: OrderItem) => {
     loadOrders(tabIdx)
   }
 }
+const remindDelivery = () => uni.$u.toast('已提醒发货')
+const viewLogistics = () => uni.$u.toast('查看物流')
+const evaluateOrder = () => uni.$u.toast('评价')
+const buyAgain = () => uni.$u.toast('再次购买')
 const goShop = () => uni.$grouter.switchTab('index')
 </script>
 
 <style lang="scss" scoped>
 .page {
-  background: #f5f9f5;
   min-height: 100vh;
+  background: $uni-bg-color-page;
 }
-.wrap {
-  background: #f5f9f5;
-}
-.order {
-  width: 710rpx;
-  background-color: $u-bg-white;
-  margin: 20rpx auto;
-  border-radius: 20rpx;
-  box-sizing: border-box;
-  padding: 20rpx;
-  font-size: 28rpx;
-  .merchant-group {
-    margin-bottom: 20rpx;
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-  .top {
-    display: flex;
-    justify-content: space-between;
-    .left {
-      display: flex;
-      align-items: center;
-      .store {
-        margin: 0 10rpx;
-        font-size: 32rpx;
-        font-weight: bold;
-      }
-    }
-    .right {
-      color: $u-type-warning-dark;
-    }
-  }
-  .item {
-    display: flex;
-    margin: 20rpx 0 0;
-    .left {
-      margin-right: 20rpx;
-      image {
-        width: 200rpx;
-        height: 200rpx;
-        border-radius: 10rpx;
-      }
-    }
-    .content {
-      .title {
-        font-size: 28rpx;
-        line-height: 50rpx;
-      }
-      .type {
-        margin: 10rpx 0;
-        font-size: 24rpx;
-        color: $u-tips-color;
-      }
-    }
-    .right {
-      margin-left: 10rpx;
-      padding-top: 20rpx;
-      text-align: right;
-      .decimal {
-        font-size: 24rpx;
-        margin-top: 4rpx;
-      }
-      .number {
-        color: $u-tips-color;
-        font-size: 24rpx;
-      }
-    }
-  }
-  .total {
-    margin-top: 20rpx;
-    text-align: right;
-    font-size: 24rpx;
-    .total-price {
-      font-size: 32rpx;
-    }
-  }
-  .bottom {
-    display: flex;
-    margin-top: 40rpx;
-    padding: 0 10rpx;
-    justify-content: space-between;
-    align-items: center;
-    .btn {
-      line-height: 52rpx;
-      width: 160rpx;
-      border-radius: 26rpx;
-      border: 2rpx solid $u-border-color;
-      font-size: 26rpx;
-      text-align: center;
-      color: $u-type-info-dark;
-    }
-    .pay {
-      color: $u-type-warning-dark;
-      border-color: $u-type-warning-dark;
-    }
-    .confirm {
-      color: $u-type-warning-dark;
-      border-color: $u-type-warning-dark;
-    }
-  }
-}
-.centre {
-  text-align: center;
-  margin: 200rpx auto;
-  font-size: 32rpx;
-  image {
-    width: 164rpx;
-    height: 164rpx;
-    border-radius: 50%;
-    margin-bottom: 20rpx;
-  }
-  .tips {
-    font-size: 24rpx;
-    color: $u-tips-color;
-    margin-top: 20rpx;
-  }
-  .go-btn {
-    margin: 80rpx auto;
-    width: 200rpx;
-    border-radius: 32rpx;
-    line-height: 64rpx;
-    color: #fff;
-    font-size: 26rpx;
-    background: linear-gradient(270deg, #f29100 0%, #ffb74d 100%);
-  }
-}
+
 .wrap {
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--window-top));
   width: 100%;
+  background: $uni-bg-color-page;
 }
+
+.tabs-wrap {
+  position: relative;
+  z-index: 3;
+  background: $uni-bg-color;
+  box-shadow: 0 6rpx 20rpx rgba($uni-text-color, 0.04);
+}
+
 .swiper-box {
   flex: 1;
 }
+
 .swiper-item {
   height: 100%;
+}
+
+.order-scroll {
+  height: 100%;
+  width: 100%;
+}
+
+.page-box {
+  padding: 18rpx 20rpx 32rpx;
+}
+
+.order-card {
+  margin-bottom: 18rpx;
+  padding: 24rpx 24rpx 22rpx;
+  border-radius: 16rpx;
+  background: $uni-bg-color;
+  box-shadow: 0 8rpx 24rpx rgba($uni-text-color, 0.05);
+}
+
+.order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid $uni-border-color-light;
+}
+
+.order-shop {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.shop-name {
+  min-width: 0;
+  margin: 0 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 38rpx;
+  color: $uni-text-color;
+}
+
+.status-pill {
+  flex-shrink: 0;
+  min-width: 108rpx;
+  padding: 7rpx 16rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 23rpx;
+  font-weight: 600;
+  line-height: 30rpx;
+}
+
+.merchant-group {
+  padding-top: 18rpx;
+}
+
+.merchant-name {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  color: $uni-text-color-grey;
+}
+
+.goods-item {
+  display: flex;
+  gap: 18rpx;
+  padding: 14rpx 0;
+}
+
+.goods-img {
+  flex-shrink: 0;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 12rpx;
+  background: $uni-bg-color-grey;
+}
+
+.goods-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.goods-title {
+  min-height: 72rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 36rpx;
+  color: $uni-text-color;
+}
+
+.goods-spec {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 12rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 23rpx;
+  line-height: 30rpx;
+  color: $uni-text-color-grey;
+  background: $uni-bg-color-grey;
+}
+
+.goods-side {
+  flex-shrink: 0;
+  min-width: 112rpx;
+  text-align: right;
+}
+
+.goods-price {
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 36rpx;
+  color: $uni-text-color;
+}
+
+.decimal {
+  font-size: 22rpx;
+}
+
+.goods-num {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 30rpx;
+  color: $uni-text-color-grey;
+}
+
+.order-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 10rpx;
+  margin-top: 14rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid $uni-border-color-light;
+  font-size: 24rpx;
+  line-height: 34rpx;
+  color: $uni-text-color-secondary;
+}
+
+.summary-text {
+  color: $uni-text-color-grey;
+}
+
+.summary-price {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: $uni-color-error;
+}
+
+.order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 22rpx;
+}
+
+.more-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+}
+
+.action-group {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  flex: 1;
+}
+
+.btn {
+  min-width: 148rpx;
+  height: 56rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 25rpx;
+  line-height: 54rpx;
+}
+
+.btn-plain {
+  border: 1rpx solid $uni-border-color;
+  color: $uni-text-color-secondary;
+  background: $uni-bg-color;
+}
+
+.btn-primary {
+  border: 1rpx solid $uni-color-warning;
+  color: $uni-text-color-inverse;
+  background: $uni-color-warning;
+}
+
+.empty-state {
+  padding: 70rpx 0 120rpx;
+  text-align: center;
+}
+
+.empty-tip {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  color: $uni-text-color-grey;
+}
+
+.go-btn {
+  width: 208rpx;
+  height: 64rpx;
+  margin: 44rpx auto 0;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 26rpx;
+  line-height: 64rpx;
+  color: $uni-text-color-inverse;
+  background: $uni-color-warning;
+}
+
+.load-more {
+  padding: 24rpx 0 8rpx;
 }
 </style>
