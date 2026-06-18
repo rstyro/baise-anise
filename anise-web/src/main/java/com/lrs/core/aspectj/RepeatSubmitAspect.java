@@ -2,6 +2,7 @@ package com.lrs.core.aspectj;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson2.JSON;
 import com.lrs.common.annotation.RepeatSubmit;
 import com.lrs.common.enums.RedisKeyEnum;
 import com.lrs.common.exception.ServiceException;
@@ -9,7 +10,6 @@ import com.lrs.common.utils.AopUtil;
 import com.lrs.common.utils.RemoteIpUtil;
 import com.lrs.common.vo.UserVo;
 import com.lrs.core.base.BaseController;
-import com.lrs.core.system.entity.SysUser;
 import com.lrs.core.util.RedisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
@@ -110,12 +111,14 @@ public class RepeatSubmitAspect {
         // 根据锁类型添加不同标识
         switch (antiResubmit.lockType()) {
             case SYSTEM_USER:
-                UserVo loginSysUser = BaseController.getLoginSysUser();
-                String userId = loginSysUser != null?String.valueOf(loginSysUser.getUserId()):"";
-                if (StringUtils.hasText(userId)) {
-                    addSeparator(keyBuilder);
-                    keyBuilder.append("system_user:").append(userId);
-                }
+                appendUserKey(keyBuilder, "system_user");
+                break;
+            case APP_USER:
+                appendUserKey(keyBuilder, "app_user");
+                break;
+            case APP_USER_PARAM:
+                appendUserKey(keyBuilder, "app_user");
+                appendParamKey(keyBuilder, joinPoint);
                 break;
             case IP:
                 String clientIp = RemoteIpUtil.getRemoteIpSafely(request);
@@ -133,15 +136,28 @@ public class RepeatSubmitAspect {
                 break;
             case PARAM:
                 // 参数级别的锁，使用所有参数hash
-                String paramHash = generateParamHash(joinPoint);
-                if (StringUtils.hasText(paramHash)) {
-                    addSeparator(keyBuilder);
-                    keyBuilder.append("param:").append(paramHash);
-                }
+                appendParamKey(keyBuilder, joinPoint);
                 break;
         }
 
         return keyBuilder.toString();
+    }
+
+    private void appendUserKey(StringBuilder keyBuilder, String prefix) {
+        UserVo loginSysUser = BaseController.getLoginSysUser();
+        Long userId = loginSysUser != null ? loginSysUser.getUserId() : null;
+        if (userId != null) {
+            addSeparator(keyBuilder);
+            keyBuilder.append(prefix).append(":").append(userId);
+        }
+    }
+
+    private void appendParamKey(StringBuilder keyBuilder, ProceedingJoinPoint joinPoint) {
+        String paramHash = generateParamHash(joinPoint);
+        if (StringUtils.hasText(paramHash)) {
+            addSeparator(keyBuilder);
+            keyBuilder.append("param:").append(paramHash);
+        }
     }
 
     private String generateParamHash(ProceedingJoinPoint joinPoint) {
@@ -152,9 +168,9 @@ public class RepeatSubmitAspect {
             }
             String paramStr = Arrays.stream(args)
                     .filter(o-> Objects.nonNull(o) && !(o instanceof MultipartFile))
-                    .map(Object::toString)
+                    .map(JSON::toJSONString)
                     .collect(Collectors.joining("|"));
-            return DigestUtils.md5DigestAsHex(paramStr.getBytes());
+            return DigestUtils.md5DigestAsHex(paramStr.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             log.warn("生成参数hash失败", e);
             return "error";

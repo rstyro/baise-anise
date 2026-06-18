@@ -3,6 +3,9 @@ package com.lrs.core.business.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lrs.core.business.entity.BizProductSku;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.math.BigDecimal;
 
 /**
  * <p>
@@ -15,4 +18,10 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface BizProductSkuMapper extends BaseMapper<BizProductSku> {
 
+    /**
+     * 原子扣减SKU库存，只有库存充足且SKU可用时才会成功。
+     */
+    int decreaseStock(@Param("skuId") Long skuId,
+                      @Param("stockQuantity") BigDecimal stockQuantity,
+                      @Param("salesQuantity") Integer salesQuantity);
 }

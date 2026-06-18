@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -80,5 +81,13 @@ public class BizProductSkuServiceImpl extends ServiceImpl<BizProductSkuMapper, B
         public boolean batchDel(List<Long> ids) {
             return removeBatchByIds(ids);
          }
+
+        @Override
+        public boolean decreaseStock(Long skuId, BigDecimal quantity) {
+            if (skuId == null || quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+                return false;
+            }
+            return baseMapper.decreaseStock(skuId, quantity, quantity.intValue()) == 1;
+        }
 
 }

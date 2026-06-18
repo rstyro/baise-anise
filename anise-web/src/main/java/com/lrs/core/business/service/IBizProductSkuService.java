@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.lrs.core.business.entity.BizProductSku;
 import com.lrs.core.system.dto.BaseDto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -23,4 +24,9 @@ public interface IBizProductSkuService extends IService<BizProductSku> {
     boolean edit(BizProductSku item);
     boolean del(Long id);
     boolean batchDel(List<Long> ids);
+
+    /**
+     * 原子扣减SKU库存，返回是否扣减成功。
+     */
+    boolean decreaseStock(Long skuId, BigDecimal quantity);
 }
